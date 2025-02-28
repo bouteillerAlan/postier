@@ -1,85 +1,95 @@
-import { exists, createDir, writeTextFile, readTextFile, removeFile } from '@tauri-apps/api/fs';
-import { appDataDir, join } from '@tauri-apps/api/path';
+import { 
+  exists, 
+  mkdir, 
+  writeTextFile, 
+  readTextFile, 
+  remove,
+  BaseDirectory 
+} from '@tauri-apps/plugin-fs';
 import { RequestHistoryItem } from '../types';
 
-// File name for storing history
-const HISTORY_FILE = 'history.json';
+const HISTORY_FILE_NAME = 'history.json';
+const HISTORY_DIR = ''; // Empty string means root of the AppLocalData directory
 
 /**
- * Get the app data directory path
+ * Ensures the app data directory exists
  */
-async function getAppDataDir(): Promise<string> {
-  // Get the app data directory path
-  const appDir = await appDataDir();
-  
-  // Create the postier directory if it doesn't exist
-  const postierDir = await join(appDir, 'postier');
+async function ensureAppDataDir(): Promise<void> {
   try {
-    await createDir(postierDir, { recursive: true });
-  } catch (error) {
-    console.error('Error creating directory:', error);
-  }
-  
-  return postierDir;
-}
-
-/**
- * Get the full path to the history file
- */
-async function getHistoryFilePath(): Promise<string> {
-  const appDataDir = await getAppDataDir();
-  return await join(appDataDir, HISTORY_FILE);
-}
-
-/**
- * Save history to file
- */
-export async function saveHistory(history: RequestHistoryItem[]): Promise<void> {
-  try {
-    const filePath = await getHistoryFilePath();
-    await writeTextFile(filePath, JSON.stringify(history, null, 2));
-    console.log('History saved successfully');
-  } catch (error) {
-    console.error('Error saving history:', error);
-  }
-}
-
-/**
- * Load history from file
- */
-export async function loadHistory(): Promise<RequestHistoryItem[]> {
-  try {
-    const filePath = await getHistoryFilePath();
+    const dirExists = await exists(HISTORY_DIR, { baseDir: BaseDirectory.AppLocalData });
     
-    // Check if file exists
-    const fileExists = await exists(filePath);
+    if (!dirExists) {
+      await mkdir(HISTORY_DIR, { 
+        baseDir: BaseDirectory.AppLocalData,
+        recursive: true 
+      });
+    }
+  } catch (error) {
+    console.error('Failed to ensure app data directory exists:', error);
+    throw error;
+  }
+}
+
+/**
+ * Saves request history to a file
+ */
+export async function saveHistoryToFile(history: RequestHistoryItem[]): Promise<void> {
+  try {
+    await ensureAppDataDir();
+    
+    await writeTextFile(HISTORY_FILE_NAME, JSON.stringify(history, null, 2), {
+      baseDir: BaseDirectory.AppLocalData
+    });
+    
+    console.log('History saved to file in AppLocalData directory');
+  } catch (error) {
+    console.error('Failed to save history to file:', error);
+  }
+}
+
+/**
+ * Loads request history from a file
+ */
+export async function loadHistoryFromFile(): Promise<RequestHistoryItem[]> {
+  try {
+    const fileExists = await exists(HISTORY_FILE_NAME, { 
+      baseDir: BaseDirectory.AppLocalData 
+    });
+    
     if (!fileExists) {
-      console.log('History file does not exist yet');
+      console.log('History file does not exist, returning empty array');
       return [];
     }
     
-    // Read and parse the file
-    const content = await readTextFile(filePath);
-    return JSON.parse(content) as RequestHistoryItem[];
+    const historyJson = await readTextFile(HISTORY_FILE_NAME, {
+      baseDir: BaseDirectory.AppLocalData
+    });
+    
+    const history = JSON.parse(historyJson) as RequestHistoryItem[];
+    console.log('History loaded from file in AppLocalData directory');
+    return history;
   } catch (error) {
-    console.error('Error loading history:', error);
+    console.error('Failed to load history from file:', error);
     return [];
   }
 }
 
 /**
- * Clear history file
+ * Clears the history file
  */
-export async function clearHistory(): Promise<void> {
+export async function clearHistoryFile(): Promise<void> {
   try {
-    const filePath = await getHistoryFilePath();
-    const fileExists = await exists(filePath);
+    const fileExists = await exists(HISTORY_FILE_NAME, { 
+      baseDir: BaseDirectory.AppLocalData 
+    });
     
     if (fileExists) {
-      await removeFile(filePath);
-      console.log('History cleared successfully');
+      await remove(HISTORY_FILE_NAME, {
+        baseDir: BaseDirectory.AppLocalData
+      });
+      console.log('History file cleared');
     }
   } catch (error) {
-    console.error('Error clearing history:', error);
+    console.error('Failed to clear history file:', error);
   }
-} 
+}
