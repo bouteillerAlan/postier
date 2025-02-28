@@ -5,9 +5,20 @@ import { getStatusColor } from '../utils/formatter';
 interface RequestHistoryProps {
   history: RequestHistoryItem[];
   onSelectRequest: (request: RequestHistoryItem) => void;
+  isLoading?: boolean;
 }
 
-export default function RequestHistory({ history, onSelectRequest }: RequestHistoryProps) {
+export default function RequestHistory({ history, onSelectRequest, isLoading = false }: RequestHistoryProps) {
+  if (isLoading) {
+    return (
+      <Flex align="center" justify="center" style={{ height: '100%' }}>
+        <Text as="p" size="2" color="gray">
+          Loading history...
+        </Text>
+      </Flex>
+    );
+  }
+
   if (history.length === 0) {
     return (
       <Box p="4">
