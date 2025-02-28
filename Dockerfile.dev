@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-# Install system dependencies for Tauri
+# System dependencies for Tauri
 RUN apk add --no-cache \
     curl \
     wget \
@@ -10,25 +10,20 @@ RUN apk add --no-cache \
     gtk+3.0-dev \
     webkit2gtk-dev \
     libayatana-appindicator-dev \
-    xvfb \
     build-base
 
-# Set up pnpm
+# Setup pnpm
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN npm install -g pnpm
 
-WORKDIR /app
+WORKDIR /app/postier-app
 
-# Copy package files first
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies using pnpm
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-
-# Copy the rest of the code
-COPY . .
+RUN pnpm install
 
 EXPOSE 1420
 
-CMD ["pnpm", "tauri", "dev", "--no-watch"] 
+# Start development server
+CMD ["pnpm", "tauri", "dev"]
