@@ -1,0 +1,34 @@
+FROM node:20-alpine
+
+# Install system dependencies for Tauri
+RUN apk add --no-cache \
+    curl \
+    wget \
+    rust \
+    cargo \
+    pkgconfig \
+    gtk+3.0-dev \
+    webkit2gtk-dev \
+    libayatana-appindicator-dev \
+    xvfb \
+    build-base
+
+# Set up pnpm
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN npm install -g pnpm
+
+WORKDIR /app
+
+# Copy package files first
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies using pnpm
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+# Copy the rest of the code
+COPY . .
+
+EXPOSE 1420
+
+CMD ["pnpm", "tauri", "dev", "--no-watch"] 

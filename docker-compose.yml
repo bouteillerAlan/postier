@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  postier:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "1420:1420"
+    volumes:
+      - ./src:/app # Mount the current directory
+      - /app/node_modules # Preserve node_modules in container
+      - /app/target # Preserve Rust build artifacts
+    environment:
+      - RUST_BACKTRACE=1
+    command: pnpm tauri dev
+    privileged: true # Enable privileged mode for GUI
+    tty: true
+    network_mode: "host"
