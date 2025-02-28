@@ -8,6 +8,13 @@
   "permissions": [
     "core:default",
     "opener:default",
-    "fs:default"
+    {
+      "identifier": "fs:read-all",
+      "allow": [{ "path": "$APPLOCALDATA/*" }]
+    },
+    {
+      "identifier": "fs:write-all",
+      "allow": [{ "path": "$APPLOCALDATA/*" }]
+    }
   ]
 }

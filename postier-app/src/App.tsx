@@ -5,7 +5,7 @@ import ResponseViewer from "./components/ResponseViewer";
 import RequestHistory from "./components/RequestHistory";
 import { RequestData, ResponseData, RequestHistoryItem } from "./types";
 import { sendRequest } from "./utils/http";
-import { loadHistory, saveHistory, clearHistory } from "./utils/historyStorage";
+import { loadHistoryFromFile, saveHistoryToFile, clearHistoryFile } from "./utils/historyStorage";
 
 function App() {
   const [response, setResponse] = useState<ResponseData | null>(null);
@@ -18,7 +18,7 @@ function App() {
     async function fetchHistory() {
       try {
         setIsHistoryLoading(true);
-        const savedHistory = await loadHistory();
+        const savedHistory = await loadHistoryFromFile();
         setHistory(savedHistory);
       } catch (error) {
         console.error("Error loading history:", error);
@@ -36,7 +36,7 @@ function App() {
     if (isHistoryLoading) return;
     
     // Save history to file
-    saveHistory(history).catch(error => {
+    saveHistoryToFile(history).catch(error => {
       console.error("Error saving history:", error);
     });
   }, [history, isHistoryLoading]);
@@ -83,7 +83,7 @@ function App() {
 
   async function handleClearHistory() {
     try {
-      await clearHistory();
+      await clearHistoryFile();
       setHistory([]);
     } catch (error) {
       console.error("Error clearing history:", error);
