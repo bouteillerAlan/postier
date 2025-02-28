@@ -1,14 +1,20 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { Theme } from "@radix-ui/themes";
 import App from "./App";
-import "./index.css";
+import { Theme } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
+import "./style.css";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <Theme appearance="dark" accentColor="blue">
+    <Theme
+      accentColor="violet"
+      grayColor="mauve"
+      radius="small"
+      appearance="dark"
+    >
       <App />
+      {/* <ThemePanel /> for debugging radix theme */}
     </Theme>
   </React.StrictMode>,
 );
