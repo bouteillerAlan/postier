@@ -1,29 +1,31 @@
 # Postier - A Modern HTTP Client
 
-Postier is a cross-platform HTTP client built with Tauri, React, and TypeScript, designed to be a lightweight and fast alternative to Postman. It provides a modern, intuitive interface for making HTTP requests and viewing responses.
+Postier is a cross-platform HTTP client built with Tauri, React, and TypeScript, designed to be a lightweight and fast alternative to Postman and equivalent. It provides a modern, intuitive interface for making HTTP requests and viewing responses.
+
+I want it fully open-source, and privacy first.
 
 ## Features
 
 - **HTTP Request Support**
-  - Supports GET, POST, PUT, DELETE, and PATCH methods
+  - Supports GET, POST, PUT, DELETE, HEAD, OPTIONS and PATCH methods
   - URL input with method selection
-  - Request body editor (JSON)
-  - Headers management (coming soon)
-  - Request history (coming soon)
+  - Request body editor (formats: form-data, raw as text or javascript or JSON or HTML or XML, none)
+  - Headers managements
+  - Request history
 
 - **Response Handling**
   - Real-time response display
-  - Syntax-highlighted JSON formatting
+  - Response in raw or preview or pretty
+  - If the response is view in "pretty" you have syntax-highlighted in JSON, XML, HTML or Text
   - Response headers viewer
   - HTTP status code display
   - Error handling with clear error messages
 
 - **User Interface**
   - Modern, clean design using Radix UI
-  - Dark/Light mode support (coming soon)
+  - Dark/Light mode support
   - Loading states with animated spinner
   - Tabbed interface for request/response data
-  - Responsive layout
 
 ## Tech Stack
 
@@ -35,67 +37,11 @@ Postier is a cross-platform HTTP client built with Tauri, React, and TypeScript,
 
 ## Project Structure
 
-```
-src/
-├── components/
-│   ├── LoadingSpinner.tsx    # Loading animation component
-│   ├── RequestPanel.tsx      # HTTP request form component
-│   └── ResponsePanel.tsx     # Response display component
-├── App.tsx                   # Main application component
-└── App.css                   # Global styles
-```
+WIP
 
 ## Component Documentation
 
-### App.tsx
-The main application component that manages the application state and coordinates between request and response components.
-
-**State Management:**
-- `response`: Stores the Axios response object
-- `error`: Stores any error that occurs during the request
-- `isLoading`: Tracks the loading state during requests
-
-### RequestPanel.tsx
-Handles the request configuration UI and form submission.
-
-**Props:**
-- `onRequest`: Callback function that receives the request configuration
-
-**Features:**
-- Method selection dropdown
-- URL input field
-- Request body editor (disabled for GET requests)
-- Submit button to send requests
-
-### ResponsePanel.tsx
-Displays the HTTP response or error messages.
-
-**Props:**
-- `response`: The Axios response object
-- `error`: Any error object from failed requests
-- `isLoading`: Boolean indicating if a request is in progress
-
-**Features:**
-- Loading spinner during requests
-- Error message display
-- Response status code display
-- Tabbed interface for response body and headers
-- Syntax-highlighted JSON formatting
-
-### LoadingSpinner.tsx
-A reusable loading indicator component.
-
-**Features:**
-- CSS-based spinning animation
-- Centered layout
-- Loading text display
-
-## Styling
-
-The application uses CSS variables from Radix UI Themes for consistent styling:
-- `--gray-1` through `--gray-5`: Background and border colors
-- `--accent-9`: Accent color for interactive elements
-- `--red-2`, `--red-6`: Error state colors
+WIP
 
 ## Getting Started
 
@@ -113,22 +59,7 @@ pnpm tauri dev
 
 ### Docker Development
 
-Prerequisites:
-- Docker and Docker Compose installed
-
-To start development with Docker:
-
-```bash
-docker compose up
-```
-
-This will:
-- Build the Docker container with all necessary dependencies
-- Start the development server automatically
-- Mount your local code for live editing
-- Preserve node_modules and Rust build artifacts in Docker volumes
-
-The application will be available at `http://localhost:1420` and will hot-reload when you make changes to the code.
+WIP
 
 ## Contributing
 
