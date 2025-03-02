@@ -28,7 +28,7 @@ export default function KeyValueForm(props: {getKeyValues: (data: KeyValue[]) =>
   }, [keyValues]);
 
   return (
-    <Section size="1">
+    <Section size="1" pb="0">
       <Text as="p" size="2" weight="bold" mb="2">{props.title}</Text>
 
       <Flex direction="column" gap="2">

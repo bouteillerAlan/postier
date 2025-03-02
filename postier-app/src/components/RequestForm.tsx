@@ -23,21 +23,24 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
   const [body, setBody] = useState<string>('');
   const [contentType, setContentType] = useState<ContentType>('json');
 
+  const buildQueryString = (): string => {
+    return query
+      .filter(item => item.enabled && item.key && item.value) // Filter out disabled or empty key-value pairs
+      .map(item => `${encodeURIComponent(item.key)}=${encodeURIComponent(item.value)}`)
+      .join(',');
+  };
+
   const handleSubmit = () => {
     const requestData: RequestData = {
       id: uuidv4(),
-      url,
+      url: `${url}?${buildQueryString()}`,
       method,
-      headers: headers.filter(h => h.key && h.value),
+      headers: headers.filter(item => item.enabled && item.key && item.value),
       body,
       contentType,
     };
     onSubmit(requestData);
   };
-
-  const handleQuery = () => {
-    // todo: to implement
-  }
 
   return (
     <Container>
