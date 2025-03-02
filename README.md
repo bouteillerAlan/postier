@@ -45,6 +45,12 @@ WIP
 
 ## Getting Started
 
+### Prerequisites
+
+- Node.js (v22.14.0 or higher)
+- pnpm
+- Rust (for Tauri)
+
 ### Local Development
 
 1. Install dependencies:
