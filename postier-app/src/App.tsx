@@ -91,7 +91,7 @@ function App() {
   }
 
   return (
-    <Container size="4" p="4" style={{ height: "100vh" }}>
+    <Container p="4">
 
       <Tabs.Root defaultValue="request">
         <Tabs.List>
@@ -120,6 +120,7 @@ function App() {
             />
           </Box>
         </Tabs.Content>
+
       </Tabs.Root>
     </Container>
   );

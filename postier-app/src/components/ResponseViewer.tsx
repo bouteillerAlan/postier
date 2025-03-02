@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Tabs, Box, Text, Flex, Badge } from '@radix-ui/themes';
+import {Tabs, Box, Text, Flex, Badge, Section} from '@radix-ui/themes';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json';
 import xml from 'react-syntax-highlighter/dist/esm/languages/hljs/xml';
@@ -47,7 +47,7 @@ export default function ResponseViewer({ response }: ResponseViewerProps) {
   const headers = formatHeadersForDisplay(response.headers);
 
   return (
-    <Box className="response-container">
+    <Section size="1" pt="0">
       <Flex gap="2" mb="4" align="center">
         <Badge color={statusColor as any /* todo: fix me */} size="2">
           {response.status} {response.statusText}
@@ -135,6 +135,6 @@ export default function ResponseViewer({ response }: ResponseViewerProps) {
           </Box>
         </Tabs.Content>
       </Tabs.Root>
-    </Box>
+    </Section>
   );
 } 

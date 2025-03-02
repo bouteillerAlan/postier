@@ -5,7 +5,7 @@ export type ContentType = 'form-data' | 'text' | 'javascript' | 'json' | 'html' 
 
 export type ViewMode = 'raw' | 'preview' | 'pretty';
 
-export interface Header {
+export interface KeyValue {
   key: string;
   value: string;
   enabled: boolean;
@@ -15,7 +15,7 @@ export interface RequestData {
   id: string;
   url: string;
   method: HttpMethod;
-  headers: Header[];
+  headers: KeyValue[];
   body: string;
   contentType: ContentType;
 }
