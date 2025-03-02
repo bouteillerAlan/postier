@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {HttpMethod, ContentType, Header, RequestData, httpMethods} from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import {Box, Button, Flex, IconButton, Section, Select, Text, TextArea, TextField} from '@radix-ui/themes';
-import {HttpMethodColorCustom, HttpMethodColorRadixUI} from "../utils/switchStyle.ts";
+import {HttpMethodColorRadixUI} from "../utils/switchStyle.ts";
 
 interface RequestFormProps {
   onSubmit: (requestData: RequestData) => void;
@@ -56,7 +56,7 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
             <Select.Trigger color={HttpMethodColorRadixUI(method)} variant="soft" />
             <Select.Content position="popper" variant="soft">
               {httpMethods.map((e, i) => (
-                  <Select.Item style={{color: HttpMethodColorRadixUI(e), backgroundColor: HttpMethodColorCustom(e)}} value={e} key={`${i}${e}`}>{e}</Select.Item>
+                  <Select.Item style={{color: HttpMethodColorRadixUI(e)}} value={e} key={`${i}${e}`}>{e}</Select.Item>
               ))}
             </Select.Content>
           </Select.Root>
