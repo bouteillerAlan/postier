@@ -9,11 +9,11 @@
     "core:default",
     "opener:default",
     {
-      "identifier": "fs:read-all",
+      "identifier": "fs:allow-write-file",
       "allow": [{ "path": "$APPLOCALDATA/*" }]
     },
     {
-      "identifier": "fs:write-all",
+      "identifier": "fs:allow-read-file",
       "allow": [{ "path": "$APPLOCALDATA/*" }]
     }
   ]
