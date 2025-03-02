@@ -28,15 +28,16 @@ interface ResponseViewerProps {
 
 export default function ResponseViewer({ response }: ResponseViewerProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('pretty');
-  
+
   if (!response) {
-    return (
-      <Box className="response-container">
-        <Text as="p" size="2" color="gray">
-          Send a request to see the response here.
-        </Text>
-      </Box>
-    );
+    response = {
+      data: "Send a request to see the response here.",
+      headers: {},
+      size: 0,
+      status: 0,
+      statusText: "",
+      time: 0,
+    }
   }
 
   const contentType = detectContentType(response.data);

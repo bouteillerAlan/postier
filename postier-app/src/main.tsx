@@ -8,13 +8,12 @@ import "./style.css";
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <Theme
-      accentColor="violet"
+      accentColor="teal"
       grayColor="mauve"
       radius="small"
-      appearance="dark"
+      appearance="light"
     >
       <App />
-      {/* <ThemePanel /> for debugging radix theme */}
     </Theme>
   </React.StrictMode>,
 );

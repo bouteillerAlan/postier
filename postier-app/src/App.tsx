@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Tabs, Container, Heading, Flex, Box, Button } from "@radix-ui/themes";
+import { Tabs, Container, Flex, Box, Button } from "@radix-ui/themes";
 import RequestForm from "./components/RequestForm";
 import ResponseViewer from "./components/ResponseViewer";
 import RequestHistory from "./components/RequestHistory";
@@ -92,8 +92,7 @@ function App() {
 
   return (
     <Container size="4" p="4" style={{ height: "100vh" }}>
-      <Heading size="5" mb="4">Postier - HTTP Client</Heading>
-      
+
       <Tabs.Root defaultValue="request">
         <Tabs.List>
           <Tabs.Trigger value="request">Request</Tabs.Trigger>
@@ -101,14 +100,12 @@ function App() {
         </Tabs.List>
         
         <Tabs.Content value="request">
-          <Flex direction="column" gap="4" style={{ height: "calc(100vh - 120px)" }}>
-            <RequestForm onSubmit={handleSendRequest} isLoading={isLoading} />
-            <ResponseViewer response={response} />
-          </Flex>
+          <RequestForm onSubmit={handleSendRequest} isLoading={isLoading} />
+          <ResponseViewer response={response} />
         </Tabs.Content>
         
         <Tabs.Content value="history">
-          <Box style={{ height: "calc(100vh - 120px)" }}>
+          <Box>
             {history.length > 0 && (
               <Flex justify="end" p="2">
                 <Button color="red" variant="soft" onClick={handleClearHistory}>

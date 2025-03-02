@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { ContentType, Header, HttpMethod, RequestData, ResponseData } from '../types';
+import {ContentType, Header, RequestData, ResponseData} from '../types';
 
 export const formatHeaders = (headers: Header[]): Record<string, string> => {
   return headers
