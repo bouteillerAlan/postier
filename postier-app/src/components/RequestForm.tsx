@@ -14,6 +14,10 @@ interface RequestFormProps {
 export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
   const { requestData, setRequestData } = useRequestData();
 
+  /**
+   * build the string for the query and return it
+   * @return string
+   */
   const buildQueryString = (): string => {
     return "?".concat(
       requestData.query
@@ -23,11 +27,22 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
     );
   };
 
+  /**
+   * add the protocol in the url if it's not given by the user
+   * /!\ atm just support https
+   * @return string
+   */
+  const safeUrl = (): string => {
+    const urlPattern = /^https?:\/\//;
+    const isValidUrl = urlPattern.test(requestData.url);
+    return isValidUrl ? requestData.url : `https://${requestData.url}`;
+  }
+
   const handleSubmit = () => {
     const updatedRequestData = {
       ...requestData,
       id: uuidv4(),
-      url: `${requestData.url}${buildQueryString()}`,
+      url: `${safeUrl()}${buildQueryString()}`,
     };
     onSubmit(updatedRequestData);
   };
