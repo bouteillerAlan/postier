@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { Theme } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
-import "./style.css";
+import "./styles/style.css";
 import {ThemeProvider} from "next-themes";
 import {RequestDataProvider} from "./contexts/RequestForm.tsx";
 

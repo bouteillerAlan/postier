@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode } from "react";
-import {HttpMethod, ContentType, RequestDataWithResponse,} from "../types";
+import {RequestDataWithResponse,} from "../types/types.ts";
 
 // Shape of the context value
 interface RequestDataContextType {
@@ -15,10 +15,10 @@ export const RequestDataProvider = ({ children }: { children: ReactNode }) => {
   const [requestData, setRequestData] = useState<RequestDataWithResponse>({
     id: '',
     url: '',
-    method: 'GET' as HttpMethod,
+    method: 'GET',
     headers: [],
     body: '',
-    contentType: 'json' as ContentType,
+    contentType: 'json',
     query: [],
     response: undefined,
   });

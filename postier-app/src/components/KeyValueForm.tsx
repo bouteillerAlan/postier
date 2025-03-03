@@ -1,5 +1,5 @@
 import {Button, Flex, IconButton, Section, Text, TextField} from "@radix-ui/themes";
-import {KeyValue} from "../types.ts";
+import {KeyValue} from "../types/types.ts";
 import {useEffect, useState} from "react";
 
 export default function KeyValueForm(props: {getKeyValues: (data: KeyValue[]) => void, setKeyValues: KeyValue[], title: string}) {
@@ -52,7 +52,7 @@ export default function KeyValueForm(props: {getKeyValues: (data: KeyValue[]) =>
           </Flex>
         ))}
         <Button variant="soft" onClick={addKeyValue}>
-          Add a new {props.title}
+          Add a new {props.title.toLowerCase()}
         </Button>
       </Flex>
     </Section>

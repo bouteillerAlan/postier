@@ -6,7 +6,7 @@ import {
   remove,
   BaseDirectory 
 } from '@tauri-apps/plugin-fs';
-import { RequestHistoryItem } from '../types';
+import { RequestHistoryItem } from '../types/types.ts';
 
 const HISTORY_FILE_NAME = 'history.json';
 const HISTORY_DIR = ''; // Empty string means root of the AppLocalData directory

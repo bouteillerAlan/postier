@@ -1,4 +1,4 @@
-import { ContentType, ViewMode } from '../types';
+import { ContentType, ViewMode } from '../types/types.ts';
 
 export const detectContentType = (data: any): ContentType => {
   if (!data) return 'none';

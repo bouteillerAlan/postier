@@ -1,6 +1,6 @@
 import { ScrollArea, Box, Text, Flex, Badge } from '@radix-ui/themes';
-import { RequestHistoryItem } from '../types';
-import { getStatusColor } from '../utils/formatter';
+import { RequestHistoryItem } from '../types/types.ts';
+import { getStatusColor } from '../services/formatter';
 
 interface RequestHistoryProps {
   history: RequestHistoryItem[] | undefined;

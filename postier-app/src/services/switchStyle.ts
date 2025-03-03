@@ -1,4 +1,4 @@
-import {HttpMethod} from "../types.ts";
+import {HttpMethod} from "../types/types.ts";
 
 export const HttpMethodColorRadixUI = (method: HttpMethod) => {
     switch (method) {

@@ -1,5 +1,5 @@
 import {Box, Flex, Section, Select, Text, TextArea} from "@radix-ui/themes";
-import {ContentType} from "../types.ts";
+import {ContentType} from "../types/types.ts";
 import {useEffect, useState} from "react";
 
 export default function BodyForm(props: {getBody: (data: string) => void; getContentType: (data: ContentType) => void; setBody: string; setContentType: ContentType}) {

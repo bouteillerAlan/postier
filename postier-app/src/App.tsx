@@ -3,8 +3,8 @@ import { Tabs, Container, Flex, Box, Button } from "@radix-ui/themes";
 import RequestForm from "./components/RequestForm";
 import ResponseViewer from "./components/ResponseViewer";
 import RequestHistory from "./components/RequestHistory";
-import {RequestData, ResponseData} from "./types";
-import { sendRequest } from "./utils/http";
+import {RequestData, ResponseData} from "./types/types.ts";
+import { sendRequest } from "./services/http";
 import { useRequestData } from "./contexts/RequestForm.tsx";
 
 function App() {

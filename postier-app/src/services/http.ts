@@ -1,9 +1,9 @@
-import {ContentType, KeyValue, RequestData} from '../types';
+import {ContentType, KeyValue, RequestData} from '../types/types.ts';
 import { fetch } from '@tauri-apps/plugin-http';
 
 export const formatHeaders = (headers: KeyValue[]): Record<string, string> => {
   return headers
-    .filter((header: KeyValue): boolean => header.enabled)
+    .filter((header: KeyValue): boolean => header.enabled && header.key.trim().length > 0 && header.value.trim().length > 0)
     .reduce((acc: Record<string, string>, header: KeyValue) => {
       acc[header.key] = header.value;
       return acc;
@@ -77,8 +77,8 @@ export const sendRequest = async (requestData: RequestData): Promise<{
 
   try {
     const response: Response = await fetch(url, {...config});
-    const body: string = await response.text();
     const endTime: number = performance.now();
+    const body: string = await response.text();
 
     return {
       status: response.status,

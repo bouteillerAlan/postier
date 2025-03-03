@@ -34,6 +34,17 @@
           "url": "https://*"
         }
       ]
+    },
+    {
+      "identifier": "http:allow-fetch-read-body",
+      "allow": [
+        {
+          "url": "http://*"
+        },
+        {
+          "url": "https://*"
+        }
+      ]
     }
   ]
 }

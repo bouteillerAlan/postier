@@ -7,14 +7,14 @@ import javascript from 'react-syntax-highlighter/dist/esm/languages/hljs/javascr
 import html from 'react-syntax-highlighter/dist/esm/languages/hljs/htmlbars';
 import atomOneDark from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark';
 
-import { ResponseData, ViewMode } from '../types';
+import { ResponseData, ViewMode } from '../types/types.ts';
 import { 
   detectContentType, 
   formatData, 
   getLanguageForSyntaxHighlighting, 
   formatHeadersForDisplay,
   getStatusColor
-} from '../utils/formatter';
+} from '../services/formatter';
 
 // Register languages
 SyntaxHighlighter.registerLanguage('json', json);
