@@ -46,7 +46,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
   return (
     <Section size="1" pt="0">
       <Flex gap="2" mb="4" align="center">
-        <Badge color={statusColor as any /* todo: fix me */} size="2">
+        <Badge color={statusColor} size="2">
           {response.status} {response.statusText}
         </Badge>
         <Text size="1" color="gray">

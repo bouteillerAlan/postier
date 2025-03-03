@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from "uuid";
 import { Box, Button, Container, Flex, Section, Select, Tabs, TextField } from "@radix-ui/themes";
-import { HttpMethodColorRadixUI } from "../services/switchStyle.ts";
 import KeyValueForm from "./KeyValueForm.tsx";
 import BodyForm from "./BodyForm.tsx";
 import {ContentType, HttpMethod, httpMethods, KeyValue, RequestData} from "../types/types.ts";
 import {useRequestData} from "../contexts/RequestForm.tsx";
+import {HttpMethodColorRadixUI} from "../services/formatter.ts";
 
 interface RequestFormProps {
   onSubmit: (requestData: RequestData) => void;
