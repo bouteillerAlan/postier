@@ -14,9 +14,10 @@
     },
     {
       "identifier": "http:default",
-      "allow": [{ "url": "https://google.fr" }]
+      "allow": [
+        { "url": "http://*" },
+        { "url": "https://*" }
+      ]
     }
-  ],
-  "capabilities": [
   ]
 }

@@ -1,16 +1,16 @@
 import React, { createContext, useState, useContext, ReactNode } from "react";
 import { HttpMethod, ContentType, RequestDataWithQuery } from "../types";
 
-// Define the shape of the context value
+// Shape of the context value
 interface RequestDataContextType {
   requestData: RequestDataWithQuery;
   setRequestData: React.Dispatch<React.SetStateAction<RequestDataWithQuery>>;
 }
 
-// Create a context with a default value
+// Context with default value
 export const RequestDataContext = createContext<RequestDataContextType | undefined>(undefined);
 
-// Create a provider component
+// Provider
 export const RequestDataProvider = ({ children }: { children: ReactNode }) => {
   const [requestData, setRequestData] = useState<RequestDataWithQuery>({
     id: '',
@@ -29,7 +29,7 @@ export const RequestDataProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Create a custom hook to use the request data context
+// Custom hook to use the request data context
 export const useRequestData = () => {
   const context = useContext(RequestDataContext);
   if (!context) {
