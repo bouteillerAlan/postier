@@ -65,7 +65,6 @@ export default function ResponseViewer({ response }: ResponseViewerProps) {
         
         <Tabs.Content value="response">
           <Flex gap="2" mb="2" mt="2">
-            <Text size="2">View as:</Text>
             <Tabs.Root value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)}>
               <Tabs.List>
                 <Tabs.Trigger value="pretty">Pretty</Tabs.Trigger>

@@ -8,13 +8,8 @@
   "permissions": [
     "core:default",
     "opener:default",
-    "http:allow-fetch",
     {
-      "identifier": "fs:allow-write-file",
-      "allow": [{"path": "$APPLOCALDATA/*"}]
-    },
-    {
-      "identifier": "fs:allow-read-file",
+      "identifier": "fs:default",
       "allow": [{"path": "$APPLOCALDATA/*"}]
     },
     {

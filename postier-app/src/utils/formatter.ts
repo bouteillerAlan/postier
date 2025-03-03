@@ -85,7 +85,7 @@ export const getLanguageForSyntaxHighlighting = (contentType: ContentType): stri
 export const formatHeadersForDisplay = (headers: Record<string, string>): { key: string; value: string }[] => {
   return Object.entries(headers).map(([key, value]) => ({
     key,
-    value: typeof value === 'string' ? value : JSON.stringify(value),
+    value: JSON.stringify(value),
   }));
 };
 
