@@ -1,7 +1,8 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import {ContentType, Header, RequestData, ResponseData} from '../types';
+import {ContentType, KeyValue, RequestData, ResponseData} from '../types';
+import axiosTauriApiAdapter from "axios-tauri-api-adapter";
 
-export const formatHeaders = (headers: Header[]): Record<string, string> => {
+export const formatHeaders = (headers: KeyValue[]): Record<string, string> => {
   return headers
     .filter(header => header.enabled)
     .reduce((acc, header) => {
@@ -63,16 +64,16 @@ export const sendRequest = async (requestData: RequestData): Promise<ResponseDat
   const config: AxiosRequestConfig = {
     url,
     method: method.toLowerCase(),
-    headers: formattedHeaders,
+    headers: {...formattedHeaders, "User-Agent": "Postier@1.0.0"},
     data: formatRequestBody(body, contentType),
   };
 
   const startTime = performance.now();
-  
+
   try {
-    const response: AxiosResponse = await axios(config);
+    const response: AxiosResponse = await axios({...config, adapter: axiosTauriApiAdapter });
     const endTime = performance.now();
-    
+
     return {
       status: response.status,
       statusText: response.statusText,

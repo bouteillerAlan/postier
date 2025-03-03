@@ -8,13 +8,20 @@
   "permissions": [
     "core:default",
     "opener:default",
+    "http:allow-fetch",
     {
       "identifier": "fs:allow-write-file",
-      "allow": [{ "path": "$APPLOCALDATA/*" }]
+      "allow": [{"path": "$APPLOCALDATA/*"}]
     },
     {
       "identifier": "fs:allow-read-file",
-      "allow": [{ "path": "$APPLOCALDATA/*" }]
+      "allow": [{"path": "$APPLOCALDATA/*"}]
+    },
+    {
+      "identifier": "http:default",
+      "allow": [{ "url": "https://google.fr" }]
     }
+  ],
+  "capabilities": [
   ]
 }
