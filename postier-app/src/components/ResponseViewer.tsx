@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {Tabs, Box, Text, Flex, Badge, Section} from '@radix-ui/themes';
+import {Tabs, Box, Text, Flex, Badge, Section, Table} from '@radix-ui/themes';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json';
 import xml from 'react-syntax-highlighter/dist/esm/languages/hljs/xml';
@@ -11,8 +11,7 @@ import { ResponseData, ViewMode } from '../types/types.ts';
 import { 
   detectContentType, 
   formatData, 
-  getLanguageForSyntaxHighlighting, 
-  formatHeadersForDisplay,
+  getLanguageForSyntaxHighlighting,
   getStatusColor
 } from '../services/formatter';
 
@@ -30,18 +29,19 @@ export default function ResponseViewer(props: ResponseViewerProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('pretty');
   const response = props.response ?? {
     data: "Send a request to see the response here.",
-    headers: {},
+    headers: null,
     size: 0,
     status: 0,
     statusText: "",
     time: 0,
+    id: 0
   };
 
   const contentType = detectContentType(response.data);
   const formattedData = formatData(response.data, viewMode, contentType);
   const language = getLanguageForSyntaxHighlighting(contentType);
   const statusColor = getStatusColor(response.status);
-  const headers = formatHeadersForDisplay(response.headers);
+  const headers = response.headers;
 
   return (
     <Section size="1" pt="0">
@@ -50,7 +50,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
           {response.status} {response.statusText}
         </Badge>
         <Text size="1" color="gray">
-          {Math.round(response.time)}ms | {Math.round(response.size / 1024)}KB
+          {Math.round(response.time)}ms | {Math.round(response.size / 1024)}KB | {response.id}
         </Text>
       </Flex>
 
@@ -121,12 +121,25 @@ export default function ResponseViewer(props: ResponseViewerProps) {
         <Tabs.Content value="headers">
           <Box style={{ maxHeight: '500px', overflow: 'auto' }}>
             <Flex direction="column" gap="2" mt="2">
-              {headers.map((header, index) => (
-                <Flex key={index} gap="2">
-                  <Text as="span" weight="bold" size="2">{header.key}:</Text>
-                  <Text as="span" size="2">{header.value}</Text>
-                </Flex>
-              ))}
+
+              <Table.Root size="1" layout="fixed">
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeaderCell>Key</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
+                  </Table.Row>
+                </Table.Header>
+
+                <Table.Body>
+                  {headers?.map((header, index) => (
+                    <Table.Row key={`headers${index}`}>
+                      <Table.RowHeaderCell>{header.key}</Table.RowHeaderCell>
+                      <Table.Cell>{header.value}</Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Root>
+
             </Flex>
           </Box>
         </Tabs.Content>

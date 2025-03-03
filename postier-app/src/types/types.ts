@@ -31,10 +31,11 @@ export interface RequestDataWithResponse extends RequestDataWithQuery {
 export interface ResponseData {
   status: number;
   statusText: string;
-  headers: Headers | null;
+  headers: KeyValue[] | null;
   data: string | null;
   time: number;
   size: number;
+  id: string | null;
 }
 
 export interface RequestHistoryItem extends RequestData {

@@ -50,10 +50,11 @@ export const formatRequestBody = (body: string, contentType: ContentType): any =
 export const sendRequest = async (requestData: RequestData): Promise<{
   status: number;
   statusText: string;
-  headers: Headers| null;
+  headers: KeyValue[] | null;
   data: string | null;
   time: number;
-  size: number
+  size: number;
+  id: string | null;
 }> => {
   const { url, method, headers, body, contentType } = requestData;
   
@@ -80,13 +81,24 @@ export const sendRequest = async (requestData: RequestData): Promise<{
     const endTime: number = performance.now();
     const body: string = await response.text();
 
+    // map the headers
+    const headers: KeyValue[] = [];
+    response.headers.forEach((value: string, key: string) => {
+      headers.push({
+        key,
+        value,
+        enabled: true
+      })
+    });
+
     return {
       status: response.status,
       statusText: response.statusText,
-      headers: response.headers,
+      headers: headers,
       data: body,
       time: endTime - startTime,
       size: JSON.stringify(response.body).length,
+      id: requestData.id
     };
   } catch (error: any) {
     const endTime = performance.now();
@@ -101,6 +113,7 @@ export const sendRequest = async (requestData: RequestData): Promise<{
         data: error.response.data,
         time: endTime - startTime,
         size: JSON.stringify(error.response.data || '').length,
+        id: null
       };
     } else if (error.request) {
       // The request was made but no response was received
@@ -111,6 +124,7 @@ export const sendRequest = async (requestData: RequestData): Promise<{
         data: null,
         time: endTime - startTime,
         size: 0,
+        id: null
       };
     } else {
       // Something happened in setting up the request that triggered an Error
@@ -121,6 +135,7 @@ export const sendRequest = async (requestData: RequestData): Promise<{
         data: null,
         time: endTime - startTime,
         size: 0,
+        id: null
       };
     }
   }
