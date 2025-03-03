@@ -38,6 +38,10 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
     return isValidUrl ? requestData.url : `https://${requestData.url}`;
   }
 
+  /**
+   * submit the request
+   * @return void
+   */
   const handleSubmit = () => {
     const updatedRequestData = {
       ...requestData,

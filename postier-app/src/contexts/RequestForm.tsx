@@ -1,10 +1,10 @@
 import React, { createContext, useState, useContext, ReactNode } from "react";
-import { HttpMethod, ContentType, RequestDataWithQuery } from "../types";
+import {HttpMethod, ContentType, RequestDataWithResponse,} from "../types";
 
 // Shape of the context value
 interface RequestDataContextType {
-  requestData: RequestDataWithQuery;
-  setRequestData: React.Dispatch<React.SetStateAction<RequestDataWithQuery>>;
+  requestData: RequestDataWithResponse;
+  setRequestData: React.Dispatch<React.SetStateAction<RequestDataWithResponse>>;
 }
 
 // Context with default value
@@ -12,14 +12,15 @@ export const RequestDataContext = createContext<RequestDataContextType | undefin
 
 // Provider
 export const RequestDataProvider = ({ children }: { children: ReactNode }) => {
-  const [requestData, setRequestData] = useState<RequestDataWithQuery>({
+  const [requestData, setRequestData] = useState<RequestDataWithResponse>({
     id: '',
     url: '',
     method: 'GET' as HttpMethod,
     headers: [],
     body: '',
     contentType: 'json' as ContentType,
-    query: []
+    query: [],
+    response: undefined,
   });
 
   return (

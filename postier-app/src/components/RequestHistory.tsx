@@ -3,7 +3,7 @@ import { RequestHistoryItem } from '../types';
 import { getStatusColor } from '../utils/formatter';
 
 interface RequestHistoryProps {
-  history: RequestHistoryItem[];
+  history: RequestHistoryItem[] | undefined;
   onSelectRequest: (request: RequestHistoryItem) => void;
   isLoading?: boolean;
 }
@@ -19,7 +19,7 @@ export default function RequestHistory({ history, onSelectRequest, isLoading = f
     );
   }
 
-  if (history.length === 0) {
+  if (history && history.length === 0) {
     return (
       <Box p="4">
         <Text as="p" size="2" color="gray">
@@ -32,7 +32,7 @@ export default function RequestHistory({ history, onSelectRequest, isLoading = f
   return (
     <ScrollArea style={{ height: '100%' }}>
       <Flex direction="column" gap="2" p="2">
-        {history.map((item) => (
+        {history && history.map((item) => (
           <Box 
             key={item.id}
             p="2" 

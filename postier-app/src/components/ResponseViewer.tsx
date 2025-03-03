@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {useState} from 'react';
 import {Tabs, Box, Text, Flex, Badge, Section} from '@radix-ui/themes';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json';
@@ -23,22 +23,19 @@ SyntaxHighlighter.registerLanguage('javascript', javascript);
 SyntaxHighlighter.registerLanguage('htmlbars', html);
 
 interface ResponseViewerProps {
-  response: ResponseData | null;
+  response: ResponseData | undefined;
 }
 
-export default function ResponseViewer({ response }: ResponseViewerProps) {
+export default function ResponseViewer(props: ResponseViewerProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('pretty');
-
-  if (!response) {
-    response = {
-      data: "Send a request to see the response here.",
-      headers: {},
-      size: 0,
-      status: 0,
-      statusText: "",
-      time: 0,
-    }
-  }
+  const response = props.response ?? {
+    data: "Send a request to see the response here.",
+    headers: {},
+    size: 0,
+    status: 0,
+    statusText: "",
+    time: 0,
+  };
 
   const contentType = detectContentType(response.data);
   const formattedData = formatData(response.data, viewMode, contentType);

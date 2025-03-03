@@ -82,11 +82,14 @@ export const getLanguageForSyntaxHighlighting = (contentType: ContentType): stri
   }
 };
 
-export const formatHeadersForDisplay = (headers: Record<string, string>): { key: string; value: string }[] => {
-  return Object.entries(headers).map(([key, value]) => ({
-    key,
-    value: JSON.stringify(value),
-  }));
+export const formatHeadersForDisplay = (headers: Headers | {} | null): { key: string; value: string }[] => {
+  if (headers) {
+    return Object.entries(headers).map(([key, value]) => ({
+      key,
+      value: JSON.stringify(value),
+    }));
+  }
+  return [];
 };
 
 export const getStatusColor = (status: number): string => {

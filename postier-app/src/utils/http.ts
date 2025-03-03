@@ -1,11 +1,10 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import {ContentType, KeyValue, RequestData, ResponseData} from '../types';
-import axiosTauriApiAdapter from "axios-tauri-api-adapter";
+import {ContentType, KeyValue, RequestData} from '../types';
+import { fetch } from '@tauri-apps/plugin-http';
 
 export const formatHeaders = (headers: KeyValue[]): Record<string, string> => {
   return headers
-    .filter(header => header.enabled)
-    .reduce((acc, header) => {
+    .filter((header: KeyValue): boolean => header.enabled)
+    .reduce((acc: Record<string, string>, header: KeyValue) => {
       acc[header.key] = header.value;
       return acc;
     }, {} as Record<string, string>);
@@ -48,39 +47,46 @@ export const formatRequestBody = (body: string, contentType: ContentType): any =
   return body;
 };
 
-export const sendRequest = async (requestData: RequestData): Promise<ResponseData> => {
+export const sendRequest = async (requestData: RequestData): Promise<{
+  status: number;
+  statusText: string;
+  headers: Headers| null;
+  data: string | null;
+  time: number;
+  size: number
+}> => {
   const { url, method, headers, body, contentType } = requestData;
   
-  const formattedHeaders = formatHeaders(headers);
+  const formattedHeaders: Record<string, string> = formatHeaders(headers);
   
   // Add content type header if not already present and not 'none'
   if (contentType !== 'none' && !formattedHeaders['Content-Type']) {
-    const contentTypeValue = getContentTypeHeader(contentType);
+    const contentTypeValue: string = getContentTypeHeader(contentType);
     if (contentTypeValue) {
       formattedHeaders['Content-Type'] = contentTypeValue;
     }
   }
 
-  const config: AxiosRequestConfig = {
-    url,
+  const config = {
     method: method.toLowerCase(),
-    headers: {...formattedHeaders, "User-Agent": "Postier@1.0.0"},
+    headers: {...formattedHeaders, "User-Agent": "PostierRuntime/1.0.0"},
     data: formatRequestBody(body, contentType),
   };
 
-  const startTime = performance.now();
+  const startTime: number = performance.now();
 
   try {
-    const response: AxiosResponse = await axios({...config, adapter: axiosTauriApiAdapter });
-    const endTime = performance.now();
+    const response: Response = await fetch(url, {...config});
+    const body: string = await response.text();
+    const endTime: number = performance.now();
 
     return {
       status: response.status,
       statusText: response.statusText,
-      headers: response.headers as Record<string, string>,
-      data: response.data,
+      headers: response.headers,
+      data: body,
       time: endTime - startTime,
-      size: JSON.stringify(response.data).length,
+      size: JSON.stringify(response.body).length,
     };
   } catch (error: any) {
     const endTime = performance.now();
@@ -91,7 +97,7 @@ export const sendRequest = async (requestData: RequestData): Promise<ResponseDat
       return {
         status: error.response.status,
         statusText: error.response.statusText,
-        headers: error.response.headers as Record<string, string>,
+        headers: error.response.headers,
         data: error.response.data,
         time: endTime - startTime,
         size: JSON.stringify(error.response.data || '').length,
@@ -101,8 +107,8 @@ export const sendRequest = async (requestData: RequestData): Promise<ResponseDat
       return {
         status: 0,
         statusText: 'No response received',
-        headers: {},
-        data: 'No response received from server',
+        headers: null,
+        data: null,
         time: endTime - startTime,
         size: 0,
       };
@@ -110,9 +116,9 @@ export const sendRequest = async (requestData: RequestData): Promise<ResponseDat
       // Something happened in setting up the request that triggered an Error
       return {
         status: 0,
-        statusText: 'Request Error',
-        headers: {},
-        data: error.message || 'Unknown error occurred',
+        statusText: `Request Error: ${error.message}`,
+        headers: null,
+        data: null,
         time: endTime - startTime,
         size: 0,
       };

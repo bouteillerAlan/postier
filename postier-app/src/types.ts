@@ -21,14 +21,18 @@ export interface RequestData {
 }
 
 export interface RequestDataWithQuery extends RequestData {
-  query: KeyValue[]
+  query: KeyValue[];
+}
+
+export interface RequestDataWithResponse extends RequestDataWithQuery {
+  response: ResponseData | undefined;
 }
 
 export interface ResponseData {
   status: number;
   statusText: string;
-  headers: Record<string, string>;
-  data: any;
+  headers: Headers | null;
+  data: string | null;
   time: number;
   size: number;
 }
