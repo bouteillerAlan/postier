@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import {HttpMethod, RequestData, httpMethods, ContentType, KeyValue} from '../types';
-import { v4 as uuidv4 } from 'uuid';
-import {Box, Button, Container, Flex, Section, Select, Tabs, TextField} from '@radix-ui/themes';
-import {HttpMethodColorRadixUI} from "../utils/switchStyle.ts";
+import { v4 as uuidv4 } from "uuid";
+import { Box, Button, Container, Flex, Section, Select, Tabs, TextField } from "@radix-ui/themes";
+import { HttpMethodColorRadixUI } from "../utils/switchStyle.ts";
 import KeyValueForm from "./KeyValueForm.tsx";
 import BodyForm from "./BodyForm.tsx";
+import {ContentType, HttpMethod, httpMethods, KeyValue, RequestData} from "../types.ts";
+import {useRequestData} from "../contexts/RequestForm.tsx";
 
 interface RequestFormProps {
   onSubmit: (requestData: RequestData) => void;
@@ -12,56 +12,47 @@ interface RequestFormProps {
 }
 
 export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
-  const [url, setUrl] = useState<string>('');
-  const [headers, setHeaders] = useState<KeyValue[]>([
-    { key: '', value: '', enabled: true }
-  ]);
-  const [query, setQuery] = useState<KeyValue[]>([
-    { key: '', value: '', enabled: true }
-  ]);
-  const [method, setMethod] = useState<HttpMethod>('GET');
-  const [body, setBody] = useState<string>('');
-  const [contentType, setContentType] = useState<ContentType>('json');
+  const { requestData, setRequestData } = useRequestData();
 
   const buildQueryString = (): string => {
-    return query
-      .filter(item => item.enabled && item.key && item.value) // Filter out disabled or empty key-value pairs
-      .map(item => `${encodeURIComponent(item.key)}=${encodeURIComponent(item.value)}`)
-      .join(',');
+    return "?".concat(
+      requestData.query
+        .filter(item => item.enabled && item.key && item.value)
+        .map(item => `${encodeURIComponent(item.key)}=${encodeURIComponent(item.value)}`)
+        .join(',')
+    );
   };
 
   const handleSubmit = () => {
-    const requestData: RequestData = {
+    const updatedRequestData = {
+      ...requestData,
       id: uuidv4(),
-      url: `${url}?${buildQueryString()}`,
-      method,
-      headers: headers.filter(item => item.enabled && item.key && item.value),
-      body,
-      contentType,
+      url: `${requestData.url}${buildQueryString()}`,
     };
-    onSubmit(requestData);
+    onSubmit(updatedRequestData);
   };
 
   return (
     <Container>
-
       <Section size="1">
         <Flex gap="2" justify="between" align="center">
-
-          <Select.Root value={method} onValueChange={(value) => setMethod(value as HttpMethod)}>
-            <Select.Trigger color={HttpMethodColorRadixUI(method)} variant="soft" />
+          <Select.Root value={requestData.method} onValueChange={(value) => setRequestData(prev => ({ ...prev, method: value as HttpMethod }))}>
+            <Select.Trigger color={HttpMethodColorRadixUI(requestData.method)} variant="soft" />
             <Select.Content position="popper" variant="soft">
               {httpMethods.map((e, i) => (
-                  <Select.Item style={{color: HttpMethodColorRadixUI(e)}} value={e} key={`${i}${e}`}>{e}</Select.Item>
+                <Select.Item style={{ color: HttpMethodColorRadixUI(e) }} value={e} key={`${i}${e}`}>{e}</Select.Item>
               ))}
             </Select.Content>
           </Select.Root>
 
-          <TextField.Root placeholder="Enter URL" value={url} className='fw'
-              onChange={(e) => setUrl(e.target.value)}
+          <TextField.Root
+            placeholder="Enter URL"
+            value={requestData.url}
+            className='fw'
+            onChange={(e) => setRequestData(prev => ({ ...prev, url: e.target.value }))}
           />
 
-          <Button onClick={handleSubmit} disabled={!url || isLoading} loading={isLoading}>Send</Button>
+          <Button onClick={handleSubmit} disabled={!requestData.url || isLoading} loading={isLoading}>Send</Button>
         </Flex>
       </Section>
 
@@ -75,20 +66,32 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
 
           <Box>
             <Tabs.Content value="query">
-              <KeyValueForm getKeyValues={(data: KeyValue[]): void => setQuery(data)} title="Query"/>
+              <KeyValueForm
+                getKeyValues={(data: KeyValue[]): void => setRequestData(prev => ({ ...prev, query: data }))}
+                setKeyValues={requestData.query}
+                title="Query"
+              />
             </Tabs.Content>
 
             <Tabs.Content value="header">
-              <KeyValueForm getKeyValues={(data: KeyValue[]): void => setHeaders(data)} title="Header"/>
+              <KeyValueForm
+                getKeyValues={(data: KeyValue[]): void => setRequestData(prev => ({ ...prev, headers: data }))}
+                setKeyValues={requestData.headers}
+                title="Header"
+              />
             </Tabs.Content>
 
             <Tabs.Content value="body">
-              <BodyForm getBody={(data: string): void => setBody(data)} getContentType={(data: ContentType): void => setContentType(data)}/>
+              <BodyForm
+                getBody={(data: string): void => setRequestData(prev => ({...prev, body: data}))}
+                getContentType={(data: ContentType): void => setRequestData(prev => ({...prev, contentType: data}))}
+                setBody={requestData.body}
+                setContentType={requestData.contentType}
+              />
             </Tabs.Content>
           </Box>
         </Tabs.Root>
-
       </Section>
     </Container>
   );
-} 
+}

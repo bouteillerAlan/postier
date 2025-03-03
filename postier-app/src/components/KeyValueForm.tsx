@@ -2,10 +2,10 @@ import {Button, Flex, IconButton, Section, Text, TextField} from "@radix-ui/them
 import {KeyValue} from "../types.ts";
 import {useEffect, useState} from "react";
 
-export default function KeyValueForm(props: {getKeyValues: (data: KeyValue[]) => void, title: string}) {
-  const [keyValues, setKeyValues] = useState<KeyValue[]>([
-    { key: '', value: '', enabled: true }
-  ]);
+export default function KeyValueForm(props: {getKeyValues: (data: KeyValue[]) => void, setKeyValues: KeyValue[], title: string}) {
+  const [keyValues, setKeyValues] = useState<KeyValue[]>(
+    props.setKeyValues.length > 0 ? props.setKeyValues : [{ key: '', value: '', enabled: true }]
+  );
 
   const addKeyValue = () => {
     setKeyValues([...keyValues, { key: '', value: '', enabled: true }]);

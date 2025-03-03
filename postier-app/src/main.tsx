@@ -5,6 +5,7 @@ import { Theme } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
 import "./style.css";
 import {ThemeProvider} from "next-themes";
+import {RequestDataProvider} from "./contexts/RequestForm.tsx";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
@@ -17,7 +18,9 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         appearance="light"
         // scaling="100%"
       >
-        <App />
+        <RequestDataProvider>
+          <App/>
+        </RequestDataProvider>
       </Theme>
     </ThemeProvider>
   </React.StrictMode>,

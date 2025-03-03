@@ -20,6 +20,10 @@ export interface RequestData {
   contentType: ContentType;
 }
 
+export interface RequestDataWithQuery extends RequestData {
+  query: KeyValue[]
+}
+
 export interface ResponseData {
   status: number;
   statusText: string;
