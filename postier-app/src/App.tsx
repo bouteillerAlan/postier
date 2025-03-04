@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useState} from "react";
 import { Tabs, Container, Flex, Box, Button } from "@radix-ui/themes";
 import RequestForm from "./components/RequestForm";
 import ResponseViewer from "./components/ResponseViewer";
@@ -25,7 +25,6 @@ function App() {
 
   return (
     <Container p="4">
-
       <Tabs.Root defaultValue="request">
         <Tabs.List>
           <Tabs.Trigger value="request">Request</Tabs.Trigger>

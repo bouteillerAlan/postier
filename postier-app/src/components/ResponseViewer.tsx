@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {Tabs, Box, Text, Flex, Badge, Section, Table} from '@radix-ui/themes';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json';
@@ -27,6 +27,7 @@ interface ResponseViewerProps {
 
 export default function ResponseViewer(props: ResponseViewerProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('pretty');
+
   const response = props.response ?? {
     data: "Send a request to see the response here.",
     headers: null,
@@ -43,8 +44,28 @@ export default function ResponseViewer(props: ResponseViewerProps) {
   const statusColor = getStatusColor(response.status);
   const headers = response.headers;
 
+  const subMenuRef = useRef<HTMLDivElement>(null);
+  let responseCodeViewHeight = '500px';
+  let responseDataViewHeight = '500px';
+
+  const calculateResponseViewHeight = () => {
+    if (subMenuRef && subMenuRef.current) {
+      const rect = subMenuRef.current.getBoundingClientRect();
+      responseCodeViewHeight = `${window.innerHeight - rect.bottom}px`;
+      responseDataViewHeight = `${window.innerHeight - rect.bottom + rect.height}px`;
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener('resize', calculateResponseViewHeight);
+    calculateResponseViewHeight();
+    return () => {
+      window.removeEventListener('resize', calculateResponseViewHeight);
+    };
+  }, []);
+
   return (
-    <Section size="1" pt="0">
+    <Section size="1" p="0">
       <Flex gap="2" mb="4" align="center">
         <Badge color={statusColor} size="2">
           {response.status} {response.statusText}
@@ -62,18 +83,17 @@ export default function ResponseViewer(props: ResponseViewerProps) {
         </Tabs.List>
         
         <Tabs.Content value="response">
-          <Flex gap="2" mb="2" mt="2">
-            <Tabs.Root value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)}>
-              <Tabs.List>
-                <Tabs.Trigger value="pretty">Pretty</Tabs.Trigger>
-                <Tabs.Trigger value="raw">Raw</Tabs.Trigger>
-                <Tabs.Trigger value="preview">Preview</Tabs.Trigger>
-              </Tabs.List>
-            </Tabs.Root>
-          </Flex>
-          
+
+          <Tabs.Root ref={subMenuRef} mb="3" value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)}>
+            <Tabs.List>
+              <Tabs.Trigger value="pretty">Pretty</Tabs.Trigger>
+              <Tabs.Trigger value="raw">Raw</Tabs.Trigger>
+              <Tabs.Trigger value="preview">Preview</Tabs.Trigger>
+            </Tabs.List>
+          </Tabs.Root>
+
           {viewMode === 'pretty' ? (
-            <Box style={{ maxHeight: '500px', overflow: 'auto' }}>
+            <Box style={{ height: responseCodeViewHeight, overflow: 'auto' }}>
               <SyntaxHighlighter 
                 language={language} 
                 style={atomOneDark}
@@ -89,7 +109,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
           ) : viewMode === 'raw' ? (
             <Box 
               style={{ 
-                maxHeight: '500px', 
+                height: responseCodeViewHeight,
                 overflow: 'auto',
                 whiteSpace: 'pre-wrap',
                 fontFamily: 'monospace',
@@ -103,7 +123,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
           ) : (
             <Box 
               style={{ 
-                maxHeight: '500px', 
+                height: responseCodeViewHeight,
                 overflow: 'auto',
                 padding: '16px',
                 backgroundColor: 'rgba(0, 0, 0, 0.1)',
@@ -120,8 +140,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
         </Tabs.Content>
         
         <Tabs.Content value="headers">
-          {/*todo: calculate the maxHeight*/}
-          <Section pt="0" style={{ maxHeight: '500px', overflow: 'auto' }}>
+          <Section p="0" style={{ height: responseDataViewHeight, overflow: 'auto' }}>
               <Table.Root size="1" layout="fixed">
                 <Table.Header>
                   <Table.Row>
@@ -143,8 +162,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
         </Tabs.Content>
 
         <Tabs.Content value="debug">
-          {/*todo: calculate the maxHeight*/}
-          <Section pt="0" style={{ maxHeight: '500px', overflow: 'auto' }}>
+          <Section p="0" style={{ height: responseDataViewHeight, overflow: 'auto' }}>
             <Table.Root size="1" layout="fixed">
               <Table.Header>
                 <Table.Row>
