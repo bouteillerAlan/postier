@@ -15,7 +15,6 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         // todo: later we gonna use the user settings here
         // accentColor="teal"
         // grayColor="mauve"
-        appearance="light"
         // scaling="100%"
       >
         <RequestDataProvider>

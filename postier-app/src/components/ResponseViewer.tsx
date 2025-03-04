@@ -1,25 +1,9 @@
 import {useEffect, useRef, useState} from 'react';
-import {Tabs, Box, Text, Flex, Badge, Section, Table} from '@radix-ui/themes';
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
-import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json';
-import xml from 'react-syntax-highlighter/dist/esm/languages/hljs/xml';
-import javascript from 'react-syntax-highlighter/dist/esm/languages/hljs/javascript';
-import html from 'react-syntax-highlighter/dist/esm/languages/hljs/htmlbars';
-import atomOneDark from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark';
-
+import {Tabs, Box, Text, Flex, Badge, Section, Table, Card} from '@radix-ui/themes';
 import {KeyValue, ResponseData, ViewMode} from '../types/types.ts';
-import { 
-  detectContentType, 
-  formatData, 
-  getLanguageForSyntaxHighlighting,
-  getStatusColor
-} from '../services/formatter';
-
-// Register languages
-SyntaxHighlighter.registerLanguage('json', json);
-SyntaxHighlighter.registerLanguage('xml', xml);
-SyntaxHighlighter.registerLanguage('javascript', javascript);
-SyntaxHighlighter.registerLanguage('htmlbars', html);
+import {detectContentType, formatData, getLanguageForSyntaxHighlighting, getStatusColor} from '../services/formatter';
+import hljs, {AutoHighlightResult} from 'highlight.js';
+import 'highlight.js/styles/github.css';
 
 interface ResponseViewerProps {
   response: ResponseData | null;
@@ -38,9 +22,11 @@ export default function ResponseViewer(props: ResponseViewerProps) {
     id: 0
   };
 
+  // todo: check the need of that since we move to hljs
   const contentType = detectContentType(response.data);
   const formattedData = formatData(response.data, viewMode, contentType);
   const language = getLanguageForSyntaxHighlighting(contentType);
+
   const statusColor = getStatusColor(response.status);
   const headers = response.headers;
 
@@ -63,6 +49,11 @@ export default function ResponseViewer(props: ResponseViewerProps) {
       window.removeEventListener('resize', calculateResponseViewHeight);
     };
   }, []);
+
+  const [hljsResult, setHljsResult] = useState<AutoHighlightResult | null>(null);
+  useEffect(() => {
+    setHljsResult(hljs.highlightAuto(response.data ?? ''))
+  }, [response]);
 
   return (
     <Section size="1" p="0">
@@ -93,26 +84,22 @@ export default function ResponseViewer(props: ResponseViewerProps) {
           </Tabs.Root>
 
           {viewMode === 'pretty' ? (
-            <Box style={{ height: responseCodeViewHeight, overflow: 'auto' }}>
-              <SyntaxHighlighter 
-                language={language} 
-                style={atomOneDark}
-                customStyle={{ 
-                  borderRadius: '6px',
-                  margin: 0,
-                  padding: '16px'
-                }}
-              >
-                {formattedData}
-              </SyntaxHighlighter>
+            <Box
+              style={{
+                maxHeight: responseCodeViewHeight,
+                overflow: 'auto'
+            }}
+            >
+              <Card
+                style={{overflowX: 'auto', width: "fit-content"}}
+                dangerouslySetInnerHTML={{__html: `<pre><code>${hljsResult?.value ?? ''}</code></pre>`}}
+              />
             </Box>
           ) : viewMode === 'raw' ? (
-            <Box 
-              style={{ 
-                height: responseCodeViewHeight,
+            <Box
+              style={{
+                maxHeight: responseCodeViewHeight,
                 overflow: 'auto',
-                whiteSpace: 'pre-wrap',
-                fontFamily: 'monospace',
                 padding: '16px',
                 backgroundColor: 'rgba(0, 0, 0, 0.1)',
                 borderRadius: '6px'
@@ -122,8 +109,8 @@ export default function ResponseViewer(props: ResponseViewerProps) {
             </Box>
           ) : (
             <Box 
-              style={{ 
-                height: responseCodeViewHeight,
+              style={{
+                maxHeight: responseCodeViewHeight,
                 overflow: 'auto',
                 padding: '16px',
                 backgroundColor: 'rgba(0, 0, 0, 0.1)',
