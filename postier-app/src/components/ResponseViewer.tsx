@@ -1,9 +1,10 @@
 import {useEffect, useRef, useState} from 'react';
 import {Tabs, Box, Text, Flex, Badge, Section, Table, Card} from '@radix-ui/themes';
 import {KeyValue, ResponseData, ViewMode} from '../types/types.ts';
-import {detectContentType, formatData, getLanguageForSyntaxHighlighting, getStatusColor} from '../services/formatter';
+import {detectContentType, formatData, getStatusColor} from '../services/formatter';
 import hljs, {AutoHighlightResult} from 'highlight.js';
 import 'highlight.js/styles/github.css';
+import 'highlight.js/styles/atom-one-dark-reasonable.min.css';
 
 interface ResponseViewerProps {
   response: ResponseData | null;
@@ -22,10 +23,9 @@ export default function ResponseViewer(props: ResponseViewerProps) {
     id: 0
   };
 
-  // todo: check the need of that since we move to hljs
+  // todo: improve contentType with the use of the content-type header
   const contentType = detectContentType(response.data);
   const formattedData = formatData(response.data, viewMode, contentType);
-  const language = getLanguageForSyntaxHighlighting(contentType);
 
   const statusColor = getStatusColor(response.status);
   const headers = response.headers;
@@ -63,7 +63,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
         'yaml'
       ]
     })
-    setHljsResult(hljs.highlightAuto(response.data ?? ''))
+    setHljsResult(hljs.highlightAuto(formattedData))
   }, [response]);
 
   return (
@@ -83,7 +83,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
           <Tabs.Trigger value="headers">Headers ({headers?.length ?? 0})</Tabs.Trigger>
           <Tabs.Trigger value="debug">Debug</Tabs.Trigger>
         </Tabs.List>
-        
+
         <Tabs.Content value="response">
 
           <Tabs.Root ref={subMenuRef} mb="3" value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)}>
@@ -119,7 +119,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
               {formattedData}
             </Box>
           ) : (
-            <Box 
+            <Box
               style={{
                 maxHeight: responseCodeViewHeight,
                 overflow: 'auto',
@@ -136,7 +136,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
             </Box>
           )}
         </Tabs.Content>
-        
+
         <Tabs.Content value="headers">
           <Section p="0" style={{ height: responseDataViewHeight, overflow: 'auto' }}>
               <Table.Root size="1" layout="fixed">
