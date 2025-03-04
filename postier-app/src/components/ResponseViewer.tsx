@@ -120,9 +120,8 @@ export default function ResponseViewer(props: ResponseViewerProps) {
         </Tabs.Content>
         
         <Tabs.Content value="headers">
-          <Box style={{ maxHeight: '500px', overflow: 'auto' }}>
-            <Flex direction="column" gap="2" mt="2">
-
+          {/*todo: calculate the maxHeight*/}
+          <Section pt="0" style={{ maxHeight: '500px', overflow: 'auto' }}>
               <Table.Root size="1" layout="fixed">
                 <Table.Header>
                   <Table.Row>
@@ -140,29 +139,30 @@ export default function ResponseViewer(props: ResponseViewerProps) {
                   ))}
                 </Table.Body>
               </Table.Root>
-
-            </Flex>
-          </Box>
+          </Section>
         </Tabs.Content>
 
         <Tabs.Content value="debug">
-          <Table.Root size="1" layout="fixed">
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell>Key</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-
-            <Table.Body>
-              {props.response?.debug?.map((debug: KeyValue, index: number) => (
-                <Table.Row key={`debug${index}`}>
-                  <Table.RowHeaderCell>{debug.key}</Table.RowHeaderCell>
-                  <Table.Cell>{debug.value}</Table.Cell>
+          {/*todo: calculate the maxHeight*/}
+          <Section pt="0" style={{ maxHeight: '500px', overflow: 'auto' }}>
+            <Table.Root size="1" layout="fixed">
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeaderCell>Key</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
                 </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
+              </Table.Header>
+
+              <Table.Body>
+                {props.response?.debug?.map((debug: KeyValue, index: number) => (
+                  <Table.Row key={`debug${index}`}>
+                    <Table.RowHeaderCell>{debug.key}</Table.RowHeaderCell>
+                    <Table.Cell>{debug.value}</Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          </Section>
         </Tabs.Content>
 
       </Tabs.Root>

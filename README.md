@@ -32,7 +32,7 @@ I want it fully open-source, and privacy first.
 - **Frontend Framework**: React with TypeScript
 - **Desktop Framework**: Tauri
 - **UI Components**: Radix UI
-- **HTTP Client**: Axios
+- **HTTP Client**: Tauri build-in plugin
 - **Syntax Highlighting**: react-syntax-highlighter
 
 ## Project Structure
