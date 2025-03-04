@@ -25,7 +25,8 @@ export interface RequestDataWithQuery extends RequestData {
 }
 
 export interface RequestDataWithResponse extends RequestDataWithQuery {
-  response: ResponseData | undefined;
+  response: ResponseData | null;
+  debug: KeyValue[] | null;
 }
 
 export interface ResponseData {
@@ -36,6 +37,7 @@ export interface ResponseData {
   time: number;
   size: number;
   id: string | null;
+  debug: KeyValue[] | null;
 }
 
 export interface RequestHistoryItem extends RequestData {

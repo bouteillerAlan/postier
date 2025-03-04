@@ -20,7 +20,8 @@ export const RequestDataProvider = ({ children }: { children: ReactNode }) => {
     body: '',
     contentType: 'json',
     query: [],
-    response: undefined,
+    response: null,
+    debug: null
   });
 
   return (

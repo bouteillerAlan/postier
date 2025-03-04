@@ -7,7 +7,7 @@ import javascript from 'react-syntax-highlighter/dist/esm/languages/hljs/javascr
 import html from 'react-syntax-highlighter/dist/esm/languages/hljs/htmlbars';
 import atomOneDark from 'react-syntax-highlighter/dist/esm/styles/hljs/atom-one-dark';
 
-import { ResponseData, ViewMode } from '../types/types.ts';
+import {KeyValue, ResponseData, ViewMode} from '../types/types.ts';
 import { 
   detectContentType, 
   formatData, 
@@ -22,7 +22,7 @@ SyntaxHighlighter.registerLanguage('javascript', javascript);
 SyntaxHighlighter.registerLanguage('htmlbars', html);
 
 interface ResponseViewerProps {
-  response: ResponseData | undefined;
+  response: ResponseData | null;
 }
 
 export default function ResponseViewer(props: ResponseViewerProps) {
@@ -50,14 +50,15 @@ export default function ResponseViewer(props: ResponseViewerProps) {
           {response.status} {response.statusText}
         </Badge>
         <Text size="1" color="gray">
-          {Math.round(response.time)}ms | {Math.round(response.size / 1024)}KB | {response.id}
+          {Math.round(response.time)}ms | {Math.round(response.size / 1024)}KB
         </Text>
       </Flex>
 
       <Tabs.Root defaultValue="response">
         <Tabs.List>
           <Tabs.Trigger value="response">Response</Tabs.Trigger>
-          <Tabs.Trigger value="headers">Headers</Tabs.Trigger>
+          <Tabs.Trigger value="headers">Headers ({headers?.length ?? 0})</Tabs.Trigger>
+          <Tabs.Trigger value="debug">Debug</Tabs.Trigger>
         </Tabs.List>
         
         <Tabs.Content value="response">
@@ -143,7 +144,28 @@ export default function ResponseViewer(props: ResponseViewerProps) {
             </Flex>
           </Box>
         </Tabs.Content>
+
+        <Tabs.Content value="debug">
+          <Table.Root size="1" layout="fixed">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell>Key</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
+
+            <Table.Body>
+              {props.response?.debug?.map((debug: KeyValue, index: number) => (
+                <Table.Row key={`debug${index}`}>
+                  <Table.RowHeaderCell>{debug.key}</Table.RowHeaderCell>
+                  <Table.Cell>{debug.value}</Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+        </Tabs.Content>
+
       </Tabs.Root>
     </Section>
   );
-} 
+}

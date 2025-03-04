@@ -1,4 +1,4 @@
-import {ContentType, KeyValue, RequestData} from '../types/types.ts';
+import {ContentType, KeyValue, RequestData, ResponseData} from '../types/types.ts';
 import { fetch } from '@tauri-apps/plugin-http';
 
 export const formatHeaders = (headers: KeyValue[]): Record<string, string> => {
@@ -47,15 +47,7 @@ export const formatRequestBody = (body: string, contentType: ContentType): any =
   return body;
 };
 
-export const sendRequest = async (requestData: RequestData): Promise<{
-  status: number;
-  statusText: string;
-  headers: KeyValue[] | null;
-  data: string | null;
-  time: number;
-  size: number;
-  id: string | null;
-}> => {
+export const sendRequest = async (requestData: RequestData): Promise<ResponseData> => {
   const { url, method, headers, body, contentType } = requestData;
   
   const formattedHeaders: Record<string, string> = formatHeaders(headers);
@@ -75,11 +67,25 @@ export const sendRequest = async (requestData: RequestData): Promise<{
   };
 
   const startTime: number = performance.now();
+  let response: Response | null = null;
+  let error: any | null = null;
+  let data: ResponseData = {
+    status: 0,
+    statusText: '',
+    headers: null,
+    data: null,
+    time: 0,
+    size: 0,
+    id: '',
+    debug: null
+  };
 
   try {
-    const response: Response = await fetch(url, {...config});
-    const endTime: number = performance.now();
-    const body: string = await response.text();
+    response = await fetch(url, {...config});
+    const endTimeRequest: number = performance.now();
+    const bodyArrayBuffer: ArrayBuffer = await response.arrayBuffer();
+    const bodyBlob: Blob = new Blob([bodyArrayBuffer]);
+    const body: string = new TextDecoder().decode(bodyArrayBuffer);
 
     // map the headers
     const headers: KeyValue[] = [];
@@ -91,52 +97,86 @@ export const sendRequest = async (requestData: RequestData): Promise<{
       })
     });
 
-    return {
+    data = {
       status: response.status,
       statusText: response.statusText,
       headers: headers,
       data: body,
-      time: endTime - startTime,
-      size: JSON.stringify(response.body).length,
-      id: requestData.id
+      time: endTimeRequest - startTime,
+      size: bodyBlob.size,
+      id: requestData.id,
+      debug: null
     };
-  } catch (error: any) {
+  } catch (err: any) {
     const endTime = performance.now();
-    
+    error = err;
+
     if (error.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
-      return {
+      data = {
         status: error.response.status,
         statusText: error.response.statusText,
         headers: error.response.headers,
         data: error.response.data,
         time: endTime - startTime,
         size: JSON.stringify(error.response.data || '').length,
-        id: null
+        id: null,
+        debug: null
       };
     } else if (error.request) {
       // The request was made but no response was received
-      return {
+      data = {
         status: 0,
         statusText: 'No response received',
         headers: null,
         data: null,
         time: endTime - startTime,
         size: 0,
-        id: null
+        id: null,
+        debug: null
       };
     } else {
       // Something happened in setting up the request that triggered an Error
-      return {
+      data = {
         status: 0,
         statusText: `Request Error: ${error.message}`,
         headers: null,
         data: null,
         time: endTime - startTime,
         size: 0,
-        id: null
+        id: null,
+        debug: null
       };
     }
+  } finally {
+    const endTimePostier: number = performance.now();
+    if (data.debug === null) data.debug = [];
+    data.debug.push(
+      {key: 'Postier UID', value: `${requestData.id}`, enabled: true},
+      {key: 'Request time', value: `${data.time}ms`, enabled: true},
+      {key: 'Processing time', value: `${endTimePostier - startTime}ms`, enabled: true},
+      {key: 'Nb headers', value: `${data.headers?.length}`, enabled: true},
+    );
+
+    if (response) {
+      data.debug.push(
+        {key: 'Status', value: `${response.status} (${response.statusText})`, enabled: true},
+        {key: 'Body', value: `bodyUsed: ${response.bodyUsed} - blob size: ${data.size} bytes`, enabled: true},
+      );
+    } else if (error && error.response) {
+      data.debug.push(
+        {key: 'Status', value: `${error.response.status} (${error.response.statusText})`, enabled: true},
+        {key: 'Body', value: `bodyUsed: ${error.response.bodyUsed} - blob size: ${data.size} bytes`, enabled: true},
+      );
+    } else if (error && error.request) {
+      data.debug.push(
+        {key: 'Status', value: `No response received`, enabled: true}
+      );
+    } else {
+      if (error) data.debug.push({key: 'Status', value: `${error.message}`, enabled: true});
+    }
+
+    return data;
   }
 }; 
