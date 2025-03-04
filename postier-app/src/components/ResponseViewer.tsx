@@ -91,7 +91,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
             }}
             >
               <Card
-                style={{overflowX: 'auto', width: "fit-content"}}
+                style={{overflowX: 'auto', minWidth: 'fit-content'}}
                 dangerouslySetInnerHTML={{__html: `<pre><code>${hljsResult?.value ?? ''}</code></pre>`}}
               />
             </Box>
