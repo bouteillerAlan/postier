@@ -52,6 +52,17 @@ export default function ResponseViewer(props: ResponseViewerProps) {
 
   const [hljsResult, setHljsResult] = useState<AutoHighlightResult | null>(null);
   useEffect(() => {
+    // only use the language a http api could return, this improves greatly the auto-detect function
+    hljs.configure({
+      languages: [
+        'json',
+        'xml',
+        'html',
+        'css',
+        'javascript',
+        'yaml'
+      ]
+    })
     setHljsResult(hljs.highlightAuto(response.data ?? ''))
   }, [response]);
 
@@ -77,7 +88,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
 
           <Tabs.Root ref={subMenuRef} mb="3" value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)}>
             <Tabs.List>
-              <Tabs.Trigger value="pretty">Pretty</Tabs.Trigger>
+              <Tabs.Trigger value="pretty">Pretty ({hljsResult?.language})</Tabs.Trigger>
               <Tabs.Trigger value="raw">Raw</Tabs.Trigger>
               <Tabs.Trigger value="preview">Preview</Tabs.Trigger>
             </Tabs.List>
