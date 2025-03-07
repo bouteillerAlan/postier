@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="build files" pattern="file[postier]:postier-app/src-tauri/target//*" />
+</component>
