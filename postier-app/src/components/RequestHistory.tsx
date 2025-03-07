@@ -4,12 +4,12 @@ import { getStatusColor } from '../services/formatter';
 
 interface RequestHistoryProps {
   history: RequestHistoryItem[] | undefined;
-  onSelectRequest: (request: RequestHistoryItem) => void;
   isLoading?: boolean;
 }
 
-export default function RequestHistory({ history, onSelectRequest, isLoading = false }: RequestHistoryProps) {
-  if (isLoading) {
+export default function RequestHistory({ history, isLoading = false }: RequestHistoryProps) {
+
+  const loadingDisplay = () => {
     return (
       <Flex align="center" justify="center" style={{ height: '100%' }}>
         <Text as="p" size="2" color="gray">
@@ -19,7 +19,7 @@ export default function RequestHistory({ history, onSelectRequest, isLoading = f
     );
   }
 
-  if (history && history.length === 0) {
+  const noHistoryDisplay = () => {
     return (
       <Box p="4">
         <Text as="p" size="2" color="gray">
@@ -30,44 +30,48 @@ export default function RequestHistory({ history, onSelectRequest, isLoading = f
   }
 
   return (
-    <ScrollArea style={{ height: '100%' }}>
-      <Flex direction="column" gap="2" p="2">
-        {history && history.map((item) => (
-          <Box 
-            key={item.id}
-            p="2" 
-            style={{ 
-              cursor: 'pointer',
-              borderRadius: '6px',
-              border: '1px solid var(--gray-6)'
-            }}
-            onClick={() => onSelectRequest(item)}
-          >
-            <Flex justify="between" align="center" mb="1">
-              <Badge variant="soft">{item.method}</Badge>
+  <ScrollArea style={{ height: '100%' }}>
+
+    {isLoading && loadingDisplay()}
+    {(!isLoading && (!history || (history && history.length === 0))) && noHistoryDisplay()}
+
+    {<Flex direction="column" gap="2" p="2">
+      {(!isLoading && (history && history.length > 0)) && history.map((item) => (
+        <Box
+          key={item.id}
+          p="2"
+          style={{
+            cursor: 'pointer',
+            borderRadius: '6px',
+            border: '1px solid var(--gray-6)'
+          }}
+          onClick={() => {}}
+        >
+          <Flex justify="between" align="center" mb="1">
+            <Badge variant="soft">{item.method}</Badge>
+            <Text size="1" color="gray">
+              {new Date(item.timestamp).toLocaleTimeString()}
+            </Text>
+          </Flex>
+          <Text size="2" style={{ wordBreak: 'break-all' }}>
+            {item.url}
+          </Text>
+          {item.response && (
+            <Flex mt="1" align="center" gap="2">
+              <Badge
+                size="1"
+                color={getStatusColor(item.response.status) as any} // todo: fix me
+              >
+                {item.response.status}
+              </Badge>
               <Text size="1" color="gray">
-                {new Date(item.timestamp).toLocaleTimeString()}
+                {Math.round(item.response.time)}ms
               </Text>
             </Flex>
-            <Text size="2" style={{ wordBreak: 'break-all' }}>
-              {item.url}
-            </Text>
-            {item.response && (
-              <Flex mt="1" align="center" gap="2">
-                <Badge 
-                  size="1" 
-                  color={getStatusColor(item.response.status) as any} // todo: fix me
-                >
-                  {item.response.status}
-                </Badge>
-                <Text size="1" color="gray">
-                  {Math.round(item.response.time)}ms
-                </Text>
-              </Flex>
-            )}
-          </Box>
-        ))}
-      </Flex>
-    </ScrollArea>
+          )}
+        </Box>
+      ))}
+    </Flex>}
+  </ScrollArea>
   );
 } 

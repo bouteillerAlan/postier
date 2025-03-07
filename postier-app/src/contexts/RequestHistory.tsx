@@ -2,14 +2,14 @@ import React, { createContext, useState, useContext, ReactNode } from "react";
 import {RequestHistoryItem} from "../types/types.ts";
 
 interface HistoryDataContextType {
-  historyData: RequestHistoryItem;
-  setHistoryData: React.Dispatch<React.SetStateAction<RequestHistoryItem>>;
+  historyData: RequestHistoryItem[] | null;
+  setHistoryData: React.Dispatch<React.SetStateAction<RequestHistoryItem[]>>;
 }
 
-export const HistoryDataContext = createContext<HistoryDataContextType | undefined>(undefined);
+export const HistoryDataContext = createContext<HistoryDataContextType | null>(null);
 
 export const HistoryDataProvider = ({ children }: { children: ReactNode }) => {
-  const [historyData, setHistoryData] = useState<RequestHistoryItem>({
+  const [historyData, setHistoryData] = useState<RequestHistoryItem[]>([{
     body: '',
     contentType: 'none',
     debug: null,
@@ -20,7 +20,7 @@ export const HistoryDataProvider = ({ children }: { children: ReactNode }) => {
     response: null,
     timestamp: 0,
     url: ''
-  });
+  }]);
 
   return (
     <HistoryDataContext.Provider value={{ historyData, setHistoryData }}>

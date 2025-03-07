@@ -6,9 +6,11 @@ import RequestHistory from "./components/RequestHistory";
 import {RequestData, ResponseData} from "./types/types.ts";
 import { sendRequest } from "./services/http";
 import { useRequestData } from "./contexts/RequestForm.tsx";
+import {useHistoryData} from "./contexts/RequestHistory.tsx";
 
 function App() {
   const { requestData, setRequestData } = useRequestData();
+  const { setHistoryData } = useHistoryData();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   async function handleSendRequest(requestConfig: RequestData) {
@@ -16,6 +18,7 @@ function App() {
     try {
       const responseData: ResponseData = await sendRequest(requestConfig);
       setRequestData(prev => ({...prev, response: responseData}));
+      setHistoryData(prev => ({...prev, response: responseData}));
     } catch (error) {
       console.error("Error sending request:", error);
     } finally {
@@ -47,7 +50,6 @@ function App() {
             )}
             <RequestHistory 
               history={undefined}
-              onSelectRequest={() => {}}
               isLoading={false}
             />
           </Box>
