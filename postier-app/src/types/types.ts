@@ -40,7 +40,6 @@ export interface ResponseData {
   debug: KeyValue[] | null;
 }
 
-export interface RequestHistoryItem extends RequestData {
+export interface RequestHistoryItem extends RequestDataWithResponse {
   timestamp: number;
-  response?: ResponseData;
-} 
+}

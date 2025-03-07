@@ -34,8 +34,6 @@ export const RequestDataProvider = ({ children }: { children: ReactNode }) => {
 // Custom hook to use the request data context
 export const useRequestData = () => {
   const context = useContext(RequestDataContext);
-  if (!context) {
-    throw new Error('useRequestData must be used within a RequestDataProvider');
-  }
+  if (!context) throw new Error('useRequestData must be used within a RequestDataProvider');
   return context;
 };
