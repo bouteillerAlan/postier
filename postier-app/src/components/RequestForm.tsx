@@ -44,23 +44,6 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
     return '';
   }
 
-  const updatePrevRequestData = (key: keyof RequestData, value: any) => {
-    setRequestData((prev: PostierObject) => {
-      if (!prev.request) prev.request = {
-        body: "",
-        contentType: undefined,
-        headers: [],
-        id: "",
-        method: undefined,
-        query: undefined,
-        timestamp: 0,
-        url: ""
-      };
-      prev.request[`${key}`] = value;
-      return prev;
-    });
-  }
-
   /**
    * submit the request
    * @return void
@@ -77,7 +60,9 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
     <Container>
       <Section size="1">
         <Flex gap="2" justify="between" align="center">
-          <Select.Root value={requestData.request?.method} onValueChange={(value) => setRequestData(prev => ({ ...prev, method: value as HttpMethod }) )}>
+          <Select.Root value={requestData.request?.method} onValueChange={(value) => setRequestData((prev: PostierObject) => {
+            return { ...prev, request: {...prev.request, method: value as HttpMethod}};
+          })}>
             <Select.Trigger color={HttpMethodColorRadixUI(requestData.request?.method ?? 'GET')} variant="soft" />
             <Select.Content position="popper" variant="soft">
               {httpMethods.map((e, i) => (
@@ -90,7 +75,9 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
             placeholder="Enter URL"
             value={requestData.request?.url}
             className='fw'
-            onChange={(e) => setRequestData(prev => ({ ...prev, url: e.target.value }))}
+            onChange={(e) => setRequestData((prev: PostierObject) => {
+              return { ...prev, request: {...prev.request, url: e.target.value}};
+            })}
           />
 
           <Button onClick={handleSubmit} disabled={!requestData.request?.url || isLoading} loading={isLoading}>Send</Button>
@@ -109,7 +96,7 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
             <Tabs.Content value="query">
               <KeyValueForm
                 getKeyValues={(data: KeyValue[]): void => setRequestData((prev: PostierObject) => {
-                  return { ...prev, query: data }
+                  return { ...prev, request: {...prev.request, query: data}};
                 })}
                 setKeyValues={requestData.request?.query ?? null}
                 title="Query"
@@ -118,7 +105,9 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
 
             <Tabs.Content value="header">
               <KeyValueForm
-                getKeyValues={(data: KeyValue[]): void => setRequestData((prev: PostierObject) => ({ ...prev, headers: data }))}
+                getKeyValues={(data: KeyValue[]): void => setRequestData((prev: PostierObject) => {
+                  return { ...prev, request: {...prev.request, headers: data}};
+                })}
                 setKeyValues={requestData.request?.headers ?? null}
                 title="Header"
               />
@@ -126,8 +115,12 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
 
             <Tabs.Content value="body">
               <BodyForm
-                getBody={(data: string): void => setRequestData((prev: PostierObject) => ({...prev, body: data}))}
-                getContentType={(data: ContentType): void => setRequestData((prev: PostierObject) => ({...prev, contentType: data}))}
+                getBody={(data: string): void => setRequestData((prev: PostierObject) => {
+                  return { ...prev, request: {...prev.request, body: data}};
+                })}
+                getContentType={(data: ContentType): void => setRequestData((prev: PostierObject) => {
+                  return { ...prev, request: {...prev.request, contentType: data}};
+                })}
                 setBody={requestData.request?.body ?? null}
                 setContentType={requestData.request?.contentType ?? null}
               />
