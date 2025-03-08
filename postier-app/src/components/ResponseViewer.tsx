@@ -43,6 +43,11 @@ export default function ResponseViewer(props: ResponseViewerProps) {
   }
 
   useEffect(() => {
+    console.log(props.response)
+    console.log(props.debug)
+  }, []);
+
+  useEffect(() => {
     window.addEventListener('resize', calculateResponseViewHeight);
     calculateResponseViewHeight();
     return () => {

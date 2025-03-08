@@ -17,9 +17,9 @@ function App() {
     setIsLoading(true);
     try {
       const postierObject: PostierObject = await sendRequest(requestConfig);
-      // store the response for the responseView
+      // store the response for the responseViewer
       setRequestData((prev: PostierObject) => {
-        return {...prev, postierObject};
+        return {...prev, ...postierObject};
       });
       // save all the data in the history feed
       setHistoryData((prev: PostierObject[]) => {
