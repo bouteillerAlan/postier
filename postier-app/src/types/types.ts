@@ -13,33 +13,28 @@ export interface KeyValue {
 
 export interface RequestData {
   id: string;
+  timestamp: number;
   url: string;
   method: HttpMethod;
   headers: KeyValue[];
-  body: string;
+  query: KeyValue[] | null;
   contentType: ContentType;
-}
-
-export interface RequestDataWithQuery extends RequestData {
-  query: KeyValue[];
-}
-
-export interface RequestDataWithResponse extends RequestDataWithQuery {
-  response: ResponseData | null;
-  debug: KeyValue[] | null;
+  body: string;
 }
 
 export interface ResponseData {
+  id: string;
+  timestamp: number;
   status: number;
   statusText: string;
   headers: KeyValue[] | null;
   data: string | null;
   time: number;
   size: number;
-  id: string | null;
-  debug: KeyValue[] | null;
 }
 
-export interface RequestHistoryItem extends RequestDataWithResponse {
-  timestamp: number;
+export interface RequestContext {
+  request: RequestData;
+  response: ResponseData | null;
+  debug: KeyValue[] | null;
 }
