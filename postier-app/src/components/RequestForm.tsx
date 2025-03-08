@@ -50,7 +50,7 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
    */
   const handleSubmit = () => {
     onSubmit({
-      ...requestData,
+      ...requestData.request,
       id: uuidv4(),
       url: `${safeUrl()}${buildQueryString()}`
     });

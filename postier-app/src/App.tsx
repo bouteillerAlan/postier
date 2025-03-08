@@ -10,15 +10,21 @@ import { useHistoryData } from "./contexts/HistoryContext.tsx";
 
 function App() {
   const { requestData, setRequestData } = useRequestData();
-  const { historyData } = useHistoryData();
+  const { historyData, setHistoryData } = useHistoryData();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   async function handleSendRequest(requestConfig: RequestData) {
     setIsLoading(true);
     try {
       const postierObject: PostierObject = await sendRequest(requestConfig);
+      // store the response for the responseView
       setRequestData((prev: PostierObject) => {
         return {...prev, postierObject};
+      });
+      // save all the data in the history feed
+      setHistoryData((prev: PostierObject[]) => {
+        prev.push(postierObject);
+        return prev;
       });
     } catch (error) {
       console.error("Error sending request:", error);
