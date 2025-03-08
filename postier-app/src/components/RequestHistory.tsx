@@ -1,16 +1,13 @@
 import { ScrollArea, Box, Text, Flex, Badge } from '@radix-ui/themes';
 import { getStatusColor } from '../services/formatter';
-import {useHistoryData} from "../contexts/HistoryContext.tsx";
 import {PostierObject} from "../types/types.ts";
 
 interface RequestHistoryProps {
   isLoading?: boolean;
+  history: PostierObject[];
 }
 
-export default function RequestHistory({ isLoading = false }: RequestHistoryProps) {
-
-  const history: PostierObject[] | null = useHistoryData().historyData;
-
+export default function RequestHistory({ history, isLoading = false }: RequestHistoryProps) {
   const loadingDisplay = () => {
     return (
       <Flex align="center" justify="center" style={{ height: '100%' }}>
@@ -38,7 +35,7 @@ export default function RequestHistory({ isLoading = false }: RequestHistoryProp
     {(!isLoading && (!history || (history && history.length === 0))) && noHistoryDisplay()}
 
     {<Flex direction="column" gap="2" p="2">
-      {(!isLoading && (history && history.length > 0)) && history.map((item) => (
+      {(!isLoading && (history && history.length > 0)) && history.map((item: PostierObject) => (
         <Box
           key={item.request.id}
           p="2"
@@ -50,13 +47,13 @@ export default function RequestHistory({ isLoading = false }: RequestHistoryProp
           onClick={() => {}}
         >
           <Flex justify="between" align="center" mb="1">
-            <Badge variant="soft">{item.method}</Badge>
+            <Badge variant="soft">{item.request.method}</Badge>
             <Text size="1" color="gray">
-              {new Date(item.timestamp).toLocaleTimeString()}
+              {new Date(item.request.timestamp).toLocaleTimeString()}
             </Text>
           </Flex>
           <Text size="2" style={{ wordBreak: 'break-all' }}>
-            {item.url}
+            {item.request.url}
           </Text>
           {item.response && (
             <Flex mt="1" align="center" gap="2">

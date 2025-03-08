@@ -1,15 +1,16 @@
 import {useState} from "react";
-import { Tabs, Container, Flex, Box, Button } from "@radix-ui/themes";
+import {Tabs, Container, Flex, Box, Button} from "@radix-ui/themes";
 import RequestForm from "./components/RequestForm";
 import ResponseViewer from "./components/ResponseViewer";
 import RequestHistory from "./components/RequestHistory";
 import {RequestData, PostierObject} from "./types/types.ts";
 import { sendRequest } from "./services/http";
 import { useRequestData } from "./contexts/RequestContext.tsx";
+import { useHistoryData } from "./contexts/HistoryContext.tsx";
 
 function App() {
   const { requestData, setRequestData } = useRequestData();
-  //todo: const { setHistoryData } = useHistoryData();
+  const { historyData } = useHistoryData();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   async function handleSendRequest(requestConfig: RequestData) {
@@ -27,7 +28,7 @@ function App() {
   }
 
   return (
-    <Container p="4">responseData
+    <Container p="4">
       <Tabs.Root defaultValue="request">
         <Tabs.List>
           <Tabs.Trigger value="request">Request</Tabs.Trigger>
@@ -36,7 +37,7 @@ function App() {
         
         <Tabs.Content value="request">
           <RequestForm onSubmit={handleSendRequest} isLoading={isLoading} />
-          <ResponseViewer response={requestData.response} />
+          <ResponseViewer response={requestData.response} debug={requestData.debug} />
         </Tabs.Content>
         
         <Tabs.Content value="history">
@@ -48,7 +49,7 @@ function App() {
                 </Button>
               </Flex>
             )}
-            <RequestHistory isLoading={isLoading}/>
+            <RequestHistory isLoading={isLoading} history={historyData}/>
           </Box>
         </Tabs.Content>
 
