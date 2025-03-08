@@ -2,7 +2,7 @@ import {Box, Flex, Section, Select, Text, TextArea} from "@radix-ui/themes";
 import {ContentType} from "../types/types.ts";
 import {useEffect, useState} from "react";
 
-export default function BodyForm(props: {getBody: (data: string) => void; getContentType: (data: ContentType) => void; setBody: string; setContentType: ContentType}) {
+export default function BodyForm(props: {getBody: (data: string) => void; getContentType: (data: ContentType) => void; setBody: string | null; setContentType: ContentType | null}) {
   const [body, setBody] = useState<string>(props.setBody ?? '');
   const [contentType, setContentType] = useState<ContentType>(props.setContentType ?? 'json');
 

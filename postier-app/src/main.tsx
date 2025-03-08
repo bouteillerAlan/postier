@@ -5,8 +5,8 @@ import { Theme } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
 import "./styles/style.css";
 import {ThemeProvider} from "next-themes";
-import {RequestDataProvider} from "./contexts/RequestForm.tsx";
-import {HistoryDataProvider} from "./contexts/RequestHistory.tsx";
+import {RequestDataProvider} from "./contexts/RequestContext.tsx";
+import {HistoryDataProvider} from "./contexts/HistoryContext.tsx";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

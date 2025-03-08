@@ -1,13 +1,15 @@
 import { ScrollArea, Box, Text, Flex, Badge } from '@radix-ui/themes';
-import { RequestHistoryItem } from '../types/types.ts';
 import { getStatusColor } from '../services/formatter';
+import {useHistoryData} from "../contexts/HistoryContext.tsx";
+import {PostierObject} from "../types/types.ts";
 
 interface RequestHistoryProps {
-  history: RequestHistoryItem[] | undefined;
   isLoading?: boolean;
 }
 
-export default function RequestHistory({ history, isLoading = false }: RequestHistoryProps) {
+export default function RequestHistory({ isLoading = false }: RequestHistoryProps) {
+
+  const history: PostierObject[] | null = useHistoryData().historyData;
 
   const loadingDisplay = () => {
     return (
@@ -38,7 +40,7 @@ export default function RequestHistory({ history, isLoading = false }: RequestHi
     {<Flex direction="column" gap="2" p="2">
       {(!isLoading && (history && history.length > 0)) && history.map((item) => (
         <Box
-          key={item.id}
+          key={item.request.id}
           p="2"
           style={{
             cursor: 'pointer',

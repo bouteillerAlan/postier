@@ -7,6 +7,7 @@ import 'highlight.js/styles/atom-one-dark-reasonable.min.css';
 
 interface ResponseViewerProps {
   response: ResponseData | null;
+  debug: KeyValue[] | [];
 }
 
 export default function ResponseViewer(props: ResponseViewerProps) {
@@ -161,7 +162,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
               </Table.Header>
 
               <Table.Body>
-                {props.response?.debug?.map((debug: KeyValue, index: number) => (
+                {props.debug.length > 0 && props.debug.map((debug: KeyValue, index: number) => (
                   <Table.Row key={`debug${index}`}>
                     <Table.RowHeaderCell>{debug.key}</Table.RowHeaderCell>
                     <Table.Cell>{debug.value}</Table.Cell>

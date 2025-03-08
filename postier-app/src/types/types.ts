@@ -16,10 +16,10 @@ export interface RequestData {
   timestamp: number;
   url: string;
   method: HttpMethod;
-  headers: KeyValue[];
+  headers: KeyValue[] | null;
   query: KeyValue[] | null;
-  contentType: ContentType;
-  body: string;
+  contentType: ContentType | null;
+  body: string | null;
 }
 
 export interface ResponseData {
@@ -33,8 +33,8 @@ export interface ResponseData {
   size: number;
 }
 
-export interface RequestContext {
+export interface PostierObject {
   request: RequestData;
-  response: ResponseData | null;
-  debug: KeyValue[] | null;
+  response: ResponseData;
+  debug: KeyValue[] | [];
 }

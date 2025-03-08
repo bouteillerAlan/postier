@@ -2,8 +2,8 @@ import { v4 as uuidv4 } from "uuid";
 import { Box, Button, Container, Flex, Section, Select, Tabs, TextField } from "@radix-ui/themes";
 import KeyValueForm from "./KeyValueForm.tsx";
 import BodyForm from "./BodyForm.tsx";
-import {ContentType, HttpMethod, httpMethods, KeyValue, RequestData} from "../types/types.ts";
-import {useRequestData} from "../contexts/RequestForm.tsx";
+import {ContentType, HttpMethod, httpMethods, KeyValue, PostierObject, RequestData} from "../types/types.ts";
+import {useRequestData} from "../contexts/RequestContext.tsx";
 import {HttpMethodColorRadixUI} from "../services/formatter.ts";
 
 interface RequestFormProps {
@@ -19,12 +19,15 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
    * @return string
    */
   const buildQueryString = (): string => {
-    return "?".concat(
-      requestData.query
-        .filter(item => item.enabled && item.key && item.value)
-        .map(item => `${encodeURIComponent(item.key)}=${encodeURIComponent(item.value)}`)
-        .join(',')
-    );
+    if (requestData.request?.query) {
+      return "?".concat(
+        requestData.request.query
+          .filter(item => item.enabled && item.key && item.value)
+          .map(item => `${encodeURIComponent(item.key)}=${encodeURIComponent(item.value)}`)
+          .join(',')
+      );
+    }
+    return '';
   };
 
   /**
@@ -33,9 +36,29 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
    * @return string
    */
   const safeUrl = (): string => {
-    const urlPattern = /^https?:\/\//;
-    const isValidUrl = urlPattern.test(requestData.url);
-    return isValidUrl ? requestData.url : `https://${requestData.url}`;
+    if (requestData.request?.url) {
+      const urlPattern = /^https?:\/\//;
+      const isValidUrl = urlPattern.test(requestData.request.url);
+      return isValidUrl ? requestData.request.url : `https://${requestData.request.url}`;
+    }
+    return '';
+  }
+
+  const updatePrevRequestData = (key: keyof RequestData, value: any) => {
+    setRequestData((prev: PostierObject) => {
+      if (!prev.request) prev.request = {
+        body: "",
+        contentType: undefined,
+        headers: [],
+        id: "",
+        method: undefined,
+        query: undefined,
+        timestamp: 0,
+        url: ""
+      };
+      prev.request[`${key}`] = value;
+      return prev;
+    });
   }
 
   /**
@@ -43,20 +66,19 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
    * @return void
    */
   const handleSubmit = () => {
-    const updatedRequestData = {
+    onSubmit({
       ...requestData,
       id: uuidv4(),
-      url: `${safeUrl()}${buildQueryString()}`,
-    };
-    onSubmit(updatedRequestData);
+      url: `${safeUrl()}${buildQueryString()}`
+    });
   };
 
   return (
     <Container>
       <Section size="1">
         <Flex gap="2" justify="between" align="center">
-          <Select.Root value={requestData.method} onValueChange={(value) => setRequestData(prev => ({ ...prev, method: value as HttpMethod }))}>
-            <Select.Trigger color={HttpMethodColorRadixUI(requestData.method)} variant="soft" />
+          <Select.Root value={requestData.request?.method} onValueChange={(value) => setRequestData(prev => ({ ...prev, method: value as HttpMethod }) )}>
+            <Select.Trigger color={HttpMethodColorRadixUI(requestData.request?.method ?? 'GET')} variant="soft" />
             <Select.Content position="popper" variant="soft">
               {httpMethods.map((e, i) => (
                 <Select.Item style={{ color: HttpMethodColorRadixUI(e) }} value={e} key={`${i}${e}`}>{e}</Select.Item>
@@ -66,12 +88,12 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
 
           <TextField.Root
             placeholder="Enter URL"
-            value={requestData.url}
+            value={requestData.request?.url}
             className='fw'
             onChange={(e) => setRequestData(prev => ({ ...prev, url: e.target.value }))}
           />
 
-          <Button onClick={handleSubmit} disabled={!requestData.url || isLoading} loading={isLoading}>Send</Button>
+          <Button onClick={handleSubmit} disabled={!requestData.request?.url || isLoading} loading={isLoading}>Send</Button>
         </Flex>
       </Section>
 
@@ -86,26 +108,28 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
           <Box>
             <Tabs.Content value="query">
               <KeyValueForm
-                getKeyValues={(data: KeyValue[]): void => setRequestData(prev => ({ ...prev, query: data }))}
-                setKeyValues={requestData.query}
+                getKeyValues={(data: KeyValue[]): void => setRequestData((prev: PostierObject) => {
+                  return { ...prev, query: data }
+                })}
+                setKeyValues={requestData.request?.query ?? null}
                 title="Query"
               />
             </Tabs.Content>
 
             <Tabs.Content value="header">
               <KeyValueForm
-                getKeyValues={(data: KeyValue[]): void => setRequestData(prev => ({ ...prev, headers: data }))}
-                setKeyValues={requestData.headers}
+                getKeyValues={(data: KeyValue[]): void => setRequestData((prev: PostierObject) => ({ ...prev, headers: data }))}
+                setKeyValues={requestData.request?.headers ?? null}
                 title="Header"
               />
             </Tabs.Content>
 
             <Tabs.Content value="body">
               <BodyForm
-                getBody={(data: string): void => setRequestData(prev => ({...prev, body: data}))}
-                getContentType={(data: ContentType): void => setRequestData(prev => ({...prev, contentType: data}))}
-                setBody={requestData.body}
-                setContentType={requestData.contentType}
+                getBody={(data: string): void => setRequestData((prev: PostierObject) => ({...prev, body: data}))}
+                getContentType={(data: ContentType): void => setRequestData((prev: PostierObject) => ({...prev, contentType: data}))}
+                setBody={requestData.request?.body ?? null}
+                setContentType={requestData.request?.contentType ?? null}
               />
             </Tabs.Content>
           </Box>

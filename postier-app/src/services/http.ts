@@ -1,4 +1,4 @@
-import {ContentType, KeyValue, RequestData, ResponseData} from '../types/types.ts';
+import {ContentType, KeyValue, PostierObject, RequestData, ResponseData} from '../types/types.ts';
 import { fetch } from '@tauri-apps/plugin-http';
 
 export const formatHeaders = (headers: KeyValue[]): Record<string, string> => {
@@ -47,37 +47,37 @@ export const formatRequestBody = (body: string, contentType: ContentType): any =
   return body;
 };
 
-export const sendRequest = async (requestData: RequestData): Promise<ResponseData> => {
+export const sendRequest = async (requestData: RequestData): Promise<PostierObject> => {
   const { url, method, headers, body, contentType } = requestData;
-  
-  const formattedHeaders: Record<string, string> = formatHeaders(headers);
-  
+
+  const formattedHeaders: Record<string, string> | null = headers ? formatHeaders(headers) : null;
+
   // Add content type header if not already present and not 'none'
-  if (contentType !== 'none' && !formattedHeaders['Content-Type']) {
-    const contentTypeValue: string = getContentTypeHeader(contentType);
-    if (contentTypeValue) {
-      formattedHeaders['Content-Type'] = contentTypeValue;
+  if (formattedHeaders) {
+    if (contentType && contentType !== 'none' && !formattedHeaders['Content-Type']) {
+      const contentTypeValue: string = getContentTypeHeader(contentType);
+      if (contentTypeValue) formattedHeaders['Content-Type'] = contentTypeValue;
     }
   }
 
   const config = {
     method: method.toLowerCase(),
     headers: {...formattedHeaders, "User-Agent": "PostierRuntime/1.0.0"},
-    data: formatRequestBody(body, contentType),
+    data: (body && contentType) ? formatRequestBody(body, contentType) : null
   };
 
   const startTime: number = performance.now();
   let response: Response | null = null;
   let error: any | null = null;
-  let data: ResponseData = {
+  let responseData: ResponseData = {
+    id: requestData.id,
+    timestamp: Date.now(),
     status: 0,
     statusText: '',
     headers: null,
     data: null,
     time: 0,
     size: 0,
-    id: '',
-    debug: null
   };
 
   try {
@@ -90,22 +90,17 @@ export const sendRequest = async (requestData: RequestData): Promise<ResponseDat
     // map the headers
     const headers: KeyValue[] = [];
     response.headers.forEach((value: string, key: string) => {
-      headers.push({
-        key,
-        value,
-        enabled: true
-      })
+      headers.push({key, value, enabled: true})
     });
 
-    data = {
+    responseData = {
+      ...responseData,
       status: response.status,
       statusText: response.statusText,
       headers: headers,
       data: body,
       time: endTimeRequest - startTime,
-      size: bodyBlob.size,
-      id: requestData.id,
-      debug: null
+      size: bodyBlob.size
     };
   } catch (err: any) {
     const endTime = performance.now();
@@ -114,69 +109,66 @@ export const sendRequest = async (requestData: RequestData): Promise<ResponseDat
     if (error.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
-      data = {
+      responseData = {
+        ...responseData,
         status: error.response.status,
         statusText: error.response.statusText,
         headers: error.response.headers,
         data: error.response.data,
         time: endTime - startTime,
         size: JSON.stringify(error.response.data || '').length,
-        id: null,
-        debug: null
       };
     } else if (error.request) {
       // The request was made but no response was received
-      data = {
+      responseData = {
+        ...responseData,
         status: 0,
         statusText: 'No response received',
         headers: null,
         data: null,
         time: endTime - startTime,
         size: 0,
-        id: null,
-        debug: null
       };
     } else {
       // Something happened in setting up the request that triggered an Error
-      data = {
+      responseData = {
+        ...responseData,
         status: 0,
         statusText: `Request Error: ${error.message}`,
         headers: null,
         data: null,
         time: endTime - startTime,
         size: 0,
-        id: null,
-        debug: null
       };
     }
   } finally {
     const endTimePostier: number = performance.now();
-    if (data.debug === null) data.debug = [];
-    data.debug.push(
+    const debug: KeyValue[] = [];
+    debug.push(
       {key: 'Postier UID', value: `${requestData.id}`, enabled: true},
-      {key: 'Request time', value: `${data.time}ms`, enabled: true},
+      {key: 'Request time', value: `${responseData.time}ms`, enabled: true},
       {key: 'Processing time', value: `${endTimePostier - startTime}ms`, enabled: true},
-      {key: 'Nb headers', value: `${data.headers?.length}`, enabled: true},
+      {key: 'Nb headers', value: `${responseData.headers?.length}`, enabled: true},
     );
 
     if (response) {
-      data.debug.push(
+      debug.push(
         {key: 'Status', value: `${response.status} (${response.statusText})`, enabled: true},
-        {key: 'Body', value: `bodyUsed: ${response.bodyUsed} - blob size: ${data.size} bytes`, enabled: true},
+        {key: 'Body', value: `bodyUsed: ${response.bodyUsed} - blob size: ${responseData.size} bytes`, enabled: true},
       );
     } else if (error && error.response) {
-      data.debug.push(
+      debug.push(
         {key: 'Status', value: `${error.response.status} (${error.response.statusText})`, enabled: true},
-        {key: 'Body', value: `bodyUsed: ${error.response.bodyUsed} - blob size: ${data.size} bytes`, enabled: true},
+        {key: 'Body', value: `bodyUsed: ${error.response.bodyUsed} - blob size: ${responseData.size} bytes`, enabled: true},
       );
     } else if (error && error.request) {
-      data.debug.push(
+      debug.push(
         {key: 'Status', value: `No response received`, enabled: true}
       );
     } else {
-      if (error) data.debug.push({key: 'Status', value: `${error.message}`, enabled: true});
+      if (error) debug.push({key: 'Status', value: `${error.message}`, enabled: true});
     }
 
-    return data;
+    return {request: requestData, response: responseData, debug};
   }
 }; 
