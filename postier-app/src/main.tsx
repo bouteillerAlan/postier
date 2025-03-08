@@ -6,6 +6,7 @@ import "@radix-ui/themes/styles.css";
 import "./styles/style.css";
 import {ThemeProvider} from "next-themes";
 import {RequestDataProvider} from "./contexts/RequestForm.tsx";
+import {HistoryDataProvider} from "./contexts/RequestHistory.tsx";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
@@ -16,9 +17,12 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         // accentColor="teal"
         // grayColor="mauve"
         // scaling="100%"
+        // appearance="light"
       >
         <RequestDataProvider>
-          <App/>
+          <HistoryDataProvider>
+            <App/>
+          </HistoryDataProvider>
         </RequestDataProvider>
       </Theme>
     </ThemeProvider>

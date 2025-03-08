@@ -2,8 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {Tabs, Box, Text, Flex, Badge, Section, Table, Card} from '@radix-ui/themes';
 import {KeyValue, ResponseData, ViewMode} from '../types/types.ts';
 import {detectContentType, formatData, getStatusColor} from '../services/formatter';
-import hljs, {AutoHighlightResult} from 'highlight.js';
-import 'highlight.js/styles/github.css';
+import hljs from 'highlight.js';
 import 'highlight.js/styles/atom-one-dark-reasonable.min.css';
 
 interface ResponseViewerProps {
@@ -48,22 +47,15 @@ export default function ResponseViewer(props: ResponseViewerProps) {
     return () => {
       window.removeEventListener('resize', calculateResponseViewHeight);
     };
-  }, []);
+  }, [subMenuRef, subMenuRef.current]);
 
-  const [hljsResult, setHljsResult] = useState<AutoHighlightResult | null>(null);
+  const configureHljs = () => {
+    hljs.configure({languages: ['json', 'xml', 'html', 'css', 'javascript', 'yaml']});
+    hljs.highlightAll();
+  }
   useEffect(() => {
-    // only use the language a http api could return, this improves greatly the auto-detect function
-    hljs.configure({
-      languages: [
-        'json',
-        'xml',
-        'html',
-        'css',
-        'javascript',
-        'yaml'
-      ]
-    })
-    setHljsResult(hljs.highlightAuto(formattedData))
+    // todo: fix this shit
+    configureHljs();
   }, [response]);
 
   return (
@@ -88,7 +80,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
 
           <Tabs.Root ref={subMenuRef} mb="3" value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)}>
             <Tabs.List>
-              <Tabs.Trigger value="pretty">Pretty ({hljsResult?.language})</Tabs.Trigger>
+              <Tabs.Trigger value="pretty">Pretty</Tabs.Trigger>
               <Tabs.Trigger value="raw">Raw</Tabs.Trigger>
               <Tabs.Trigger value="preview">Preview</Tabs.Trigger>
             </Tabs.List>
@@ -101,10 +93,9 @@ export default function ResponseViewer(props: ResponseViewerProps) {
                 overflow: 'auto'
             }}
             >
-              <Card
-                style={{overflowX: 'auto', minWidth: 'fit-content'}}
-                dangerouslySetInnerHTML={{__html: `<pre><code>${hljsResult?.value ?? ''}</code></pre>`}}
-              />
+              <Card style={{overflowX: 'auto', minWidth: 'fit-content'}}>
+                <pre><code>{formattedData}</code></pre>
+              </Card>
             </Box>
           ) : viewMode === 'raw' ? (
             <Box
