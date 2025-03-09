@@ -48,7 +48,8 @@ export const formatRequestBody = (body: string, contentType: ContentType): any =
 };
 
 export const sendRequest = async (requestData: RequestData): Promise<PostierObject> => {
-  const { url, method, headers, body, contentType } = requestData;
+  const { composedUrl, method, headers, body, contentType } = requestData;
+  const url = composedUrl;
 
   const formattedHeaders: Record<string, string> | null = headers ? formatHeaders(headers) : null;
 
@@ -148,25 +149,27 @@ export const sendRequest = async (requestData: RequestData): Promise<PostierObje
       {key: 'Postier UID', value: `${requestData.id}`, enabled: true},
       {key: 'Request time', value: `${responseData.time}ms`, enabled: true},
       {key: 'Processing time', value: `${endTimePostier - startTime}ms`, enabled: true},
-      {key: 'Nb headers', value: `${responseData.headers?.length}`, enabled: true},
+      {key: 'Request url', value: `${url}`, enabled: true},
+      {key: 'Request config', value: `${JSON.stringify(config)}`, enabled: true},
+      {key: 'Response sum headers', value: `${responseData.headers?.length}`, enabled: true},
     );
 
     if (response) {
       debug.push(
-        {key: 'Status', value: `${response.status} (${response.statusText})`, enabled: true},
-        {key: 'Body', value: `bodyUsed: ${response.bodyUsed} - blob size: ${responseData.size} bytes`, enabled: true},
+        {key: 'Response status', value: `${response.status} (${response.statusText})`, enabled: true},
+        {key: 'Response body', value: `bodyUsed: ${response.bodyUsed} - blob size: ${responseData.size} bytes`, enabled: true},
       );
     } else if (error && error.response) {
       debug.push(
-        {key: 'Status', value: `${error.response.status} (${error.response.statusText})`, enabled: true},
-        {key: 'Body', value: `bodyUsed: ${error.response.bodyUsed} - blob size: ${responseData.size} bytes`, enabled: true},
+        {key: 'Response status', value: `${error.response.status} (${error.response.statusText})`, enabled: true},
+        {key: 'Response body', value: `bodyUsed: ${error.response.bodyUsed} - blob size: ${responseData.size} bytes`, enabled: true},
       );
     } else if (error && error.request) {
       debug.push(
-        {key: 'Status', value: `No response received`, enabled: true}
+        {key: 'Response status', value: `No response received`, enabled: true}
       );
     } else {
-      if (error) debug.push({key: 'Status', value: `${error.message}`, enabled: true});
+      if (error) debug.push({key: 'Response status', value: `${error.message}`, enabled: true});
     }
 
     return {request: requestData, response: responseData, debug};

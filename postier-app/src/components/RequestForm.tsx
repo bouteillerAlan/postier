@@ -19,8 +19,18 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
    * @return string
    */
   const buildQueryString = (): string => {
-    if (requestData.request?.query) {
-      return "?".concat(
+    if (requestData.request.query && requestData.request.query.length > 0) {
+      let prefix = '';
+
+      // set the question mark if needed
+      if (!requestData.request.url.endsWith('?')) prefix = '?';
+
+      // if the user have already set a query just add the other
+      const queryPattern = /\?(.+=.+)+,?/;
+      const hasQuery = queryPattern.test(requestData.request.url);
+      if (hasQuery && !requestData.request.url.endsWith(',')) prefix = ',';
+
+      return `${prefix}`.concat(
         requestData.request.query
           .filter(item => item.enabled && item.key && item.value)
           .map(item => `${encodeURIComponent(item.key)}=${encodeURIComponent(item.value)}`)
@@ -52,7 +62,7 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
     onSubmit({
       ...requestData.request,
       id: uuidv4(),
-      url: `${safeUrl()}${buildQueryString()}`
+      composedUrl: `${safeUrl()}${buildQueryString()}`
     });
   };
 

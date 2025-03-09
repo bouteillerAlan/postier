@@ -15,6 +15,7 @@ export interface RequestData {
   id: string;
   timestamp: number;
   url: string;
+  composedUrl: string;
   method: HttpMethod;
   headers: KeyValue[] | null;
   query: KeyValue[] | null;
