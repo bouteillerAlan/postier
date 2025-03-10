@@ -1,5 +1,5 @@
 import {useEffect, useMemo, useRef, useState} from 'react';
-import {Tabs, Box, Text, Flex, Badge, Section, Table, Card} from '@radix-ui/themes';
+import {Tabs, Box, Text, Flex, Badge, Section, Table, Card, Tooltip} from '@radix-ui/themes';
 import {KeyValue, PostierObject, ResponseData, ViewMode} from '../types/types.ts';
 import {detectContentType, formatData, getStatusColor} from '../services/formatter';
 import hljs from 'highlight.js';
@@ -82,9 +82,17 @@ export default function ResponseViewer(props: ResponseViewerProps) {
         <Badge color={statusColor} size="2">
           {response.status} {response.statusText}
         </Badge>
-        <Text size="1" color="gray">
-          {Math.round(response.time)}ms | {Math.round(response.size / 1024)}KB
-        </Text>
+        <Tooltip content="What time take the fetch (rounded)">
+          <Text size="1" color="gray">
+            {Math.round(response.time)}ms
+          </Text>
+        </Tooltip>
+        <Text>|</Text>
+        <Tooltip content="Size of the body mesured from the blob (rounded)">
+          <Text size="1" color="gray">
+            {Math.round(response.size / 1024)}KB
+          </Text>
+        </Tooltip>
       </Flex>
 
       <Tabs.Root defaultValue={'response'}>
