@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Tabs, Container, Flex, Box, Button} from "@radix-ui/themes";
 import RequestForm from "./components/RequestForm";
 import ResponseViewer from "./components/ResponseViewer";
@@ -12,8 +12,35 @@ function App() {
   const { requestData, setRequestData } = useRequestData();
   const { historyData, setHistoryData } = useHistoryData();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [mainTabs, setMainTabs] = useState<string>('request');
 
-  async function handleSendRequest(requestConfig: RequestData) {
+  /**
+   * replace the current data in the request context by the new one
+   * @param elem
+   * @return void
+   */
+  function replaceRequestDataContext(elem: PostierObject): void {
+    setRequestData(() => elem);
+  }
+
+  /**
+   * update the context and move the user to the request tab
+   * @param elem
+   * @return void
+   */
+  function updateContextAndGoHome(elem: PostierObject) {
+    setIsLoading(true);
+    replaceRequestDataContext(elem);
+    setMainTabs('request');
+  }
+
+  /**
+   * handle the request made from the requestForm
+   * send the request, update both request and history context
+   * @param requestConfig
+   * @return Promise<void>
+   */
+  async function handleSendRequest(requestConfig: RequestData): Promise<void> {
     setIsLoading(true);
     try {
       const postierObject: PostierObject = await sendRequest(requestConfig);
@@ -34,9 +61,14 @@ function App() {
     }
   }
 
+  useEffect(() => {
+    // set loading to false after the user come back from other page
+    if (mainTabs === 'request') setIsLoading(false);
+  }, [mainTabs]);
+
   return (
     <Container p="4">
-      <Tabs.Root defaultValue="request">
+      <Tabs.Root defaultValue="request" value={mainTabs} onValueChange={setMainTabs}>
         <Tabs.List>
           <Tabs.Trigger value="request">Request</Tabs.Trigger>
           <Tabs.Trigger value="history">History</Tabs.Trigger>
@@ -56,7 +88,7 @@ function App() {
                 </Button>
               </Flex>
             )}
-            <RequestHistory isLoading={isLoading} history={historyData}/>
+            <RequestHistory isLoading={isLoading} history={historyData} onClickElement={updateContextAndGoHome}/>
           </Box>
         </Tabs.Content>
 

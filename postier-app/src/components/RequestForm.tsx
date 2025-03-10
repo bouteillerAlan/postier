@@ -64,7 +64,8 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
     onSubmit({
       ...requestData.request,
       id: uuidv4(),
-      composedUrl: `${safeUrl()}${buildQueryString()}`
+      composedUrl: `${safeUrl()}${buildQueryString()}`,
+      timestamp: Date.now()
     });
   };
 
@@ -78,7 +79,7 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
     return () => {
       if (urlInputRef && urlInputRef.current) urlInputRef.current.removeEventListener('keypress', handleKeyPress);
     }
-  }, []);
+  }, [requestData]);
 
   return (
     <Container>

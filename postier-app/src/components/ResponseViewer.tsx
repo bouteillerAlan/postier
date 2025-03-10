@@ -1,18 +1,15 @@
-import {useEffect, useMemo, useRef, useState} from 'react';
-import {Tabs, Box, Text, Flex, Badge, Section, Table, Card, Tooltip} from '@radix-ui/themes';
-import {KeyValue, PostierObject, ResponseData, ViewMode} from '../types/types.ts';
+import {memo, useEffect, useRef, useState} from 'react';
+import {Tabs, Box, Text, Flex, Badge, Section, Table, Card, Tooltip, Separator} from '@radix-ui/themes';
+import {KeyValue, ResponseData, ViewMode} from '../types/types.ts';
 import {detectContentType, formatData, getStatusColor} from '../services/formatter';
-import hljs from 'highlight.js';
-import 'highlight.js/styles/atom-one-dark-reasonable.min.css';
-import {useRequestData} from "../contexts/RequestContext.tsx";
+import { Highlight, themes} from "prism-react-renderer";
 
 interface ResponseViewerProps {
   response: ResponseData | null;
   debug: KeyValue[] | [];
 }
 
-export default function ResponseViewer(props: ResponseViewerProps) {
-  const { setRequestData } = useRequestData();
+export default memo(function ResponseViewer(props: ResponseViewerProps) {
 
   const response = props.response ?? {
     data: "Send a request to see the response here.",
@@ -23,20 +20,6 @@ export default function ResponseViewer(props: ResponseViewerProps) {
     time: 0,
     id: 0
   };
-  const responsePrettyMemo = useMemo(
-    ()=> {
-      const AHLJSresult = hljs.highlightAuto(response.data ?? '');
-      setRequestData((prev: PostierObject) => {
-        if (prev.debug && !prev.debug.find((e) => e.key.startsWith('Auto hljs'))) {
-          prev.debug.push({key: 'Auto hljs language', value: AHLJSresult.language ?? 'Not detected', enabled: true});
-          prev.debug.push({key: 'Auto hljs language second best', value: AHLJSresult.secondBest?.language ?? 'Not detected', enabled: true});
-        }
-        return prev;
-      })
-      return AHLJSresult;
-    },
-    [response]
-  );
   const [viewMode, setViewMode] = useState<ViewMode>('pretty');
 
   const getCTheader = () => {
@@ -66,8 +49,6 @@ export default function ResponseViewer(props: ResponseViewerProps) {
     }
   }
 
-  const codeRef = useRef<HTMLElement>(null);
-
   useEffect(() => {
     window.addEventListener('resize', calculateResponseViewHeight);
     calculateResponseViewHeight();
@@ -87,7 +68,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
             {Math.round(response.time)}ms
           </Text>
         </Tooltip>
-        <Text>|</Text>
+        <Separator orientation='vertical'/>
         <Tooltip content="Size of the body mesured from the blob (rounded)">
           <Text size="1" color="gray">
             {Math.round(response.size / 1024)}KB
@@ -117,10 +98,28 @@ export default function ResponseViewer(props: ResponseViewerProps) {
               style={{
                 maxHeight: responseCodeViewHeight,
                 overflow: 'auto'
-            }}
+              }}
             >
-              <Card style={{overflowX: 'auto', minWidth: 'fit-content'}}>
-                <pre><code ref={codeRef} className={ctheader} dangerouslySetInnerHTML={{__html: responsePrettyMemo.value}}></code></pre>
+              <Card style={{overflowX: 'auto', minWidth: 'fit-content', padding: 0}}>
+                <Highlight
+                  theme={themes.duotoneDark}
+                  code={response.data ?? ''}
+                  language={ctheader}
+                >
+                  {({ style, tokens, getLineProps, getTokenProps }) => (
+                    <div style={{...style, padding: 10}}>
+                      <pre style={{...style, backgroundColor: 'none', margin: 0}}>
+                      {tokens.map((line, i) => (
+                        <div key={i} {...getLineProps({ line })}>
+                          {line.map((token, key) => (
+                            <span key={key} {...getTokenProps({ token })} />
+                          ))}
+                        </div>
+                      ))}
+                    </pre>
+                    </div>
+                  )}
+                </Highlight>
               </Card>
             </Box>
           ) : viewMode === 'raw' ? (
@@ -201,4 +200,4 @@ export default function ResponseViewer(props: ResponseViewerProps) {
       </Tabs.Root>
     </Section>
   );
-}
+})
