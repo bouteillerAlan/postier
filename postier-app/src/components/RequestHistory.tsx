@@ -1,18 +1,35 @@
-import {ScrollArea, Box, Text, Flex, Badge, Separator, Card, Button} from '@radix-ui/themes';
+import {ScrollArea, Box, Text, Flex, Badge, Separator, Card, Button, Tooltip} from '@radix-ui/themes';
 import { getStatusColor } from '../services/formatter';
 import {PostierObject} from "../types/types.ts";
+import {useEffect, useState} from "react";
 
 interface RequestHistoryProps {
   isLoading?: boolean;
-  history: PostierObject[];
+  historyObject: PostierObject[];
   onClickElement: (request: PostierObject) => void
-  onDeleteElement: (request: PostierObject) => void
 }
 
-export default function RequestHistory({ history, onClickElement, onDeleteElement, isLoading = false }: RequestHistoryProps) {
+export default function RequestHistory({ historyObject, onClickElement, isLoading = false }: RequestHistoryProps) {
 
+  const [history, setHistory] = useState(historyObject);
 
-  const loadingDisplay = () => {
+  useEffect(() => {
+    setHistory(historyObject);
+  }, [history]);
+
+  /**
+   * delete an elems from the history
+   * @param elem
+   * @return void
+   */
+  function onDeleteElement(elem: PostierObject): void {
+    const deleteIndex = history.indexOf(elem);
+    if (deleteIndex === -1) return;
+    const newHistory = history.splice(deleteIndex, 1);
+    setHistory(newHistory);
+  }
+
+  function loadingDisplay() {
     return (
       <Flex align="center" justify="center" style={{ height: '100%' }}>
         <Text as="p" size="2" color="gray">
@@ -22,7 +39,7 @@ export default function RequestHistory({ history, onClickElement, onDeleteElemen
     );
   }
 
-  const noHistoryDisplay = () => {
+  function noHistoryDisplay() {
     return (
       <Box p="4">
         <Text as="p" size="2" color="gray">
@@ -52,9 +69,16 @@ export default function RequestHistory({ history, onClickElement, onDeleteElemen
                 <Separator/>
                 <Text color="gray">{Math.round(item.response.time)}ms</Text>
               </Flex>
+              <Flex gap='2' align='center' mb='1'>
+                <Tooltip content={`request id ${item.request.id.slice(0, 5)} match response id ${item.response.id.slice(0, 5)}`}>
+                  <Badge color={item.request.id === item.response.id ? 'green' : 'red'}>{item.request.id}</Badge>
+                </Tooltip>
+              </Flex>
               <Flex align='center' gap='2'>
                 <Badge variant="soft">{item.request.method}</Badge>
-                <Badge color={getStatusColor(item.response.status) as any}>{item.response.status}</Badge>
+                <Tooltip content={`${item.response.status}, ${item.response.statusText}`}>
+                  <Badge color={getStatusColor(item.response.status) as any}>{item.response.status}</Badge>
+                </Tooltip>
                 <Text style={{ wordBreak: 'break-all' }}>{item.request.url}</Text>
               </Flex>
             </Flex>
@@ -72,4 +96,4 @@ export default function RequestHistory({ history, onClickElement, onDeleteElemen
     </Flex>}
   </ScrollArea>
   );
-} 
+}

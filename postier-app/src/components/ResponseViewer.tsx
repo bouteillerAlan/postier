@@ -1,4 +1,4 @@
-import {memo, useEffect, useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {Tabs, Box, Text, Flex, Badge, Section, Table, Card, Tooltip, Separator} from '@radix-ui/themes';
 import {KeyValue, ResponseData, ViewMode} from '../types/types.ts';
 import {detectContentType, formatData, getStatusColor} from '../services/formatter';
@@ -9,7 +9,7 @@ interface ResponseViewerProps {
   debug: KeyValue[] | [];
 }
 
-export default memo(function ResponseViewer(props: ResponseViewerProps) {
+export default function ResponseViewer(props: ResponseViewerProps) {
 
   const response = props.response ?? {
     data: "Send a request to see the response here.",
@@ -198,4 +198,4 @@ export default memo(function ResponseViewer(props: ResponseViewerProps) {
       </Tabs.Root>
     </Section>
   );
-})
+}

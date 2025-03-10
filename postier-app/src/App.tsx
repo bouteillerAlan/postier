@@ -34,10 +34,6 @@ function App() {
     setMainTabs('request');
   }
 
-  function deleteOneElementFromHistory(elem: PostierObject): void {
-    // todo: delete one item
-  }
-
   /**
    * handle the request made from the requestForm
    * send the request, update both request and history context
@@ -79,8 +75,8 @@ function App() {
         </Tabs.List>
         
         <Tabs.Content value="request">
-          <RequestForm onSubmit={handleSendRequest} isLoading={isLoading} />
-          <ResponseViewer response={requestData.response} debug={requestData.debug} />
+          <RequestForm onSubmit={handleSendRequest} isLoading={isLoading}/>
+          <ResponseViewer response={requestData.response} debug={requestData.debug}/>
         </Tabs.Content>
         
         <Tabs.Content value="history">
@@ -94,9 +90,8 @@ function App() {
             {/*)}*/}
             <RequestHistory
               isLoading={isLoading}
-              history={historyData}
+              historyObject={historyData}
               onClickElement={updateContextAndGoHome}
-              onDeleteElement={deleteOneElementFromHistory}
             />
           </Box>
         </Tabs.Content>
