@@ -34,7 +34,7 @@ export const detectContentType = (data: any): ContentType => {
   return 'json';
 };
 
-export const formatData = (data: any, viewMode: ViewMode, contentType: ContentType): string => {
+export const formatData = (data: any, viewMode: ViewMode, contentType: ContentType | string): string => {
   if (!data) return '';
   
   // For raw view, just stringify the data

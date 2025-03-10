@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {Tabs, Box, Text, Flex, Badge, Section, Table, Card} from '@radix-ui/themes';
 import {KeyValue, ResponseData, ViewMode} from '../types/types.ts';
 import {detectContentType, formatData, getStatusColor} from '../services/formatter';
@@ -11,8 +11,6 @@ interface ResponseViewerProps {
 }
 
 export default function ResponseViewer(props: ResponseViewerProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('pretty');
-
   const response = props.response ?? {
     data: "Send a request to see the response here.",
     headers: null,
@@ -22,9 +20,22 @@ export default function ResponseViewer(props: ResponseViewerProps) {
     time: 0,
     id: 0
   };
+  const responsePrettyMemo = useMemo(
+    ()=> hljs.highlightAuto(response.data ?? 'xxxxxxx'),
+    [response]
+  );
+  const [viewMode, setViewMode] = useState<ViewMode>('pretty');
 
-  // todo: improve contentType with the use of the content-type header
-  const contentType = detectContentType(response.data);
+  const getCTheader = () => {
+    const cth = response.headers?.find((header: KeyValue) => header.key.toLowerCase() === 'content-type');
+    // for example google.fr send text/html; charset=utf-8
+    // and we just need the mid-part (html)
+    // reminder: https://stackoverflow.com/questions/23714383/what-are-all-the-possible-values-for-http-content-type-header
+    return cth ? cth.value.split(';')[0].split('/')[1] : '';
+  }
+
+  const ctheader = getCTheader();
+  const contentType = ctheader ?? detectContentType(response.data);
   const formattedData = formatData(response.data, viewMode, contentType);
 
   const statusColor = getStatusColor(response.status);
@@ -42,10 +53,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
     }
   }
 
-  useEffect(() => {
-    console.log(props.response)
-    console.log(props.debug)
-  }, []);
+  const codeRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     window.addEventListener('resize', calculateResponseViewHeight);
@@ -54,15 +62,6 @@ export default function ResponseViewer(props: ResponseViewerProps) {
       window.removeEventListener('resize', calculateResponseViewHeight);
     };
   }, [subMenuRef, subMenuRef.current]);
-
-  const configureHljs = () => {
-    hljs.configure({languages: ['json', 'xml', 'html', 'css', 'javascript', 'yaml']});
-    hljs.highlightAll();
-  }
-  useEffect(() => {
-    // todo: fix this shit
-    configureHljs();
-  }, [response]);
 
   return (
     <Section size="1" p="0">
@@ -75,7 +74,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
         </Text>
       </Flex>
 
-      <Tabs.Root defaultValue="response">
+      <Tabs.Root defaultValue={'response'}>
         <Tabs.List>
           <Tabs.Trigger value="response">Response</Tabs.Trigger>
           <Tabs.Trigger value="headers">Headers ({headers?.length ?? 0})</Tabs.Trigger>
@@ -100,7 +99,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
             }}
             >
               <Card style={{overflowX: 'auto', minWidth: 'fit-content'}}>
-                <pre><code>{formattedData}</code></pre>
+                <pre><code ref={codeRef} className={ctheader} dangerouslySetInnerHTML={{__html: responsePrettyMemo.value}}></code></pre>
               </Card>
             </Box>
           ) : viewMode === 'raw' ? (
@@ -126,7 +125,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
               }}
             >
               {contentType === 'html' ? (
-                <div dangerouslySetInnerHTML={{ __html: formattedData }} />
+                <iframe srcDoc={formattedData} height={responseCodeViewHeight} width='100%'/>
               ) : (
                 formattedData
               )}
