@@ -65,14 +65,12 @@ export default function RequestHistory({ historyObject, onClickElement, isLoadin
           <Flex gap='2' align='center' justify='between'>
             <Flex gap='2' direction='column'>
               <Flex gap='2' align="center" mb="1">
+                <Tooltip content={`request id ${item.request.id.slice(0, 5)} match response id ${item.response.id.slice(0, 5)}`}>
+                  <Badge color={item.request.id === item.response.id ? 'green' : 'red'}>●</Badge>
+                </Tooltip>
                 <Text color="gray">{new Date(item.request.timestamp).toLocaleString()}</Text>
                 <Separator/>
                 <Text color="gray">{Math.round(item.response.time)}ms</Text>
-              </Flex>
-              <Flex gap='2' align='center' mb='1'>
-                <Tooltip content={`request id ${item.request.id.slice(0, 5)} match response id ${item.response.id.slice(0, 5)}`}>
-                  <Badge color={item.request.id === item.response.id ? 'green' : 'red'}>{item.request.id}</Badge>
-                </Tooltip>
               </Flex>
               <Flex align='center' gap='2'>
                 <Badge variant="soft">{item.request.method}</Badge>
