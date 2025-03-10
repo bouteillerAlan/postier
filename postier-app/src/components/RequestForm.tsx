@@ -5,6 +5,7 @@ import BodyForm from "./BodyForm.tsx";
 import {ContentType, HttpMethod, httpMethods, KeyValue, PostierObject, RequestData} from "../types/types.ts";
 import {useRequestData} from "../contexts/RequestContext.tsx";
 import {HttpMethodColorRadixUI} from "../services/formatter.ts";
+import {useEffect, useRef} from "react";
 
 interface RequestFormProps {
   onSubmit: (requestData: RequestData) => void;
@@ -13,6 +14,7 @@ interface RequestFormProps {
 
 export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
   const { requestData, setRequestData } = useRequestData();
+  const urlInputRef = useRef<HTMLInputElement>(null);
 
   /**
    * build the string for the query and return it
@@ -58,13 +60,25 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
    * submit the request
    * @return void
    */
-  const handleSubmit = () => {
+  const handleSubmit = (): void => {
     onSubmit({
       ...requestData.request,
       id: uuidv4(),
       composedUrl: `${safeUrl()}${buildQueryString()}`
     });
   };
+
+  const handleKeyPress = (e: KeyboardEvent): void => {
+    if (isLoading || !requestData.request?.url) return;
+    if (e.key === 'Enter') handleSubmit();
+  }
+
+  useEffect(() => {
+    if (urlInputRef && urlInputRef.current) urlInputRef.current.addEventListener('keypress', handleKeyPress);
+    return () => {
+      if (urlInputRef && urlInputRef.current) urlInputRef.current.removeEventListener('keypress', handleKeyPress);
+    }
+  }, []);
 
   return (
     <Container>
@@ -82,7 +96,8 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
           </Select.Root>
 
           <TextField.Root
-            placeholder="Enter URL"
+            ref={urlInputRef}
+            placeholder='Enter URL'
             value={requestData.request?.url}
             className='fw'
             onChange={(e) => setRequestData((prev: PostierObject) => {
