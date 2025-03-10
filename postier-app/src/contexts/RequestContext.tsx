@@ -18,11 +18,12 @@ export const RequestDataProvider = ({ children }: { children: ReactNode }) => {
       id: '',
       timestamp: 0,
       url: '',
+      composedUrl: '',
       method: 'GET',
       headers: null,
       query: null,
       contentType: null,
-      body: null
+      body: null,
     },
     response: {
       id: '',

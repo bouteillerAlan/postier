@@ -19,6 +19,7 @@ function App() {
       const postierObject: PostierObject = await sendRequest(requestConfig);
       // store the response for the responseViewer
       setRequestData((prev: PostierObject) => {
+        prev.debug.concat(postierObject.debug); // because we have some data already set eg: 31,32 in ResponseViewer
         return {...prev, ...postierObject};
       });
       // save all the data in the history feed

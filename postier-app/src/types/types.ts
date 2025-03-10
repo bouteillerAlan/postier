@@ -37,5 +37,5 @@ export interface ResponseData {
 export interface PostierObject {
   request: RequestData;
   response: ResponseData;
-  debug: KeyValue[] | [];
+  debug: KeyValue[];
 }

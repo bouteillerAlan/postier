@@ -1,9 +1,10 @@
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {Tabs, Box, Text, Flex, Badge, Section, Table, Card} from '@radix-ui/themes';
-import {KeyValue, ResponseData, ViewMode} from '../types/types.ts';
+import {KeyValue, PostierObject, ResponseData, ViewMode} from '../types/types.ts';
 import {detectContentType, formatData, getStatusColor} from '../services/formatter';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/atom-one-dark-reasonable.min.css';
+import {useRequestData} from "../contexts/RequestContext.tsx";
 
 interface ResponseViewerProps {
   response: ResponseData | null;
@@ -11,6 +12,8 @@ interface ResponseViewerProps {
 }
 
 export default function ResponseViewer(props: ResponseViewerProps) {
+  const { setRequestData } = useRequestData();
+
   const response = props.response ?? {
     data: "Send a request to see the response here.",
     headers: null,
@@ -21,7 +24,17 @@ export default function ResponseViewer(props: ResponseViewerProps) {
     id: 0
   };
   const responsePrettyMemo = useMemo(
-    ()=> hljs.highlightAuto(response.data ?? 'xxxxxxx'),
+    ()=> {
+      const AHLJSresult = hljs.highlightAuto(response.data ?? '');
+      setRequestData((prev: PostierObject) => {
+        if (prev.debug && !prev.debug.find((e) => e.key.startsWith('Auto hljs'))) {
+          prev.debug.push({key: 'Auto hljs language', value: AHLJSresult.language ?? 'Not detected', enabled: true});
+          prev.debug.push({key: 'Auto hljs language second best', value: AHLJSresult.secondBest?.language ?? 'Not detected', enabled: true});
+        }
+        return prev;
+      })
+      return AHLJSresult;
+    },
     [response]
   );
   const [viewMode, setViewMode] = useState<ViewMode>('pretty');
