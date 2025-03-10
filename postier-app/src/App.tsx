@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {Tabs, Container, Flex, Box, Button} from "@radix-ui/themes";
+import {Tabs, Container, Box} from "@radix-ui/themes";
 import RequestForm from "./components/RequestForm";
 import ResponseViewer from "./components/ResponseViewer";
 import RequestHistory from "./components/RequestHistory";
@@ -28,10 +28,14 @@ function App() {
    * @param elem
    * @return void
    */
-  function updateContextAndGoHome(elem: PostierObject) {
+  function updateContextAndGoHome(elem: PostierObject): void {
     setIsLoading(true);
     replaceRequestDataContext(elem);
     setMainTabs('request');
+  }
+
+  function deleteOneElementFromHistory(elem: PostierObject): void {
+    // todo: delete one item
   }
 
   /**
@@ -81,14 +85,19 @@ function App() {
         
         <Tabs.Content value="history">
           <Box>
-            {history.length > 0 && (
-              <Flex justify="end" p="2">
-                <Button color="red" variant="soft" onClick={() => {}}>
-                  Clear History
-                </Button>
-              </Flex>
-            )}
-            <RequestHistory isLoading={isLoading} history={historyData} onClickElement={updateContextAndGoHome}/>
+            {/*{history.length > 0 && (*/}
+            {/*  <Flex justify="end" p="2">*/}
+            {/*    <Button color="red" variant="soft" onClick={() => {}}>*/}
+            {/*      Clear History*/}
+            {/*    </Button>*/}
+            {/*  </Flex>*/}
+            {/*)}*/}
+            <RequestHistory
+              isLoading={isLoading}
+              history={historyData}
+              onClickElement={updateContextAndGoHome}
+              onDeleteElement={deleteOneElementFromHistory}
+            />
           </Box>
         </Tabs.Content>
 
