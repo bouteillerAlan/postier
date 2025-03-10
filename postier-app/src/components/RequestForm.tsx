@@ -4,7 +4,7 @@ import KeyValueForm from "./KeyValueForm.tsx";
 import BodyForm from "./BodyForm.tsx";
 import {ContentType, HttpMethod, httpMethods, KeyValue, PostierObject, RequestData} from "../types/types.ts";
 import {useRequestData} from "../contexts/RequestContext.tsx";
-import {HttpMethodColorRadixUI} from "../services/formatter.ts";
+import {HttpMethodColorCustom, HttpMethodColorRadixUI} from "../services/formatter.ts";
 import {useEffect, useRef} from "react";
 
 interface RequestFormProps {
@@ -90,7 +90,7 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
             <Select.Trigger color={HttpMethodColorRadixUI(requestData.request?.method ?? 'GET')} variant="soft" />
             <Select.Content position="popper" variant="soft">
               {httpMethods.map((e, i) => (
-                <Select.Item style={{ color: HttpMethodColorRadixUI(e) }} value={e} key={`${i}${e}`}>{e}</Select.Item>
+                <Select.Item style={{ color: HttpMethodColorCustom(e) }} value={e} key={`${i}${e}`}>{e}</Select.Item>
               ))}
             </Select.Content>
           </Select.Root>

@@ -120,20 +120,20 @@ export const HttpMethodColorRadixUI = (method: HttpMethod) => {
 export const HttpMethodColorCustom = (method: HttpMethod) => {
   switch (method) {
     case 'GET':
-      return 'var(--green-5)';
+      return 'var(--green-11)';
     case 'POST':
-      return 'var(--amber-5)';
+      return 'var(--amber-11)';
     case 'PUT':
-      return 'var(--blue-5)';
+      return 'var(--blue-11)';
     case 'DELETE':
-      return 'var(--red-5)';
+      return 'var(--red-11)';
     case 'HEAD':
-      return 'var(--green-5)';
+      return 'var(--green-11)';
     case 'OPTIONS':
-      return 'var(--crimson-5)';
+      return 'var(--crimson-11)';
     case 'PATCH':
-      return 'var(--purple-5)';
+      return 'var(--purple-11)';
     default:
-      return 'var(--gray-5)';
+      return 'var(--gray-11)';
   }
 }
