@@ -100,14 +100,14 @@ export default memo(function ResponseViewer(props: ResponseViewerProps) {
                 overflow: 'auto'
               }}
             >
-              <Card style={{overflowX: 'auto', minWidth: 'fit-content', padding: 0}}>
+              <Card style={{overflowX: 'auto', overflowY: 'auto', minWidth: 'fit-content', padding: 0}}>
                 <Highlight
                   theme={themes.duotoneDark}
-                  code={response.data ?? ''}
+                  code={formattedData}
                   language={ctheader}
                 >
                   {({ style, tokens, getLineProps, getTokenProps }) => (
-                    <div style={{...style, padding: 10}}>
+                    <div style={{...style, backgroundColor: 'var(--gray-surface)', padding: 10}}>
                       <pre style={{...style, backgroundColor: 'none', margin: 0}}>
                       {tokens.map((line, i) => (
                         <div key={i} {...getLineProps({ line })}>
@@ -123,25 +123,23 @@ export default memo(function ResponseViewer(props: ResponseViewerProps) {
               </Card>
             </Box>
           ) : viewMode === 'raw' ? (
-            <Box
+            <Card
               style={{
-                maxHeight: responseCodeViewHeight,
+                maxHeight: 'fit-content',
                 overflow: 'auto',
                 padding: '16px',
-                backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                borderRadius: '6px'
+                backgroundColor: 'var(--gray-surface)',
               }}
             >
               {formattedData}
-            </Box>
+            </Card>
           ) : (
-            <Box
+            <Card
               style={{
-                maxHeight: responseCodeViewHeight,
+                maxHeight: 'fit-content',
                 overflow: 'auto',
                 padding: '16px',
-                backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                borderRadius: '6px'
+                backgroundColor: 'var(--gray-surface)',
               }}
             >
               {contentType === 'html' ? (
@@ -149,7 +147,7 @@ export default memo(function ResponseViewer(props: ResponseViewerProps) {
               ) : (
                 formattedData
               )}
-            </Box>
+            </Card>
           )}
         </Tabs.Content>
 
