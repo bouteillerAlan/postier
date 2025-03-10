@@ -126,18 +126,19 @@ export const sendRequest = async (requestData: RequestData): Promise<PostierObje
         status: 0,
         statusText: 'No response received',
         headers: null,
-        data: null,
+        data: 'No response received',
         time: endTime - startTime,
         size: 0,
       };
     } else {
+      console.log('oo', error)
       // Something happened in setting up the request that triggered an Error
       responseData = {
         ...responseData,
         status: 0,
         statusText: `Request Error: ${error.message}`,
         headers: null,
-        data: null,
+        data: error,
         time: endTime - startTime,
         size: 0,
       };
