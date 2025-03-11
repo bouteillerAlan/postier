@@ -1,15 +1,16 @@
 import {useEffect, useRef, useState} from 'react';
-import {Tabs, Container, Theme, Box, Card, Text} from '@radix-ui/themes';
+import {Tabs, Container, Theme} from '@radix-ui/themes';
 import RequestForm from './components/RequestForm';
 import ResponseViewer from './components/ResponseViewer';
 import RequestHistory from './components/RequestHistory';
-import {RequestData, PostierObject} from './types/types.ts';
+import {RequestData, PostierObject, Alert} from './types/types.ts';
 import {sendRequest} from './services/http';
 import {useRequestData} from './contexts/RequestContext.tsx';
 import {useHistoryData} from './contexts/HistoryContext.tsx';
 import {ThemeProvider} from 'next-themes';
 import {useSetting} from './contexts/SettingContext.tsx';
 import UserSetting from './components/UserSetting.tsx';
+import AlertCard from "./components/AlertCard.tsx";
 
 function App() {
   const { setting, setSetting } = useSetting();
@@ -17,6 +18,7 @@ function App() {
   const { historyData, setHistoryData } = useHistoryData();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [mainTabs, setMainTabs] = useState<string>('request');
+  const [alert, setAlert] = useState<Alert>({title: '', message: '', show: false});
   const mainTabRef = useRef<HTMLDivElement>(null);
 
   /**
@@ -72,18 +74,26 @@ function App() {
   }, [mainTabs]);
 
   useEffect(() => {
-    console.log('setting updated');
+    setAlert({title: 'Debug', message: 'setting updated', show: setting.debug});
     // todo: update the setting file
   }, [setting]);
 
   useEffect(() => {
-    console.log('history updated');
+    setAlert({title: 'Debug', message: 'history updated', show: setting.debug});
     // todo: update the history file
   }, [historyData]);
 
   useEffect(() => {
-    console.log('request updated');
+    setAlert({title: 'Debug', message: 'request updated', show: setting.debug});
   }, [requestData]);
+
+  useEffect(() => {
+    if (alert.show) {
+      setTimeout(() => {
+        setAlert({title: '', message: '', show: false})
+      }, 8000)
+    }
+  }, [alert]);
 
   return (
     <ThemeProvider attribute='class'>
@@ -123,17 +133,7 @@ function App() {
           </Tabs.Root>
         </Container>
 
-        <Box maxWidth="350px">
-          <Card variant="surface">
-            <Text as="div" size="2" weight="bold">
-              Debug
-            </Text>
-            <Text as="div" color="gray" size="2">
-              Message
-            </Text>
-          </Card>
-        </Box>
-
+        <AlertCard title={alert.title} message={alert.message} show={alert.show}/>
 
       </Theme>
     </ThemeProvider>

@@ -60,3 +60,9 @@ export interface UserSetting {
   codeTheme: hlTheme;
   debug: boolean;
 }
+
+export interface Alert {
+  title: string;
+  message: string;
+  show: boolean;
+}
