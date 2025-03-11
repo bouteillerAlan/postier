@@ -2,6 +2,7 @@ import {ScrollArea, Box, Text, Flex, Badge, Separator, Card, Button, Tooltip} fr
 import { getStatusColor } from '../services/formatter';
 import {PostierObject} from "../types/types.ts";
 import {useEffect, useState} from "react";
+import {ReloadIcon, StackIcon, TrashIcon} from "@radix-ui/react-icons";
 
 interface RequestHistoryProps {
   isLoading?: boolean;
@@ -66,7 +67,9 @@ export default function RequestHistory({ historyObject, onClickElement, isLoadin
             <Flex gap='2' direction='column'>
               <Flex gap='2' align="center" mb="1">
                 <Tooltip content={`request id ${item.request.id.slice(0, 5)} match response id ${item.response.id.slice(0, 5)}`}>
-                  <Badge color={item.request.id === item.response.id ? 'green' : 'red'}>●</Badge>
+                  <Badge color={item.request.id === item.response.id ? 'green' : 'red'}>
+                    <StackIcon/>
+                  </Badge>
                 </Tooltip>
                 <Text color="gray">{new Date(item.request.timestamp).toLocaleString()}</Text>
                 <Separator/>
@@ -82,10 +85,10 @@ export default function RequestHistory({ historyObject, onClickElement, isLoadin
             </Flex>
             <Flex gap='2' direction='column'>
               <Button color="orange" variant="soft" onClick={() => onClickElement(item)}>
-                Replace current request
+                <ReloadIcon/> Replace current request
               </Button>
               <Button color="crimson" variant="soft" onClick={() => onDeleteElement(item)}>
-                Delete from history
+                <TrashIcon/> Delete from history
               </Button>
             </Flex>
           </Flex>

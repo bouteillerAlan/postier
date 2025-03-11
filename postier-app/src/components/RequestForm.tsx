@@ -6,6 +6,7 @@ import {ContentType, HttpMethod, httpMethods, KeyValue, PostierObject, RequestDa
 import {useRequestData} from "../contexts/RequestContext.tsx";
 import {HttpMethodColorCustom, HttpMethodColorRadixUI} from "../services/formatter.ts";
 import {useEffect, useRef} from "react";
+import {PaperPlaneIcon} from "@radix-ui/react-icons";
 
 interface RequestFormProps {
   onSubmit: (requestData: RequestData) => void;
@@ -106,7 +107,9 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
             })}
           />
 
-          <Button onClick={handleSubmit} disabled={!requestData.request?.url || isLoading} loading={isLoading}>Send</Button>
+          <Button onClick={handleSubmit} disabled={!requestData.request?.url || isLoading} loading={isLoading}>
+            <PaperPlaneIcon/> Send
+          </Button>
         </Flex>
       </Section>
 
