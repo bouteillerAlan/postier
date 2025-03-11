@@ -9,18 +9,24 @@
     "core:default",
     "opener:default",
     {
-      "identifier": "fs:allow-write-file",
+      "identifier": "fs:scope",
       "allow": [
         {
           "path": "$APPLOCALDATA/*"
+        },
+        {
+          "path": "$APPCONFIG/*"
         }
       ]
     },
     {
-      "identifier": "fs:allow-read-file",
+      "identifier": "fs:default",
       "allow": [
         {
           "path": "$APPLOCALDATA/*"
+        },
+        {
+          "path": "$APPCONFIG/*"
         }
       ]
     },
