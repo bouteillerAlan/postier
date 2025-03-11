@@ -10,7 +10,8 @@ import {useHistoryData} from './contexts/HistoryContext.tsx';
 import {ThemeProvider} from 'next-themes';
 import {useSetting} from './contexts/SettingContext.tsx';
 import UserSetting from './components/UserSetting.tsx';
-import AlertCard from "./components/AlertCard.tsx";
+import AlertCard from './components/AlertCard.tsx';
+import {getContentFromFile, writeContentInFile} from './services/fileStorage.ts';
 
 function App() {
   const { setting, setSetting } = useSetting();
@@ -59,7 +60,7 @@ function App() {
       // save all the data in the history feed
       setHistoryData((prev: PostierObject[]) => {
         prev.push(postierObject);
-        return prev;
+        return [...prev];
       });
     } catch (error) {
       console.error('Error sending request:', error);
@@ -75,12 +76,12 @@ function App() {
 
   useEffect(() => {
     setAlert({title: 'Debug', message: 'setting updated', show: setting.debug});
-    // todo: update the setting file
+    writeContentInFile(JSON.stringify(setting), 'config.txt');
   }, [setting]);
 
   useEffect(() => {
     setAlert({title: 'Debug', message: 'history updated', show: setting.debug});
-    // todo: update the history file
+    writeContentInFile(JSON.stringify(historyData), 'history.txt');
   }, [historyData]);
 
   useEffect(() => {
@@ -94,6 +95,17 @@ function App() {
       }, 8000)
     }
   }, [alert]);
+
+  useEffect(() => {
+    getContentFromFile('config.txt').then((value: string) => {
+      const configParsed = JSON.parse(value);
+      if (configParsed && typeof configParsed === 'object') setSetting(() => ({...configParsed}));
+    });
+    getContentFromFile('history.txt').then((value: string) => {
+      const historyParsed = JSON.parse(value);
+      if (historyParsed && typeof historyParsed === 'object') setHistoryData(() => ([...historyParsed]));
+    });
+  }, []);
 
   return (
     <ThemeProvider attribute='class'>

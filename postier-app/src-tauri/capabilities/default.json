@@ -9,7 +9,18 @@
     "core:default",
     "opener:default",
     {
-      "identifier": "fs:scope",
+      "identifier": "fs:allow-mkdir",
+      "allow": [
+        {
+          "path": "$APPLOCALDATA"
+        },
+        {
+          "path": "$APPCONFIG"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-write",
       "allow": [
         {
           "path": "$APPLOCALDATA/*"
@@ -20,7 +31,62 @@
       ]
     },
     {
-      "identifier": "fs:default",
+      "identifier": "fs:allow-exists",
+      "allow": [
+        {
+          "path": "$APPLOCALDATA/*"
+        },
+        {
+          "path": "$APPCONFIG/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-create",
+      "allow": [
+        {
+          "path": "$APPLOCALDATA/*"
+        },
+        {
+          "path": "$APPCONFIG/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-appconfig-read",
+      "allow": [
+        {
+          "path": "$APPLOCALDATA/*"
+        },
+        {
+          "path": "$APPCONFIG/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-applocaldata-read",
+      "allow": [
+        {
+          "path": "$APPLOCALDATA/*"
+        },
+        {
+          "path": "$APPCONFIG/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-applocaldata-write",
+      "allow": [
+        {
+          "path": "$APPLOCALDATA/*"
+        },
+        {
+          "path": "$APPCONFIG/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-appconfig-write",
       "allow": [
         {
           "path": "$APPLOCALDATA/*"

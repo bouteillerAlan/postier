@@ -26,7 +26,8 @@
       "assetProtocol": {
         "enable": true,
         "scope": [
-          "$APPLOCALDATA/**"
+          "$APPLOCALDATA/**",
+          "$APPCONFIG/**"
         ]
       }
     }

@@ -8,7 +8,7 @@ interface SettingContextType {
 
 export const SettingContext = createContext<SettingContextType | null>(null);
 
-export const SettingProvider = ({ children }: { children: ReactNode }) => {
+export const SettingProvider = ({children}: { children: ReactNode }) => {
   const [setting, setSetting] = useState<UserSetting>({
     codeTheme: 'duotoneDark',
     accentTheme: 'cyan',
@@ -18,7 +18,7 @@ export const SettingProvider = ({ children }: { children: ReactNode }) => {
   });
 
   return (
-    <SettingContext.Provider value={{ setting, setSetting }}>
+    <SettingContext.Provider value={{setting, setSetting}}>
       {children}
     </SettingContext.Provider>
   );

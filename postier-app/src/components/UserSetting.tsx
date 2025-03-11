@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   accentTheme,
   accentThemes,
@@ -9,7 +9,8 @@ import {
   scaleTheme, scaleThemes,
   UserSetting as US
 } from '../types/types.ts';
-import {Checkbox, Container, DataList, Select} from '@radix-ui/themes';
+import {Checkbox, Code, Container, DataList, Select} from '@radix-ui/themes';
+import { path } from '@tauri-apps/api'
 
 interface UserSettingProps {
   setSetting: React.Dispatch<React.SetStateAction<US>>;
@@ -17,6 +18,15 @@ interface UserSettingProps {
 }
 
 export default function UserSetting(props: UserSettingProps) {
+
+  const [appConfigDirPath, setAppConfigDirPath] = useState<string>('Not loaded');
+  const [appLocalDataDirPath, setAppLocalDataDirPath] = useState<string>('Not loaded');
+
+  useEffect(() => {
+    path.appConfigDir().then((path: string) => setAppConfigDirPath(path));
+    path.appLocalDataDir().then((path: string) => setAppLocalDataDirPath(path));
+  }, []);
+
   return (
     <Container pt='5'>
       <DataList.Root>
@@ -24,7 +34,11 @@ export default function UserSetting(props: UserSettingProps) {
         <DataList.Item align='center'>
           <DataList.Label>Global theme</DataList.Label>
           <DataList.Value>
-            <Select.Root value={props.setting.globalTheme} onValueChange={(value: gTheme) => props.setSetting((prev: US) => ({...prev, globalTheme: value}))}>
+            <Select.Root value={props.setting.globalTheme}
+                         onValueChange={(value: gTheme) => props.setSetting((prev: US) => ({
+                           ...prev,
+                           globalTheme: value
+                         }))}>
               <Select.Trigger/>
               <Select.Content position='popper'>
                 {gThemes.map((value: gTheme, index: number) => (
@@ -38,7 +52,11 @@ export default function UserSetting(props: UserSettingProps) {
         <DataList.Item align='center'>
           <DataList.Label>Pretty theme</DataList.Label>
           <DataList.Value>
-            <Select.Root value={props.setting.codeTheme} onValueChange={(value: hlTheme) => props.setSetting((prev: US) => ({...prev, codeTheme: value}))}>
+            <Select.Root value={props.setting.codeTheme}
+                         onValueChange={(value: hlTheme) => props.setSetting((prev: US) => ({
+                           ...prev,
+                           codeTheme: value
+                         }))}>
               <Select.Trigger/>
               <Select.Content position='popper'>
                 {hlThemes.map((value: hlTheme, index: number) => (
@@ -52,7 +70,11 @@ export default function UserSetting(props: UserSettingProps) {
         <DataList.Item align='center'>
           <DataList.Label>Accent color</DataList.Label>
           <DataList.Value>
-            <Select.Root value={props.setting.accentTheme} onValueChange={(value: accentTheme) => props.setSetting((prev: US) => ({...prev, accentTheme: value}))}>
+            <Select.Root value={props.setting.accentTheme}
+                         onValueChange={(value: accentTheme) => props.setSetting((prev: US) => ({
+                           ...prev,
+                           accentTheme: value
+                         }))}>
               <Select.Trigger/>
               <Select.Content position='popper'>
                 {accentThemes.map((value: accentTheme, index: number) => (
@@ -66,7 +88,11 @@ export default function UserSetting(props: UserSettingProps) {
         <DataList.Item align='center'>
           <DataList.Label>Scale</DataList.Label>
           <DataList.Value>
-            <Select.Root value={props.setting.scaleTheme} onValueChange={(value: scaleTheme) => props.setSetting((prev: US) => ({...prev, scaleTheme: value}))}>
+            <Select.Root value={props.setting.scaleTheme}
+                         onValueChange={(value: scaleTheme) => props.setSetting((prev: US) => ({
+                           ...prev,
+                           scaleTheme: value
+                         }))}>
               <Select.Trigger/>
               <Select.Content position='popper'>
                 {scaleThemes.map((value: scaleTheme, index: number) => (
@@ -80,11 +106,28 @@ export default function UserSetting(props: UserSettingProps) {
         <DataList.Item align='center'>
           <DataList.Label>Debug mode</DataList.Label>
           <DataList.Value>
-            <Checkbox checked={props.setting.debug} onCheckedChange={(value) => props.setSetting((prev: US) => ({...prev, debug: value as boolean}))}/>
+            <Checkbox checked={props.setting.debug} onCheckedChange={(value) => props.setSetting((prev: US) => ({
+              ...prev,
+              debug: value as boolean
+            }))}/>
           </DataList.Value>
         </DataList.Item>
 
-    </DataList.Root>
+        <DataList.Item align='center'>
+          <DataList.Label>History is located in</DataList.Label>
+          <DataList.Value>
+            <Code>{appLocalDataDirPath}</Code>
+          </DataList.Value>
+        </DataList.Item>
+
+        <DataList.Item align='center'>
+          <DataList.Label>Config is located in</DataList.Label>
+          <DataList.Value>
+            <Code>{appConfigDirPath}</Code>
+          </DataList.Value>
+        </DataList.Item>
+
+      </DataList.Root>
     </Container>
   )
 }
