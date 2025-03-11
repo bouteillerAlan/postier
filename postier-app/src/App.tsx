@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from "react";
-import {Tabs, Container, Box} from "@radix-ui/themes";
+import {Tabs, Container} from "@radix-ui/themes";
 import RequestForm from "./components/RequestForm";
 import ResponseViewer from "./components/ResponseViewer";
 import RequestHistory from "./components/RequestHistory";
@@ -81,21 +81,12 @@ function App() {
         </Tabs.Content>
         
         <Tabs.Content value="history">
-          <Box>
-            {/*{history.length > 0 && (*/}
-            {/*  <Flex justify="end" p="2">*/}
-            {/*    <Button color="red" variant="soft" onClick={() => {}}>*/}
-            {/*      Clear History*/}
-            {/*    </Button>*/}
-            {/*  </Flex>*/}
-            {/*)}*/}
-            <RequestHistory
-              isLoading={isLoading}
-              historyObject={historyData}
-              onClickElement={updateContextAndGoHome}
-              mainTabRef={mainTabRef}
-            />
-          </Box>
+          <RequestHistory
+            isLoading={isLoading}
+            historyObject={historyData}
+            onClickElement={updateContextAndGoHome}
+            mainTabRef={mainTabRef}
+          />
         </Tabs.Content>
 
       </Tabs.Root>

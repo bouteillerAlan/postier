@@ -21,8 +21,14 @@ export default function ResponseViewer(props: ResponseViewerProps) {
     id: 0
   };
   const [viewMode, setViewMode] = useState<ViewMode>('pretty');
+  const [responseCodeHeight, setResponseCodeHeight] = useState<number>(0);
+  const [responseDataHeight, setResponseDataHeight] = useState<number>(0);
 
-  const getCTheader = () => {
+  /**
+   * get the value of the language contain in the Content-Type header
+   * @return string
+   */
+  function getCTheader(): string {
     const cth = response.headers?.find((header: KeyValue) => header.key.toLowerCase() === 'content-type');
     // for example google.fr send text/html; charset=utf-8
     // and we just need the mid-part (html)
@@ -38,14 +44,19 @@ export default function ResponseViewer(props: ResponseViewerProps) {
   const headers = response.headers;
 
   const subMenuRef = useRef<HTMLDivElement>(null);
-  let responseCodeViewHeight = '500px';
-  let responseDataViewHeight = '500px';
 
-  const calculateResponseViewHeight = () => {
+  /**
+   * calculate the height for each of the view element
+   * @return void
+   */
+  function calculateResponseViewHeight(): void {
     if (subMenuRef && subMenuRef.current) {
       const rect = subMenuRef.current.getBoundingClientRect();
-      responseCodeViewHeight = `${window.innerHeight - rect.bottom}px`;
-      responseDataViewHeight = `${window.innerHeight - rect.bottom + rect.height}px`;
+      // rect.bottom = size from the top of the window to the bottom of the "pretty/raw/preview" sub tab menu
+      // 30 & 20 is the size of the remaining padding and margin
+      const wh = window.innerHeight - rect.bottom;
+      setResponseCodeHeight(wh - 30);
+      setResponseDataHeight((wh - 20) + rect.height);
     }
   }
 
@@ -55,7 +66,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
     return () => {
       window.removeEventListener('resize', calculateResponseViewHeight);
     };
-  }, [subMenuRef, subMenuRef.current]);
+  }, []);
 
   return (
     <Section size="1" p="0">
@@ -96,7 +107,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
           {viewMode === 'pretty' ? (
             <Box
               style={{
-                maxHeight: responseCodeViewHeight,
+                maxHeight: responseCodeHeight,
                 overflow: 'auto'
               }}
             >
@@ -125,7 +136,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
           ) : viewMode === 'raw' ? (
             <Card
               style={{
-                maxHeight: 'fit-content',
+                maxHeight: responseCodeHeight,
                 overflow: 'auto',
                 padding: '16px',
                 backgroundColor: 'var(--gray-surface)',
@@ -136,14 +147,13 @@ export default function ResponseViewer(props: ResponseViewerProps) {
           ) : (
             <Card
               style={{
-                maxHeight: 'fit-content',
-                overflow: 'auto',
+                height: responseCodeHeight,
                 padding: '16px',
                 backgroundColor: 'var(--gray-surface)',
               }}
             >
               {contentType === 'html' ? (
-                <iframe srcDoc={formattedData} height={responseCodeViewHeight} width='100%'/>
+                <iframe srcDoc={formattedData} height='100%' width='100%'/>
               ) : (
                 formattedData
               )}
@@ -152,7 +162,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
         </Tabs.Content>
 
         <Tabs.Content value="headers">
-          <Section p="0" style={{ height: responseDataViewHeight, overflow: 'auto' }}>
+          <Section p="0" style={{ height: responseDataHeight, overflow: 'auto' }}>
               <Table.Root size="1" layout="fixed">
                 <Table.Header>
                   <Table.Row>
@@ -174,7 +184,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
         </Tabs.Content>
 
         <Tabs.Content value="debug">
-          <Section p="0" style={{ height: responseDataViewHeight, overflow: 'auto' }}>
+          <Section p="0" style={{ height: responseDataHeight, overflow: 'auto' }}>
             <Table.Root size="1" layout="fixed">
               <Table.Header>
                 <Table.Row>
