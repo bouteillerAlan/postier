@@ -1,8 +1,21 @@
-# Postier - A Modern HTTP Client
+<p align="center"> 
+<img alt="ActiveBlur" src="assets/mainScreen.png" width="220"/>
+</p>
+<h1 align="center">Postier <i>- a modern HTTP client</i></h1>
 
-Postier is a cross-platform HTTP client built with Tauri, React, and TypeScript, designed to be a lightweight and fast alternative to Postman and equivalent. It provides a modern, intuitive interface for making HTTP requests and viewing responses.
+Postier is a cross-platform HTTP client built with Tauri, designed to be a feature light alternative to Postman and equivalent.
 
-I want it fully open-source, and privacy first.
+I want it fully open-source, with no account and privacy respectful.
+
+## Story
+
+I'm just tired of 'free' software that embark a shitload of feature, mandatory user account and creepy privacy statement.
+
+So I wanted to create a tool that make only what it says and make it open-source. 
+
+I know that developing this kind of stuff implies a lot of features (like making webgl call and not only http) but this is a cool adventure so - let's go :)
+
+You can embark with me by contributing or via a [tips](https://github.com/sponsors/bouteillerAlan).
 
 ## Features
 
@@ -16,16 +29,30 @@ I want it fully open-source, and privacy first.
 - **Response Handling**
   - Real-time response display
   - Response in raw or preview or pretty
-  - If the response is view in "pretty" you have syntax-highlighted in JSON, XML, HTML or Text
+  - If the response is view in "pretty" you have syntax-highlighted via `prism-react-renderer`
   - Response headers viewer
   - HTTP status code display
-  - Error handling with clear error messages
 
 - **User Interface**
-  - Modern, clean design using Radix UI
-  - Dark/Light mode support
-  - Loading states with animated spinner
-  - Tabbed interface for request/response data
+  - Modern, clean design using Radix UI & icon
+  - Dark/Light/Auto mode support (via Radix theme)
+  - Pretty theme choice (via prism-react-renderer)
+  - Accent color choice (via Radix theme)
+  - UI scale choice (via Radix theme)
+
+- **Self sync config & history**
+  - Config and history are saved into two `txt` file, like so you can sync it the way you want.
+  - Example of path in linux (both path are visible via the setting tab):
+    - `/home/$USER/.local/share/com.postier.app/history.txt`
+    - `/home/$USER/.config/com.postier.app/history.txt`
+
+## Roadmap
+
+- [ ] Improve the performance (in part by avoiding the rerender when switching tab, radix tab implies a rerender, so I plan to use another component)
+- [ ] Error handler with a card alert to show it to the user
+- [ ] Performance plot (prepare, dns lookup, tcp handshake and so on)
+- [ ] Tabs
+- [ ] Collections
 
 ## Tech Stack
 
@@ -33,15 +60,8 @@ I want it fully open-source, and privacy first.
 - **Desktop Framework**: Tauri
 - **UI Components**: Radix UI
 - **HTTP Client**: Tauri build-in plugin
-- **Syntax Highlighting**: react-syntax-highlighter
-
-## Project Structure
-
-WIP
-
-## Component Documentation
-
-WIP
+- **FS API**: Tauri build-in plugin
+- **Syntax Highlighting**: prism-react-renderer
 
 ## Getting Started
 
@@ -83,8 +103,8 @@ See the following file :
 
 ## Want to support my work?
 
-- [Give me a tipson Github](https://github.com/sponsors/bouteillerAlan) or [on Ko-fi](https://ko-fi.com/a2n00)
-- Give a star on github
-- Or just participate to the developement :D
+- [Give me a tips on GitHub](https://github.com/sponsors/bouteillerAlan) or [on Ko-fi](https://ko-fi.com/a2n00)
+- Give a star on GitHub
+- Or just participate in the development :D
 
 ### Thanks !
