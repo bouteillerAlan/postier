@@ -63,7 +63,7 @@ export const sendRequest = async (requestData: RequestData): Promise<PostierObje
 
   const config = {
     method: method.toLowerCase(),
-    headers: {...formattedHeaders, "User-Agent": "PostierRuntime/1.0.0"},
+    headers: {...formattedHeaders, 'User-Agent': 'PostierRuntime/1.0.0'},
     data: (body && contentType) ? formatRequestBody(body, contentType) : null
   };
 

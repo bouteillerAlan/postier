@@ -1,5 +1,5 @@
-import React, { createContext, useState, useContext, ReactNode } from "react";
-import {UserSetting} from "../types/types.ts";
+import React, { createContext, useState, useContext, ReactNode } from 'react';
+import {UserSetting} from '../types/types.ts';
 
 interface SettingContextType {
   setting: UserSetting;

@@ -1,12 +1,12 @@
-import { v4 as uuidv4 } from "uuid";
-import { Box, Button, Container, Flex, Section, Select, Tabs, TextField } from "@radix-ui/themes";
-import KeyValueForm from "./KeyValueForm.tsx";
-import BodyForm from "./BodyForm.tsx";
-import {ContentType, HttpMethod, httpMethods, KeyValue, PostierObject, RequestData} from "../types/types.ts";
-import {useRequestData} from "../contexts/RequestContext.tsx";
-import {HttpMethodColorCustom, HttpMethodColorRadixUI} from "../services/formatter.ts";
-import {useEffect, useRef} from "react";
-import {PaperPlaneIcon} from "@radix-ui/react-icons";
+import { v4 as uuidv4 } from 'uuid';
+import { Box, Button, Container, Flex, Section, Select, Tabs, TextField } from '@radix-ui/themes';
+import KeyValueForm from './KeyValueForm.tsx';
+import BodyForm from './BodyForm.tsx';
+import {ContentType, HttpMethod, httpMethods, KeyValue, PostierObject, RequestData} from '../types/types.ts';
+import {useRequestData} from '../contexts/RequestContext.tsx';
+import {HttpMethodColorCustom, HttpMethodColorRadixUI} from '../services/formatter.ts';
+import {useEffect, useRef} from 'react';
+import {PaperPlaneIcon} from '@radix-ui/react-icons';
 
 interface RequestFormProps {
   onSubmit: (requestData: RequestData) => void;
@@ -84,13 +84,13 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
 
   return (
     <Container>
-      <Section size="1">
-        <Flex gap="2" justify="between" align="center">
+      <Section size='1'>
+        <Flex gap='2' justify='between' align='center'>
           <Select.Root value={requestData.request?.method} onValueChange={(value) => setRequestData((prev: PostierObject) => {
             return { ...prev, request: {...prev.request, method: value as HttpMethod}};
           })}>
-            <Select.Trigger color={HttpMethodColorRadixUI(requestData.request?.method ?? 'GET')} variant="soft" />
-            <Select.Content position="popper" variant="soft">
+            <Select.Trigger color={HttpMethodColorRadixUI(requestData.request?.method ?? 'GET')} variant='soft' />
+            <Select.Content position='popper' variant='soft'>
               {httpMethods.map((e, i) => (
                 <Select.Item style={{ color: HttpMethodColorCustom(e) }} value={e} key={`${i}${e}`}>{e}</Select.Item>
               ))}
@@ -113,36 +113,36 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
         </Flex>
       </Section>
 
-      <Section size="1" pt="0">
-        <Tabs.Root defaultValue="query">
+      <Section size='1' pt='0'>
+        <Tabs.Root defaultValue='query'>
           <Tabs.List>
-            <Tabs.Trigger value="query">Query</Tabs.Trigger>
-            <Tabs.Trigger value="header">Header</Tabs.Trigger>
-            <Tabs.Trigger value="body">Body</Tabs.Trigger>
+            <Tabs.Trigger value='query'>Query</Tabs.Trigger>
+            <Tabs.Trigger value='header'>Header</Tabs.Trigger>
+            <Tabs.Trigger value='body'>Body</Tabs.Trigger>
           </Tabs.List>
 
           <Box>
-            <Tabs.Content value="query">
+            <Tabs.Content value='query'>
               <KeyValueForm
                 getKeyValues={(data: KeyValue[]): void => setRequestData((prev: PostierObject) => {
                   return { ...prev, request: {...prev.request, query: data}};
                 })}
                 setKeyValues={requestData.request?.query ?? null}
-                title="Query"
+                title='Query'
               />
             </Tabs.Content>
 
-            <Tabs.Content value="header">
+            <Tabs.Content value='header'>
               <KeyValueForm
                 getKeyValues={(data: KeyValue[]): void => setRequestData((prev: PostierObject) => {
                   return { ...prev, request: {...prev.request, headers: data}};
                 })}
                 setKeyValues={requestData.request?.headers ?? null}
-                title="Header"
+                title='Header'
               />
             </Tabs.Content>
 
-            <Tabs.Content value="body">
+            <Tabs.Content value='body'>
               <BodyForm
                 getBody={(data: string): void => setRequestData((prev: PostierObject) => {
                   return { ...prev, request: {...prev.request, body: data}};

@@ -2,7 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {Tabs, Box, Text, Flex, Badge, Section, Table, Card, Tooltip, Separator} from '@radix-ui/themes';
 import {KeyValue, ResponseData, UserSetting, ViewMode} from '../types/types.ts';
 import {detectContentType, formatData, getStatusColor} from '../services/formatter';
-import { Highlight, themes} from "prism-react-renderer";
+import { Highlight, themes} from 'prism-react-renderer';
 
 interface ResponseViewerProps {
   response: ResponseData | null;
@@ -13,11 +13,11 @@ interface ResponseViewerProps {
 export default function ResponseViewer(props: ResponseViewerProps) {
 
   const response = props.response ?? {
-    data: "Send a request to see the response here.",
+    data: 'Send a request to see the response here.',
     headers: null,
     size: 0,
     status: 0,
-    statusText: "",
+    statusText: '',
     time: 0,
     id: 0
   };
@@ -53,7 +53,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
   function calculateResponseViewHeight(): void {
     if (subMenuRef && subMenuRef.current) {
       const rect = subMenuRef.current.getBoundingClientRect();
-      // rect.bottom = size from the top of the window to the bottom of the "pretty/raw/preview" sub tab menu
+      // rect.bottom = size from the top of the window to the bottom of the 'pretty/raw/preview' sub tab menu
       // 30 & 20 is the size of the remaining padding and margin
       const wh = window.innerHeight - rect.bottom;
       setResponseCodeHeight(wh - 30);
@@ -70,19 +70,19 @@ export default function ResponseViewer(props: ResponseViewerProps) {
   }, []);
 
   return (
-    <Section size="1" p="0">
-      <Flex gap="2" mb="4" align="center">
-        <Badge color={statusColor} size="2">
+    <Section size='1' p='0'>
+      <Flex gap='2' mb='4' align='center'>
+        <Badge color={statusColor} size='2'>
           {response.status} {response.statusText}
         </Badge>
-        <Tooltip content="What time take the fetch (rounded)">
-          <Text size="1" color="gray">
+        <Tooltip content='What time take the fetch (rounded)'>
+          <Text size='1' color='gray'>
             {Math.round(response.time)}ms
           </Text>
         </Tooltip>
         <Separator orientation='vertical'/>
-        <Tooltip content="Size of the body mesured from the blob (rounded)">
-          <Text size="1" color="gray">
+        <Tooltip content='Size of the body mesured from the blob (rounded)'>
+          <Text size='1' color='gray'>
             {Math.round(response.size / 1024)}KB
           </Text>
         </Tooltip>
@@ -90,18 +90,18 @@ export default function ResponseViewer(props: ResponseViewerProps) {
 
       <Tabs.Root defaultValue={'response'}>
         <Tabs.List>
-          <Tabs.Trigger value="response">Response</Tabs.Trigger>
-          <Tabs.Trigger value="headers">Headers ({headers?.length ?? 0})</Tabs.Trigger>
-          <Tabs.Trigger value="debug">Debug</Tabs.Trigger>
+          <Tabs.Trigger value='response'>Response</Tabs.Trigger>
+          <Tabs.Trigger value='headers'>Headers ({headers?.length ?? 0})</Tabs.Trigger>
+          <Tabs.Trigger value='debug'>Debug</Tabs.Trigger>
         </Tabs.List>
 
-        <Tabs.Content value="response">
+        <Tabs.Content value='response'>
 
-          <Tabs.Root ref={subMenuRef} mb="3" value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)}>
+          <Tabs.Root ref={subMenuRef} mb='3' value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)}>
             <Tabs.List>
-              <Tabs.Trigger value="pretty">Pretty</Tabs.Trigger>
-              <Tabs.Trigger value="raw">Raw</Tabs.Trigger>
-              <Tabs.Trigger value="preview">Preview</Tabs.Trigger>
+              <Tabs.Trigger value='pretty'>Pretty</Tabs.Trigger>
+              <Tabs.Trigger value='raw'>Raw</Tabs.Trigger>
+              <Tabs.Trigger value='preview'>Preview</Tabs.Trigger>
             </Tabs.List>
           </Tabs.Root>
 
@@ -162,9 +162,9 @@ export default function ResponseViewer(props: ResponseViewerProps) {
           )}
         </Tabs.Content>
 
-        <Tabs.Content value="headers">
-          <Section p="0" style={{ height: responseDataHeight, overflow: 'auto' }}>
-              <Table.Root size="1" layout="fixed">
+        <Tabs.Content value='headers'>
+          <Section p='0' style={{ height: responseDataHeight, overflow: 'auto' }}>
+              <Table.Root size='1' layout='fixed'>
                 <Table.Header>
                   <Table.Row>
                     <Table.ColumnHeaderCell>Key</Table.ColumnHeaderCell>
@@ -184,9 +184,9 @@ export default function ResponseViewer(props: ResponseViewerProps) {
           </Section>
         </Tabs.Content>
 
-        <Tabs.Content value="debug">
-          <Section p="0" style={{ height: responseDataHeight, overflow: 'auto' }}>
-            <Table.Root size="1" layout="fixed">
+        <Tabs.Content value='debug'>
+          <Section p='0' style={{ height: responseDataHeight, overflow: 'auto' }}>
+            <Table.Root size='1' layout='fixed'>
               <Table.Header>
                 <Table.Row>
                   <Table.ColumnHeaderCell>Key</Table.ColumnHeaderCell>
