@@ -1,5 +1,5 @@
 <p align="center"> 
-<img alt="ActiveBlur" src="assets/mainScreen.png" width="220"/>
+<img alt="ActiveBlur" src="assets/mainScreen.png" width="500"/>
 </p>
 <h1 align="center">Postier <i>- a modern HTTP client</i></h1>
 
