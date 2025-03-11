@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {Tabs, Container, Box} from "@radix-ui/themes";
 import RequestForm from "./components/RequestForm";
 import ResponseViewer from "./components/ResponseViewer";
@@ -13,6 +13,7 @@ function App() {
   const { historyData, setHistoryData } = useHistoryData();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [mainTabs, setMainTabs] = useState<string>('request');
+  const mainTabRef = useRef<HTMLDivElement>(null);
 
   /**
    * replace the current data in the request context by the new one
@@ -69,7 +70,7 @@ function App() {
   return (
     <Container p="4">
       <Tabs.Root defaultValue="request" value={mainTabs} onValueChange={setMainTabs}>
-        <Tabs.List>
+        <Tabs.List ref={mainTabRef}>
           <Tabs.Trigger value="request">Request</Tabs.Trigger>
           <Tabs.Trigger value="history">History</Tabs.Trigger>
         </Tabs.List>
@@ -92,6 +93,7 @@ function App() {
               isLoading={isLoading}
               historyObject={historyData}
               onClickElement={updateContextAndGoHome}
+              mainTabRef={mainTabRef}
             />
           </Box>
         </Tabs.Content>

@@ -1,22 +1,37 @@
 import {ScrollArea, Box, Text, Flex, Badge, Separator, Card, Button, Tooltip} from '@radix-ui/themes';
 import { getStatusColor } from '../services/formatter';
 import {PostierObject} from "../types/types.ts";
-import {useEffect, useState} from "react";
+import React, {RefObject, useEffect, useState} from "react";
 import {ReloadIcon, StackIcon, TrashIcon} from "@radix-ui/react-icons";
 
 interface RequestHistoryProps {
   isLoading?: boolean;
   historyObject: PostierObject[];
-  onClickElement: (request: PostierObject) => void
+  onClickElement: (request: PostierObject) => void;
+  mainTabRef: RefObject<HTMLDivElement>;
 }
 
-export default function RequestHistory({ historyObject, onClickElement, isLoading = false }: RequestHistoryProps) {
+export default function RequestHistory({ historyObject, onClickElement, mainTabRef, isLoading = false }: RequestHistoryProps) {
 
   const [history, setHistory] = useState(historyObject);
+  const [wh, setWh] = useState<number>(0);
 
   useEffect(() => {
     setHistory(historyObject);
   }, [history]);
+
+  useEffect(() => {
+    window.addEventListener('resize', calculateViewHeight);
+    calculateViewHeight();
+    return () => {
+      window.removeEventListener('resize', calculateViewHeight);
+    };
+  }, []);
+
+  function calculateViewHeight(): void {
+    // here 32 is the size of the padding and margin apply from the element on App.tsx
+    setWh(mainTabRef.current ? window.innerHeight - (mainTabRef.current?.offsetHeight + 32) : window.innerHeight - 32);
+  }
 
   /**
    * delete an elems from the history
@@ -30,7 +45,11 @@ export default function RequestHistory({ historyObject, onClickElement, isLoadin
     setHistory(newHistory);
   }
 
-  function loadingDisplay() {
+  /**
+   * Loading React.JSX.Element for the history
+   * @return React.JSX.Element
+   */
+  function loadingDisplay(): React.JSX.Element {
     return (
       <Flex align="center" justify="center" style={{ height: '100%' }}>
         <Text as="p" size="2" color="gray">
@@ -40,7 +59,11 @@ export default function RequestHistory({ historyObject, onClickElement, isLoadin
     );
   }
 
-  function noHistoryDisplay() {
+  /**
+   * No data React.JSX.Element for the history
+   * @return React.JSX.Element
+   */
+  function noHistoryDisplay(): React.JSX.Element {
     return (
       <Box p="4">
         <Text as="p" size="2" color="gray">
@@ -51,7 +74,7 @@ export default function RequestHistory({ historyObject, onClickElement, isLoadin
   }
 
   return (
-  <ScrollArea style={{ height: '100%' }}>
+  <ScrollArea type='auto' scrollbars='vertical' style={{ height: wh }}>
 
     {isLoading && loadingDisplay()}
     {(!isLoading && (!history || (history && history.length === 0))) && noHistoryDisplay()}
