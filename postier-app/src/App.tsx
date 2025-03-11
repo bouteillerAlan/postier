@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from "react";
-import {Tabs, Container} from "@radix-ui/themes";
+import {Tabs, Container, Theme} from "@radix-ui/themes";
 import RequestForm from "./components/RequestForm";
 import ResponseViewer from "./components/ResponseViewer";
 import RequestHistory from "./components/RequestHistory";
@@ -7,8 +7,12 @@ import {RequestData, PostierObject} from "./types/types.ts";
 import { sendRequest } from "./services/http";
 import { useRequestData } from "./contexts/RequestContext.tsx";
 import { useHistoryData } from "./contexts/HistoryContext.tsx";
+import {ThemeProvider} from "next-themes";
+import {useSetting} from "./contexts/SettingContext.tsx";
+import UserSetting from "./components/UserSetting.tsx";
 
 function App() {
+  const { setting, setSetting } = useSetting();
   const { requestData, setRequestData } = useRequestData();
   const { historyData, setHistoryData } = useHistoryData();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -68,29 +72,45 @@ function App() {
   }, [mainTabs]);
 
   return (
-    <Container p="4">
-      <Tabs.Root defaultValue="request" value={mainTabs} onValueChange={setMainTabs}>
-        <Tabs.List ref={mainTabRef}>
-          <Tabs.Trigger value="request">Request</Tabs.Trigger>
-          <Tabs.Trigger value="history">History</Tabs.Trigger>
-        </Tabs.List>
-        
-        <Tabs.Content value="request">
-          <RequestForm onSubmit={handleSendRequest} isLoading={isLoading}/>
-          <ResponseViewer response={requestData.response} debug={requestData.debug}/>
-        </Tabs.Content>
-        
-        <Tabs.Content value="history">
-          <RequestHistory
-            isLoading={isLoading}
-            historyObject={historyData}
-            onClickElement={updateContextAndGoHome}
-            mainTabRef={mainTabRef}
-          />
-        </Tabs.Content>
+    <ThemeProvider attribute="class">
+      <Theme
+        radius="small"
+        appearance={setting.theme === 'auto' ? undefined : setting.theme}
+        // todo: later we gonna use the user settings here
+        // accentColor="teal"
+        // grayColor="mauve"
+        // scaling="100%"
+      >
+        <Container p="4">
+          <Tabs.Root defaultValue="request" value={mainTabs} onValueChange={setMainTabs}>
+            <Tabs.List ref={mainTabRef}>
+              <Tabs.Trigger value="request">Request</Tabs.Trigger>
+              <Tabs.Trigger value="history">History</Tabs.Trigger>
+              <Tabs.Trigger value="setting">Setting</Tabs.Trigger>
+            </Tabs.List>
 
-      </Tabs.Root>
-    </Container>
+            <Tabs.Content value="request">
+              <RequestForm onSubmit={handleSendRequest} isLoading={isLoading}/>
+              <ResponseViewer response={requestData.response} debug={requestData.debug} userConfig={setting}/>
+            </Tabs.Content>
+
+            <Tabs.Content value="history">
+              <RequestHistory
+                isLoading={isLoading}
+                historyObject={historyData}
+                onClickElement={updateContextAndGoHome}
+                mainTabRef={mainTabRef}
+              />
+            </Tabs.Content>
+
+            <Tabs.Content value="setting">
+              <UserSetting setSetting={setSetting} setting={setting}/>
+            </Tabs.Content>
+
+          </Tabs.Root>
+        </Container>
+      </Theme>
+    </ThemeProvider>
   );
 }
 

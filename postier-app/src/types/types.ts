@@ -5,6 +5,13 @@ export type ContentType = 'form-data' | 'text' | 'javascript' | 'json' | 'html' 
 
 export type ViewMode = 'raw' | 'preview' | 'pretty';
 
+export type hlTheme = 'dracula' | 'duotoneDark' | 'duotoneLight' | 'github' | 'gruvboxMaterialDark' | 'gruvboxMaterialLight' | 'jettwaveDark' | 'jettwaveLight' | 'nightOwl' | 'nightOwlLight' | 'oceanicNext' | 'okaidia' | 'oneDark' | 'oneLight' | 'palenight' | 'shadesOfPurple' | 'synthwave84' | 'ultramin' | 'vsDark' | 'vsLight';
+export const hlThemes: hlTheme[] = ['dracula', 'duotoneDark', 'duotoneLight', 'github', 'gruvboxMaterialDark', 'gruvboxMaterialLight', 'jettwaveDark', 'jettwaveLight', 'nightOwl', 'nightOwlLight', 'oceanicNext', 'okaidia', 'oneDark', 'oneLight', 'palenight', 'shadesOfPurple', 'synthwave84', 'ultramin', 'vsDark', 'vsLight'];
+
+export type gTheme = 'light' | 'dark' | 'auto';
+export const gThemes: gTheme[] = ['light', 'dark', 'auto'];
+
+
 export interface KeyValue {
   key: string;
   value: string;
@@ -38,4 +45,10 @@ export interface PostierObject {
   request: RequestData;
   response: ResponseData;
   debug: KeyValue[];
+}
+
+export type UserSettingKeys = 'theme' | 'codeTheme';
+export interface UserSetting {
+  theme: 'light' | 'dark' | 'auto';
+  codeTheme: hlTheme;
 }

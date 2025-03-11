@@ -1,12 +1,13 @@
 import {useEffect, useRef, useState} from 'react';
 import {Tabs, Box, Text, Flex, Badge, Section, Table, Card, Tooltip, Separator} from '@radix-ui/themes';
-import {KeyValue, ResponseData, ViewMode} from '../types/types.ts';
+import {KeyValue, ResponseData, UserSetting, ViewMode} from '../types/types.ts';
 import {detectContentType, formatData, getStatusColor} from '../services/formatter';
 import { Highlight, themes} from "prism-react-renderer";
 
 interface ResponseViewerProps {
   response: ResponseData | null;
   debug: KeyValue[] | [];
+  userConfig: UserSetting;
 }
 
 export default function ResponseViewer(props: ResponseViewerProps) {
@@ -113,7 +114,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
             >
               <Card style={{overflowX: 'auto', overflowY: 'auto', minWidth: 'fit-content', padding: 0}}>
                 <Highlight
-                  theme={themes.duotoneDark}
+                  theme={themes[props.userConfig.codeTheme]}
                   code={formattedData}
                   language={ctheader}
                 >
