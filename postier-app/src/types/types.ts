@@ -11,6 +11,11 @@ export const hlThemes: hlTheme[] = ['dracula', 'duotoneDark', 'duotoneLight', 'g
 export type gTheme = 'light' | 'dark' | 'auto';
 export const gThemes: gTheme[] = ['light', 'dark', 'auto'];
 
+export type accentTheme = 'gray' | 'gold' | 'bronze' | 'brown' | 'yellow' | 'amber' | 'orange' | 'tomato' | 'red' | 'ruby' | 'crimson' | 'pink' | 'plum' | 'purple' | 'violet' | 'iris' | 'indigo' | 'blue' | 'cyan' | 'teal' | 'jade' | 'green' | 'grass' | 'lime' | 'mint' | 'sky';
+export const accentThemes: accentTheme[] = ['gray', 'gold', 'bronze', 'brown', 'yellow', 'amber', 'orange', 'tomato', 'red', 'ruby', 'crimson', 'pink', 'plum', 'purple', 'violet', 'iris', 'indigo', 'blue', 'cyan', 'teal', 'jade', 'green', 'grass', 'lime', 'mint', 'sky'];
+
+export type scaleTheme = '90%' | '95%' | '100%' | '105%' | '110%';
+export const scaleThemes: scaleTheme[] = ['90%', '95%', '100%', '105%', '110%'];
 
 export interface KeyValue {
   key: string;
@@ -47,8 +52,11 @@ export interface PostierObject {
   debug: KeyValue[];
 }
 
-export type UserSettingKeys = 'theme' | 'codeTheme';
+export type UserSettingKeys = 'globalTheme' | 'codeTheme' | 'debug' | 'accentTheme' | 'scaleTheme';
 export interface UserSetting {
-  theme: 'light' | 'dark' | 'auto';
+  globalTheme: 'light' | 'dark' | 'auto';
+  accentTheme: accentTheme;
+  scaleTheme: scaleTheme;
   codeTheme: hlTheme;
+  debug: boolean;
 }

@@ -9,7 +9,13 @@ interface SettingContextType {
 export const SettingContext = createContext<SettingContextType | null>(null);
 
 export const SettingProvider = ({ children }: { children: ReactNode }) => {
-  const [setting, setSetting] = useState<UserSetting>({codeTheme: 'duotoneDark', theme: 'auto'});
+  const [setting, setSetting] = useState<UserSetting>({
+    codeTheme: 'duotoneDark',
+    accentTheme: 'cyan',
+    debug: false,
+    scaleTheme: '100%',
+    globalTheme: 'auto'
+  });
 
   return (
     <SettingContext.Provider value={{ setting, setSetting }}>

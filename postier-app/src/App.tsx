@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from 'react';
-import {Tabs, Container, Theme} from '@radix-ui/themes';
+import {Tabs, Container, Theme, Box, Card, Text} from '@radix-ui/themes';
 import RequestForm from './components/RequestForm';
 import ResponseViewer from './components/ResponseViewer';
 import RequestHistory from './components/RequestHistory';
@@ -73,10 +73,12 @@ function App() {
 
   useEffect(() => {
     console.log('setting updated');
+    // todo: update the setting file
   }, [setting]);
 
   useEffect(() => {
     console.log('history updated');
+    // todo: update the history file
   }, [historyData]);
 
   useEffect(() => {
@@ -87,11 +89,9 @@ function App() {
     <ThemeProvider attribute='class'>
       <Theme
         radius='small'
-        appearance={setting.theme === 'auto' ? undefined : setting.theme}
-        // todo: later we gonna use the user settings here
-        // accentColor='teal'
-        // grayColor='mauve'
-        // scaling='100%'
+        appearance={setting.globalTheme === 'auto' ? undefined : setting.globalTheme}
+        scaling={setting.scaleTheme ?? '100%'}
+        accentColor={setting.accentTheme ?? 'cyan'}
       >
         <Container p='4'>
           <Tabs.Root defaultValue='request' value={mainTabs} onValueChange={setMainTabs}>
@@ -122,6 +122,19 @@ function App() {
 
           </Tabs.Root>
         </Container>
+
+        <Box maxWidth="350px">
+          <Card variant="surface">
+            <Text as="div" size="2" weight="bold">
+              Debug
+            </Text>
+            <Text as="div" color="gray" size="2">
+              Message
+            </Text>
+          </Card>
+        </Box>
+
+
       </Theme>
     </ThemeProvider>
   );
