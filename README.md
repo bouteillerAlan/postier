@@ -7,6 +7,10 @@ Postier is a cross-platform HTTP client built with Tauri, designed to be a featu
 
 I want it fully open-source, with no account and privacy respectful.
 
+
+[![publish](https://github.com/bouteillerAlan/postier/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/bouteillerAlan/postier/actions/workflows/release.yml)
+[![test-on-pr](https://github.com/bouteillerAlan/postier/actions/workflows/test-build.yml/badge.svg)](https://github.com/bouteillerAlan/postier/actions/workflows/test-build.yml)
+
 ## Story
 
 I'm just tired of 'free' software that embark a shitload of feature, mandatory user account and creepy privacy statement.
