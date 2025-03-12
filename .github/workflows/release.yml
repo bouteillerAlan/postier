@@ -46,7 +46,9 @@ jobs:
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: install frontend dependencies
-        run: pnpm install
+        run:  |
+          npm install -g pnpm
+          pnpm install
 
       - name: Import GPG key
         if: matrix.platform == 'ubuntu-22.04'
