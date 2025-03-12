@@ -37,8 +37,19 @@ jobs:
           pnpm install
 
       # If tagName and releaseId are omitted tauri-action will only build the app and won't try to upload any assets.
-      - uses: tauri-apps/tauri-action@v0
+      - name: build
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WEBKIT_DISABLE_COMPOSITING_MODE: 1
+          SIGN: 1
+          SIGN_KEY: ${{ steps.import_gpg.outputs.keyid }}
+          APPIMAGETOOL_SIGN_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         with:
           args: ${{ matrix.args }}
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: testing artifact
+          path: postier-app/src-tauri/target/release/bundle

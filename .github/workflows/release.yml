@@ -63,6 +63,7 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WEBKIT_DISABLE_COMPOSITING_MODE: 1
           SIGN: 1
           SIGN_KEY: ${{ steps.import_gpg.outputs.keyid }}
           APPIMAGETOOL_SIGN_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
