@@ -1,15 +1,15 @@
+[![publish](https://github.com/bouteillerAlan/postier/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/bouteillerAlan/postier/actions/workflows/release.yml)
+[![test-on-pr](https://github.com/bouteillerAlan/postier/actions/workflows/test-build.yml/badge.svg)](https://github.com/bouteillerAlan/postier/actions/workflows/test-build.yml)
+
 <p align="center"> 
-<img alt="ActiveBlur" src="assets/mainScreen.png" width="500"/>
+<img alt="logo postier" src="assets/postier.svg" width="250"/>
 </p>
+
 <h1 align="center">Postier <i>- a modern HTTP client</i></h1>
 
 Postier is a cross-platform HTTP client built with Tauri, designed to be a feature light alternative to Postman and equivalent.
 
 I want it fully open-source, with no account and privacy respectful.
-
-
-[![publish](https://github.com/bouteillerAlan/postier/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/bouteillerAlan/postier/actions/workflows/release.yml)
-[![test-on-pr](https://github.com/bouteillerAlan/postier/actions/workflows/test-build.yml/badge.svg)](https://github.com/bouteillerAlan/postier/actions/workflows/test-build.yml)
 
 ## Story
 
@@ -22,6 +22,8 @@ I know that developing this kind of stuff implies a lot of features (like making
 You can embark with me by contributing or via a [tips](https://github.com/sponsors/bouteillerAlan).
 
 ## Features
+
+<img alt="screenshot postier" src="assets/mainScreen.png" width="500"/>
 
 - **HTTP Request Support**
   - Supports GET, POST, PUT, DELETE, HEAD, OPTIONS and PATCH methods
