@@ -23,10 +23,6 @@ jobs:
             args: ""
           - platform: "windows-latest"
             args: ""
-      with:
-        SIGN: ${{ matrix.platform == 'ubuntu-22.04' && 1}}
-        SIGN_KEY: ${{ matrix.platform == 'ubuntu-22.04' && steps.import_gpg.outputs.keyid }}
-        APPIMAGETOOL_SIGN_PASSPHRASE: ${{ matrix.platform == 'ubuntu-22.04' && secrets.GPG_PASSPHRASE }}
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -60,9 +56,13 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
-      - uses: tauri-apps/tauri-action@v0
+      - name: build and publish
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SIGN: 1
+          SIGN_KEY: ${{ steps.import_gpg.outputs.keyid }}
+          APPIMAGETOOL_SIGN_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         with:
           tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
           releaseName: "Postier v__VERSION__"
