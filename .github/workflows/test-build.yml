@@ -9,14 +9,8 @@ jobs:
       matrix:
         include:
 #          Only ubuntu because I use free action, so I keep mac and action number for the real release
-#          - platform: "macos-latest" # for Arm based macs (M1 and above).
-#            args: "--target aarch64-apple-darwin"
-#          - platform: "macos-latest" # for Intel based macs.
-#            args: "--target x86_64-apple-darwin"
           - platform: "ubuntu-22.04"
             args: ""
-#          - platform: "windows-latest"
-#            args: ""
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -29,11 +23,8 @@ jobs:
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
-        with:
-          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: install dependencies (ubuntu only)
+      - name: install dependencies
         if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
         run: |
           sudo apt-get update
