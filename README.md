@@ -54,11 +54,7 @@ You can embark with me by contributing or via a [tips](https://github.com/sponso
 
 ## Roadmap
 
-- [ ] Improve the performance (in part by avoiding the rerender when switching tab, radix tab implies a rerender, so I plan to use another component)
-- [ ] Error handler with a card alert to show it to the user
-- [ ] Performance plot (prepare, dns lookup, tcp handshake and so on)
-- [ ] Tabs
-- [ ] Collections
+[https://github.com/users/bouteillerAlan/projects/4/views/2](https://github.com/users/bouteillerAlan/projects/4/views/2)
 
 ## Tech Stack
 
