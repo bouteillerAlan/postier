@@ -1,5 +1,4 @@
 [![publish](https://github.com/bouteillerAlan/postier/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/bouteillerAlan/postier/actions/workflows/release.yml)
-[![test-on-pr](https://github.com/bouteillerAlan/postier/actions/workflows/test-build.yml/badge.svg)](https://github.com/bouteillerAlan/postier/actions/workflows/test-build.yml)
 
 <p align="center"> 
 <img alt="logo postier" src="assets/postier.svg" width="250"/>
