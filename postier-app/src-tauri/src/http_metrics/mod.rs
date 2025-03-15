@@ -20,7 +20,7 @@ pub struct HttpMetrics {
 }
 
 // types that correspond to the ts types
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum HttpMethod {
     GET,
     POST,
@@ -31,7 +31,7 @@ pub enum HttpMethod {
     PATCH,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum ContentType {
     #[serde(rename = "form-data")]
     FormData,

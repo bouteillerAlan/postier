@@ -95,7 +95,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     
     // add content type if needed
     if let Some(content_type) = &request_data.content_type {
-        if content_type != &ContentType::None && !formatted_headers.contains_key("Content-Type") {
+        if !matches!(content_type, ContentType::None) && !formatted_headers.contains_key("Content-Type") {
             let content_type_value = get_content_type_header(content_type);
             if !content_type_value.is_empty() {
                 formatted_headers.insert("Content-Type".to_string(), content_type_value);
