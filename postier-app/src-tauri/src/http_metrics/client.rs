@@ -1,16 +1,11 @@
 use crate::http_metrics::{ContentType, HttpMetrics, KeyValue, PostierObject, RequestData, ResponseData};
-use hyper::{Body, Client, Method, Request, Response, Uri};
-use hyper_rustls::HttpsConnectorBuilder;
+use hyper::{Body, Client, Method, Request, Uri};
 use hyper_timeout::TimeoutConnector;
 use hyper_trust_dns::TrustDnsResolver;
 use socket2::{Domain, Protocol, Socket, Type};
-use std::convert::TryFrom;
 use std::net::SocketAddr;
 use std::str::FromStr;
 use std::time::{Duration, Instant};
-use std::error::Error;
-use url::Url;
-use tokio::io::AsyncReadExt;
 
 // ts types to hyper types
 impl From<super::HttpMethod> for Method {
@@ -202,7 +197,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
                 .collect();
             
             // read body
-            let (parts, body) = response.into_parts();
+            let (_parts, body) = response.into_parts();
             let body_bytes = hyper::body::to_bytes(body)
                 .await
                 .map_err(|e| format!("Failed to read body: {}", e))?;
