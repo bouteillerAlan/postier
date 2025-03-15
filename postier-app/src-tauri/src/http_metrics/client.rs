@@ -185,6 +185,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
 
     // todo: having this two request made at the same time is not a very good measure system
     //       maybe we can find another way of doing that
+    //       /!\ this can lead to bad problem for the user, eg with api that have a limited nb of request per user or paying rate
     // here we try to log for the handshake
     // but we didnt wait for the end of the request since
     // it's just for measuring purpose and the hyper client have it's own connection
