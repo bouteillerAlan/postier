@@ -3,7 +3,7 @@ use hyper::{Body, Client, Method, Request, Uri};
 use hyper_timeout::TimeoutConnector;
 use hyper_trust_dns::TrustDnsResolver;
 use tokio::net::TcpSocket;
-use std::net::{SocketAddr, ToSocketAddrs};
+use std::net::{ToSocketAddrs};
 use std::str::FromStr;
 use std::time::{Duration, Instant};
 
@@ -79,7 +79,8 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     };
 
     // prepare request
-    let url = request_data.url.clone();
+    println!("xxxxxxxxxxxxxxxxxxx {:?}", request_data);
+    let url = request_data.composed_url.clone();
     let method: Method = request_data.method.clone().into();
     
     // prepare headers
@@ -99,6 +100,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     }
     
     // add user agent
+    // todo: automatise the version tag
     formatted_headers.insert("User-Agent".to_string(), "PostierRuntime/1.0.0".to_string());
     
     // build request body
@@ -147,7 +149,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     metrics.socket_init = socket_init_start.elapsed().as_secs_f64() * 1000.0;
     
     // dns resolution
-    let uri = Uri::from_str(&url).map_err(|e| format!("Invalid URI: {}", e))?;
+    let uri = Uri::from_str(&url).map_err(|e| format!("Invalid URL: {}", e))?;
     let host = uri.host().ok_or("No host in URL")?;
     let port = uri.port_u16().unwrap_or(if uri.scheme_str() == Some("https") { 443 } else { 80 });
     

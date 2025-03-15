@@ -21,9 +21,14 @@ interface PostierObjectWithMetrics extends PostierObject {
 // main function that calls our rust http client
 export const sendRequest = async (requestData: RequestData): Promise<PostierObjectWithMetrics> => {
   try {
+    console.log('xedeededeedededede', requestData.composedUrl)
     // direct call to the rust plugin via tauri
     return await invoke<PostierObjectWithMetrics>('send_request_with_metrics', {
-      requestData
+      requestData: {
+        ...requestData,
+        composed_url: requestData.composedUrl,
+        content_type: requestData.contentType,
+      }
     });
   } catch (error) {
     // in case of error in the rust plugin, build an error response
