@@ -3,7 +3,7 @@ use hyper::{Body, Client, Method, Request, Uri};
 use hyper_timeout::TimeoutConnector;
 use hyper_trust_dns::TrustDnsResolver;
 use socket2::{Domain, Protocol, Socket, Type};
-use std::net::SocketAddr;
+use std::net::ToSocketAddrs;
 use std::str::FromStr;
 use std::time::{Duration, Instant};
 
@@ -156,11 +156,14 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     // tcp handshake
     let tcp_start = Instant::now();
     let socket_addr = format!("{}:{}", host, port);
-    let socket_addr = SocketAddr::from_str(&socket_addr).map_err(|e| format!("Invalid socket address: {}", e))?;
-    
+    let socket_addr = socket_addr.to_socket_addrs()
+                        .map_err(|e| format!("Failed to create socket: {}", e))?
+                        .next()
+                        .ok_or_else(|| "Could not resolve host".to_string())?;
+
     // create a socket manually
-    let socket = Socket::new(Domain::IPV4, Type::STREAM, Some(Protocol::TCP))
-        .map_err(|e| format!("Failed to create socket: {}", e))?;
+    let socket = Socket::new(Domain::IPV4, Type::STREAM, Some(Protocol::TCP));
+
     
     // try to connect to measure the handshake
     let _result = socket.connect(&socket_addr.into());
