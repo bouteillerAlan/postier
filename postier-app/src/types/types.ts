@@ -66,3 +66,18 @@ export interface Alert {
   message: string;
   show: boolean;
 }
+
+export interface HttpMetrics {
+  prepare: number;       // request preparation time in ms
+  socketInit: number;   // socket initialization time in ms
+  dnsLookup: number;    // dns resolution time in ms
+  tcpHandshake: number; // tcp handshake time in ms
+  transferStart: number;// transfer start time in ms
+  download: number;      // download time in ms
+  process: number;       // process time in ms
+  total: number;         // total time in ms
+}
+
+export interface PostierObjectWithMetrics extends PostierObject {
+  metrics: HttpMetrics;
+}

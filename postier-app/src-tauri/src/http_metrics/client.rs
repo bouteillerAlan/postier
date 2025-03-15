@@ -79,7 +79,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     };
 
     // prepare request
-    println!("xxxxxxxxxxxxxxxxxxx {:?}", request_data);
+    println!("REQUEST DATA {:?}", request_data);
     let url = request_data.composed_url.clone();
     let method: Method = request_data.method.clone().into();
     
@@ -155,16 +155,16 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     
     metrics.dns_lookup = dns_start.elapsed().as_secs_f64() * 1000.0;
     
-    // tcp handshake - nouvelle implémentation avec Tokio
+    // tcp handshake
     let tcp_start = Instant::now();
     
-    // Construire l'adresse socket à partir du host et du port
+    // Build the socket address
     let socket_addr = format!("{}:{}", host, port);
     
-    // Résoudre l'adresse (conversion nom de domaine en adresse IP)
+    // domain name to ip address conversion
     let socket_addr = match socket_addr.to_socket_addrs() {
         Ok(mut addrs) => {
-            // Prendre la première adresse disponible
+            // we take the first available address
             match addrs.next() {
                 Some(addr) => addr,
                 None => return Err("Could not resolve host to any IP address".to_string())
@@ -173,7 +173,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
         Err(e) => return Err(format!("Failed to resolve address: {}", e))
     };
     
-    // Créer un socket Tokio pour mesurer le temps de handshake TCP
+    // Tokio socket to measure the tcp handshake
     let socket = match if socket_addr.is_ipv4() {
         TcpSocket::new_v4()
     } else {
@@ -182,19 +182,21 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
         Ok(s) => s,
         Err(e) => return Err(format!("Failed to create TCP socket: {}", e))
     };
-    
-    // Tenter de se connecter pour mesurer le handshake
-    // On n'attend pas réellement la fin de la connexion ici puisque c'est juste pour la mesure
-    // et que le client Hyper établira sa propre connexion
+
+    // todo: having this two request made at the same time is not a very good measure system
+    //       maybe we can find another way of doing that
+    // here we try to log for the handshake
+    // but we didnt wait for the end of the request since
+    // it's just for measuring purpose and the hyper client have it's own connection
     let connect_result = socket.connect(socket_addr);
-    let _ = connect_result; // On ignore le résultat, c'est juste pour la mesure
+    let _ = connect_result; // we ignore the result since it's just for measuring
     
     metrics.tcp_handshake = tcp_start.elapsed().as_secs_f64() * 1000.0;
     
     // start transfer
     let transfer_start = Instant::now();
     
-    // perform request
+    // perform the real request
     let response_result = client.request(request).await;
     
     metrics.transfer_start = transfer_start.elapsed().as_secs_f64() * 1000.0;
