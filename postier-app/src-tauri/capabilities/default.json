@@ -8,6 +8,7 @@
   "permissions": [
     "core:default",
     "opener:default",
+    "http_metrics:default",
     {
       "identifier": "fs:allow-mkdir",
       "allow": [

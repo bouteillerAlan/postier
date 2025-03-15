@@ -30,6 +30,11 @@
           "$APPCONFIG/**"
         ]
       }
+    },
+    "plugins": {
+      "http_metrics": {
+        "enable": true
+      }
     }
   },
   "bundle": {
