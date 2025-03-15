@@ -79,7 +79,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     };
 
     // prepare request
-    let url = request_data.composed_url.clone();
+    let url = request_data.url.clone();
     let method: Method = request_data.method.clone().into();
     
     // prepare headers

@@ -58,7 +58,6 @@ pub struct RequestData {
     pub id: String,
     pub timestamp: u64,
     pub url: String,
-    pub composed_url: String,
     pub method: HttpMethod,
     pub headers: Option<Vec<KeyValue>>,
     pub query: Option<Vec<KeyValue>>,
@@ -86,7 +85,6 @@ pub struct PostierObject {
     pub metrics: HttpMetrics,
 }
 
-// expose functions to javascript
 #[tauri::command]
 pub async fn send_request_with_metrics(request_data: RequestData) -> Result<PostierObject, String> {
     client::send_request(request_data).await
