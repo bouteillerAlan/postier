@@ -4,7 +4,7 @@ import RequestForm from './components/RequestForm';
 import ResponseViewer from './components/ResponseViewer';
 import RequestHistory from './components/RequestHistory';
 import {RequestData, PostierObject, Alert} from './types/types.ts';
-import {sendRequest} from './services/http';
+import {sendRequest} from './services/rust-http.ts';
 import {useRequestData} from './contexts/RequestContext.tsx';
 import {useHistoryData} from './contexts/HistoryContext.tsx';
 import {ThemeProvider} from 'next-themes';
