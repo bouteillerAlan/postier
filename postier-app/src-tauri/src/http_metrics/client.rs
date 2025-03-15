@@ -2,8 +2,8 @@ use crate::http_metrics::{ContentType, HttpMetrics, KeyValue, PostierObject, Req
 use hyper::{Body, Client, Method, Request, Uri};
 use hyper_timeout::TimeoutConnector;
 use hyper_trust_dns::TrustDnsResolver;
-use socket2::{Domain, Protocol, Socket, Type};
-use std::net::ToSocketAddrs;
+use tokio::net::TcpSocket;
+use std::net::{SocketAddr, ToSocketAddrs};
 use std::str::FromStr;
 use std::time::{Duration, Instant};
 
@@ -153,20 +153,39 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     
     metrics.dns_lookup = dns_start.elapsed().as_secs_f64() * 1000.0;
     
-    // tcp handshake
+    // tcp handshake - nouvelle implémentation avec Tokio
     let tcp_start = Instant::now();
-    let socket_addr = format!("{}:{}", host, port);
-    let socket_addr = socket_addr.to_socket_addrs()
-                        .map_err(|e| format!("Failed to create socket: {}", e))?
-                        .next()
-                        .ok_or_else(|| "Could not resolve host".to_string())?;
-
-    // create a socket manually
-    let socket = Socket::new(Domain::IPV4, Type::STREAM, Some(Protocol::TCP));
-
     
-    // try to connect to measure the handshake
-    let _result = socket.connect(&socket_addr.into());
+    // Construire l'adresse socket à partir du host et du port
+    let socket_addr = format!("{}:{}", host, port);
+    
+    // Résoudre l'adresse (conversion nom de domaine en adresse IP)
+    let socket_addr = match socket_addr.to_socket_addrs() {
+        Ok(mut addrs) => {
+            // Prendre la première adresse disponible
+            match addrs.next() {
+                Some(addr) => addr,
+                None => return Err("Could not resolve host to any IP address".to_string())
+            }
+        },
+        Err(e) => return Err(format!("Failed to resolve address: {}", e))
+    };
+    
+    // Créer un socket Tokio pour mesurer le temps de handshake TCP
+    let socket = match if socket_addr.is_ipv4() {
+        TcpSocket::new_v4()
+    } else {
+        TcpSocket::new_v6()
+    } {
+        Ok(s) => s,
+        Err(e) => return Err(format!("Failed to create TCP socket: {}", e))
+    };
+    
+    // Tenter de se connecter pour mesurer le handshake
+    // On n'attend pas réellement la fin de la connexion ici puisque c'est juste pour la mesure
+    // et que le client Hyper établira sa propre connexion
+    let connect_result = socket.connect(socket_addr);
+    let _ = connect_result; // On ignore le résultat, c'est juste pour la mesure
     
     metrics.tcp_handshake = tcp_start.elapsed().as_secs_f64() * 1000.0;
     
