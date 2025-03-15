@@ -1,8 +1,8 @@
 use crate::http_metrics::{ContentType, HttpMetrics, KeyValue, PostierObject, RequestData, ResponseData};
 use hyper::{Body, Client, Method, Request, Response, Uri};
-use hyper_rustls::{ConfigBuilderExt, HttpsConnectorBuilder};
+use hyper_rustls::HttpsConnectorBuilder;
 use hyper_timeout::TimeoutConnector;
-use hyper_trust_dns::{TrustDnsResolver, TrustDnsResolverBuilder};
+use hyper_trust_dns::TrustDnsResolver;
 use socket2::{Domain, Protocol, Socket, Type};
 use std::convert::TryFrom;
 use std::net::SocketAddr;
@@ -135,21 +135,14 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     let socket_init_start = Instant::now();
     
     // use trust-dns for precise dns resolution
-    let resolver = TrustDnsResolverBuilder::default()
-        .build()
-        .map_err(|e| format!("Failed to build DNS resolver: {}", e))?;
+    let dns_start = Instant::now();
     
     // use hyper with rustls and trust-dns
-    let https = HttpsConnectorBuilder::new()
-        .with_native_roots()
-        .https_only()
-        .enable_http1()
-        .enable_http2()
-        .with_resolver(resolver.clone())
-        .build();
+    let resolver = TrustDnsResolver::default();
+    let https_connector = resolver.into_rustls_native_https_connector();
     
     // add a timeout
-    let mut connector = TimeoutConnector::new(https);
+    let mut connector = TimeoutConnector::new(https_connector);
     connector.set_connect_timeout(Some(Duration::from_secs(30)));
     connector.set_read_timeout(Some(Duration::from_secs(30)));
     connector.set_write_timeout(Some(Duration::from_secs(30)));
@@ -159,16 +152,9 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     metrics.socket_init = socket_init_start.elapsed().as_secs_f64() * 1000.0;
     
     // dns resolution
-    let dns_start = Instant::now();
     let uri = Uri::from_str(&url).map_err(|e| format!("Invalid URI: {}", e))?;
     let host = uri.host().ok_or("No host in URL")?;
     let port = uri.port_u16().unwrap_or(if uri.scheme_str() == Some("https") { 443 } else { 80 });
-    
-    // get resolved address
-    let _resolved = resolver
-        .lookup_ip(host)
-        .await
-        .map_err(|e| format!("DNS resolution failed: {}", e))?;
     
     metrics.dns_lookup = dns_start.elapsed().as_secs_f64() * 1000.0;
     

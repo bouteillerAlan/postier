@@ -28,7 +28,8 @@ tauri-plugin-http = "2"
 tokio = { version = "1", features = ["full"] }
 hyper = { version = "0.14", features = ["full"] }
 hyper-rustls = { version = "0.24", features = ["http2"] }
-hyper-trust-dns = "0.5"
+# Utiliser les fonctionnalités recommandées pour hyper-trust-dns
+hyper-trust-dns = { version = "0.5", features = ["rustls-native"] }
 chrono = "0.4"
 url = "2.4"
 socket2 = "0.5"
