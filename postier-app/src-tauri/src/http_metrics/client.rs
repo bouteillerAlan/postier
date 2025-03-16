@@ -63,21 +63,17 @@ fn format_request_body(body: &str, content_type: &ContentType) -> Body {
     }
 }
 
-// Ajouter cette fonction après les autres fonctions utilitaires
 fn normalize_url(url: &str) -> Result<String, String> {
-    // Si l'URL est une adresse IP avec ou sans port, on ajoute http:// par défaut
     if url.split(':').next().unwrap_or("").parse::<std::net::IpAddr>().is_ok() {
         return Ok(format!("http://{}", url));
     }
 
-    // Si l'URL n'a pas de schéma (http:// ou https://), on ajoute https:// par défaut
     let url_str = if !url.contains("://") {
         format!("https://{}", url)
     } else {
         url.to_string()
     };
 
-    // Valider l'URL
     Url::parse(&url_str)
         .map(|u| u.to_string())
         .map_err(|e| format!("Invalid URL format: {}", e))
@@ -186,14 +182,14 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     // domain name to ip address conversion with better error handling
     let socket_addr = match socket_addr.to_socket_addrs() {
         Ok(mut addrs) => {
-            // On prend la première adresse disponible
+            // take the first address available
             match addrs.next() {
                 Some(addr) => addr,
                 None => return Err("Could not resolve host to any IP address".to_string())
             }
         },
         Err(e) => {
-            // Si l'erreur est due à une adresse invalide, on essaie de parser directement comme une adresse IP
+            // if error is an invalid address we try to parse an IP
             if let Ok(ip) = host.parse::<std::net::IpAddr>() {
                 std::net::SocketAddr::new(ip, port)
             } else {
