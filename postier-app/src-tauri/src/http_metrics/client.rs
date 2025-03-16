@@ -118,8 +118,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     }
     
     // add user agent
-    // todo: automatise the version tag
-    formatted_headers.insert("User-Agent".to_string(), "PostierRuntime/1.0.0".to_string());
+    formatted_headers.insert("User-Agent".to_string(), "PostierRuntime".to_string());
     
     // build request body
     let body = match (&request_data.body, &request_data.content_type) {
@@ -170,6 +169,10 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     let uri = Uri::from_str(&url).map_err(|e| format!("Invalid URL: {}", e))?;
     let host = uri.host().ok_or("No host in URL")?;
     let port = uri.port_u16().unwrap_or(if uri.scheme_str() == Some("https") { 443 } else { 80 });
+
+    println!("URI >> {:?}", uri);
+    println!("HOST >> {:?}", host);
+    println!("PORT >> {:?}", port);
     
     metrics.dns_lookup = dns_start.elapsed().as_secs_f64() * 1000.0;
     
@@ -178,8 +181,10 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     
     // Build the socket address
     let socket_addr = format!("{}:{}", host, port);
+
+    println!("SocketAddr >> {:?}", socket_addr);
     
-    // domain name to ip address conversion with better error handling
+    // domain name to ip address conversion
     let socket_addr = match socket_addr.to_socket_addrs() {
         Ok(mut addrs) => {
             // take the first address available
@@ -223,6 +228,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     let transfer_start = Instant::now();
     
     // perform the real request
+    println!("Launch the request {:?}", request);
     let response_result = client.request(request).await;
     
     metrics.transfer_start = transfer_start.elapsed().as_secs_f64() * 1000.0;
@@ -279,6 +285,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
             Ok(response_data)
         }
         Err(err) => {
+            println!("ERROR {:?}", err);
             let end_time = Instant::now();
             
             // handle different types of errors like in the ts version
