@@ -6,6 +6,7 @@ use tokio::net::TcpSocket;
 use std::net::{ToSocketAddrs};
 use std::str::FromStr;
 use std::time::{Duration, Instant};
+use url::Url;
 
 // ts types to hyper types
 impl From<super::HttpMethod> for Method {
@@ -62,6 +63,26 @@ fn format_request_body(body: &str, content_type: &ContentType) -> Body {
     }
 }
 
+// Ajouter cette fonction après les autres fonctions utilitaires
+fn normalize_url(url: &str) -> Result<String, String> {
+    // Si l'URL est une adresse IP avec ou sans port, on ajoute http:// par défaut
+    if url.split(':').next().unwrap_or("").parse::<std::net::IpAddr>().is_ok() {
+        return Ok(format!("http://{}", url));
+    }
+
+    // Si l'URL n'a pas de schéma (http:// ou https://), on ajoute https:// par défaut
+    let url_str = if !url.contains("://") {
+        format!("https://{}", url)
+    } else {
+        url.to_string()
+    };
+
+    // Valider l'URL
+    Url::parse(&url_str)
+        .map(|u| u.to_string())
+        .map_err(|e| format!("Invalid URL format: {}", e))
+}
+
 pub async fn send_request(request_data: RequestData) -> Result<PostierObject, String> {
     let start_time = Instant::now();
     let prepare_start = start_time;
@@ -80,7 +101,8 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
 
     // prepare request
     println!("REQUEST DATA {:?}", request_data);
-    let url = request_data.composed_url.clone();
+    let url = normalize_url(&request_data.composed_url)
+        .map_err(|e| format!("URL normalization failed: {}", e))?;
     let method: Method = request_data.method.clone().into();
     
     // prepare headers
@@ -161,16 +183,23 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     // Build the socket address
     let socket_addr = format!("{}:{}", host, port);
     
-    // domain name to ip address conversion
+    // domain name to ip address conversion with better error handling
     let socket_addr = match socket_addr.to_socket_addrs() {
         Ok(mut addrs) => {
-            // we take the first available address
+            // On prend la première adresse disponible
             match addrs.next() {
                 Some(addr) => addr,
                 None => return Err("Could not resolve host to any IP address".to_string())
             }
         },
-        Err(e) => return Err(format!("Failed to resolve address: {}", e))
+        Err(e) => {
+            // Si l'erreur est due à une adresse invalide, on essaie de parser directement comme une adresse IP
+            if let Ok(ip) = host.parse::<std::net::IpAddr>() {
+                std::net::SocketAddr::new(ip, port)
+            } else {
+                return Err(format!("Failed to resolve address: {}", e));
+            }
+        }
     };
     
     // Tokio socket to measure the tcp handshake
