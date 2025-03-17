@@ -1,14 +1,15 @@
 use crate::http_metrics::{ContentType, HttpMetrics, KeyValue, PostierObject, RequestData, ResponseData};
 use hyper::{Body, Client, Method, Request, Uri};
-use hyper_timeout::TimeoutConnector;
-use hyper_trust_dns::TrustDnsResolver;
+
 use tokio::net::TcpSocket;
 use std::net::{ToSocketAddrs};
 use std::str::FromStr;
 use std::time::{Duration, Instant};
 use url::Url;
-use hyper_util::client::legacy::connect::HttpConnector;
 use hyper_tls::HttpsConnector;
+
+use hyper::client::connect::{HttpsConnector};
+use hyper_timeout::TimeoutConnector;
 
 // ts types to hyper types
 impl From<super::HttpMethod> for Method {
@@ -153,20 +154,27 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     // use trust-dns for precise dns resolution
     let dns_start = Instant::now();
     
+    
+    
+    
+    // todo: trying to build the http connector for http and https
     // Create a base HTTP connector
-    let mut http = HttpConnector::new();
-    http.enforce_http(false);  // Allow HTTPS URLs
-    
-    // Wrap it in an HTTPS connector
-    let https = HttpsConnector::new(http);
-    
+    let http = HttpConnector::new();
+
+    // Create an HTTPS connector
+    let https = HttpsConnector::from((http, hyper_rustls::Config::default()));
+
     // Add timeout support
-    let mut connector = TimeoutConnector::new(https);
+    let connector = TimeoutConnector::new(https);
     connector.set_connect_timeout(Some(Duration::from_secs(30)));
     connector.set_read_timeout(Some(Duration::from_secs(30)));
     connector.set_write_timeout(Some(Duration::from_secs(30)));
-    
+
+    // Build the client with the timeout connector
     let client = Client::builder().build(connector);
+
+
+    
     
     metrics.socket_init = socket_init_start.elapsed().as_secs_f64() * 1000.0;
     
