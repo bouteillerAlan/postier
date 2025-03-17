@@ -31,8 +31,8 @@ hyper-rustls = { version = "0.24", features = ["http2"] }
 hyper-trust-dns = { version = "0.5", features = ["rustls-native"] }
 hyper-tls = "0.5"
 hyper-util = { version = "0.1", features = ["client", "client-legacy"] }
+hyper-timeout = "0.4"
 native-tls = "0.2"
 chrono = "0.4"
 url = "2.4"
 socket2 = "0.5"
-hyper-timeout = "0.4"
