@@ -7,6 +7,7 @@ use std::net::{ToSocketAddrs};
 use std::str::FromStr;
 use std::time::{Duration, Instant};
 use url::Url;
+use hyper_rustls;
 
 // ts types to hyper types
 impl From<super::HttpMethod> for Method {
@@ -153,8 +154,15 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     
     // use hyper with rustls and trust-dns
     let resolver = TrustDnsResolver::default();
-
-    let https_connector = resolver.into_rustls_native_https_connector();
+    
+    // THIS CODE WORK FOR HTTP AND HTTPS BUT DO NOT MEASURE THE DNS RESOLVE
+    // Create a connector that supports both HTTP and HTTPS
+    let https_connector = hyper_rustls::HttpsConnectorBuilder::new()
+        .with_native_roots()
+        .https_or_http()
+        .enable_http1()
+        .enable_http2()
+        .build();
     
     // add a timeout
     let mut connector = TimeoutConnector::new(https_connector);
