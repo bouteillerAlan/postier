@@ -77,5 +77,5 @@ export interface HttpMetrics {
 }
 
 export interface PostierObjectWithMetrics extends PostierObject {
-  metrics: HttpMetrics;
+  metrics?: HttpMetrics;
 }

@@ -125,7 +125,7 @@ function App() {
 
             <Tabs.Content value='request'>
               <RequestForm onSubmit={handleSendRequest} isLoading={isLoading}/>
-              <ResponseViewer response={requestData.response} debug={requestData.debug} userConfig={setting}/>
+              <ResponseViewer response={requestData.response} debug={requestData.debug} metrics={requestData.metrics} userConfig={setting}/>
             </Tabs.Content>
 
             <Tabs.Content value='history'>

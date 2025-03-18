@@ -1,12 +1,13 @@
 import {useEffect, useRef, useState} from 'react';
-import {Tabs, Box, Text, Flex, Badge, Section, Table, Card, Tooltip, Separator} from '@radix-ui/themes';
-import {KeyValue, ResponseData, UserSetting, ViewMode} from '../types/types.ts';
+import {Tabs, Box, Text, Flex, Badge, Section, Table, Card, Tooltip, Separator, HoverCard, Link} from '@radix-ui/themes';
+import {HttpMetrics, KeyValue, ResponseData, UserSetting, ViewMode} from '../types/types.ts';
 import {detectContentType, formatData, getStatusColor} from '../services/formatter';
 import { Highlight, themes} from 'prism-react-renderer';
 
 interface ResponseViewerProps {
   response: ResponseData | null;
   debug: KeyValue[] | [];
+  metrics: HttpMetrics | undefined;
   userConfig: UserSetting;
 }
 
@@ -24,6 +25,8 @@ export default function ResponseViewer(props: ResponseViewerProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('pretty');
   const [responseCodeHeight, setResponseCodeHeight] = useState<number>(0);
   const [responseDataHeight, setResponseDataHeight] = useState<number>(0);
+  const bgColors = ['var(--blue-3)', 'var(--yellow-3)', 'var(--jade-3)', 'var(--orange-3)', 'var(--cyan-3)', 'var(--ruby-3)'];
+  const bColors = ['var(--blue-6)', 'var(--yellow-6)', 'var(--jade-6)', 'var(--orange-6)', 'var(--cyan-6)', 'var(--ruby-6)'];
 
   /**
    * get the value of the language contain in the Content-Type header
@@ -75,11 +78,49 @@ export default function ResponseViewer(props: ResponseViewerProps) {
         <Badge color={statusColor} size='2'>
           {response.status} {response.statusText}
         </Badge>
-        <Tooltip content='What time take the fetch (rounded)'>
-          <Text size='1' color='gray'>
-            {Math.round(response.time)}ms
-          </Text>
-        </Tooltip>
+        
+        <HoverCard.Root>
+		      <HoverCard.Trigger>
+			      <Link href='#'>
+              <Tooltip content='What time take the fetch (rounded)'>
+                <Text size='1' color='gray'>
+                  {Math.round(response.time)}ms
+                </Text>
+              </Tooltip>
+            </Link>
+          </HoverCard.Trigger>
+
+          <HoverCard.Content size='1' maxWidth='300px'>
+            <Flex direction='column'>
+            {props.metrics && Object.entries(props.metrics).map((metric, index) => {
+              if (metric[0] !== 'total') {
+                // percentage for each value
+                const percentage = (metric[1] / response.time) * 100;
+                // pixel for each value in comparaison to the 300px max
+                const widthInPixels = (percentage / 100) * 300;
+                return (
+                  <Box
+                    key={`metrics${index}`}
+                    height='25px'
+                    width={`${widthInPixels}px`}
+                    style={{
+                      backgroundColor: bgColors[index],
+                      border: `solid 1px ${bColors[index]}`,
+                      borderRadius: 'var(--radius-2)'
+                    }}
+                  >{widthInPixels}</Box>
+                );
+              }
+            })}
+            </Flex>
+          </HoverCard.Content>
+
+        </HoverCard.Root>
+
+
+
+          
+        
         <Separator orientation='vertical'/>
         <Tooltip content='Size of the body mesured from the blob (rounded)'>
           <Text size='1' color='gray'>
