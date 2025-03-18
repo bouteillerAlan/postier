@@ -1,15 +1,10 @@
 use crate::http_metrics::{ContentType, HttpMetrics, KeyValue, PostierObject, RequestData, ResponseData};
-use hyper::{Body, Client, Method, Request, Uri};
-use hyper_timeout::TimeoutConnector;
-use hyper_trust_dns::TrustDnsResolver;
-use tokio::net::TcpSocket;
-use std::net::{ToSocketAddrs};
-use std::str::FromStr;
-use std::time::{Duration, Instant};
+use reqwest::{Client, Method};
+use std::time::Instant;
+use trust_dns_resolver::TokioAsyncResolver;
 use url::Url;
-use hyper_rustls;
 
-// ts types to hyper types
+// ts types to reqwest types
 impl From<super::HttpMethod> for Method {
     fn from(method: super::HttpMethod) -> Self {
         match method {
@@ -46,24 +41,6 @@ fn get_content_type_header(content_type: &ContentType) -> String {
     }
 }
 
-// format request body like in the ts version
-fn format_request_body(body: &str, content_type: &ContentType) -> Body {
-    if let ContentType::None = content_type {
-        return Body::empty();
-    }
-
-    if body.is_empty() {
-        return Body::empty();
-    }
-
-    if let ContentType::Json = content_type {
-        // we don't try to validate the json here, we let the server do it
-        Body::from(body.to_string())
-    } else {
-        Body::from(body.to_string())
-    }
-}
-
 fn normalize_url(url: &str) -> Result<String, String> {
     if url.split(':').next().unwrap_or("").parse::<std::net::IpAddr>().is_ok() {
         return Ok(format!("http://{}", url));
@@ -82,22 +59,17 @@ fn normalize_url(url: &str) -> Result<String, String> {
 
 pub async fn send_request(request_data: RequestData) -> Result<PostierObject, String> {
     let start_time = Instant::now();
-    let prepare_start = start_time;
     
     // metrics
     let mut metrics = HttpMetrics {
         prepare: 0.0,
-        socket_init: 0.0,
         dns_lookup: 0.0,
         tcp_handshake: 0.0,
-        transfer_start: 0.0,
-        download: 0.0,
+        response_time: 0.0,
         process: 0.0,
-        total: 0.0,
     };
 
     // prepare request
-    println!("REQUEST DATA {:?}", request_data);
     let url = normalize_url(&request_data.composed_url)
         .map_err(|e| format!("URL normalization failed: {}", e))?;
     let method: Method = request_data.method.clone().into();
@@ -121,289 +93,147 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     // add user agent
     formatted_headers.insert("User-Agent".to_string(), "PostierRuntime".to_string());
     
-    // build request body
-    let body = match (&request_data.body, &request_data.content_type) {
-        (Some(body), Some(content_type)) => format_request_body(body, content_type),
-        _ => Body::empty(),
-    };
+    // Parse the URL to get the host
+    let url_parsed = Url::parse(&url)
+        .map_err(|e| format!("Failed to parse URL: {}", e))?;
+    let host = url_parsed.host_str().ok_or("Could not extract host")?;
+
+    // Create a DNS resolver
+    let resolver = TokioAsyncResolver::tokio_from_system_conf()
+        .map_err(|e| format!("Failed to create DNS resolver: {}", e))?;
+
+    // Create HTTP client
+    let client = Client::builder()
+        .no_proxy()
+        .build()
+        .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
+                
+    metrics.prepare = start_time.elapsed().as_secs_f64() * 1000.0;
+
+    // Measure DNS resolution time
+    let start_dns = Instant::now();
+    resolver.lookup_ip(host)
+        .await
+        .map_err(|e| format!("DNS resolution failed: {}", e))?;
+    metrics.dns_lookup = start_dns.elapsed().as_secs_f64() * 1000.0;
+
+    // Build request
+    let mut request_builder = client.request(method, &url);
     
-    // build request
-    let mut request_builder = Request::builder()
-        .method(method)
-        .uri(url.clone());
-    
-    // add headers
+    // Add headers
     for (key, value) in formatted_headers {
         request_builder = request_builder.header(key, value);
     }
     
-    let request = match request_builder.body(body) {
-        Ok(req) => req,
-        Err(e) => {
-            return Err(format!("Failed to build request: {}", e));
-        }
-    };
-    
-    metrics.prepare = prepare_start.elapsed().as_secs_f64() * 1000.0;
-    
-    // init socket and dns resolution
-    let socket_init_start = Instant::now();
-    
-    // use trust-dns for precise dns resolution
-    let dns_start = Instant::now();
-    
-    // use hyper with rustls and trust-dns
-    let resolver = TrustDnsResolver::default();
-    
-    // THIS CODE WORK FOR HTTP AND HTTPS BUT DO NOT MEASURE THE DNS RESOLVE
-    // Create a connector that supports both HTTP and HTTPS
-    let https_connector = hyper_rustls::HttpsConnectorBuilder::new()
-        .with_native_roots()
-        .https_or_http()
-        .enable_http1()
-        .enable_http2()
-        .build();
-    
-    // add a timeout
-    let mut connector = TimeoutConnector::new(https_connector);
-    connector.set_connect_timeout(Some(Duration::from_secs(30)));
-    connector.set_read_timeout(Some(Duration::from_secs(30)));
-    connector.set_write_timeout(Some(Duration::from_secs(30)));
-    
-    let client = Client::builder().build(connector);
-        
-    metrics.socket_init = socket_init_start.elapsed().as_secs_f64() * 1000.0;
-    
-    // dns resolution
-    let uri = Uri::from_str(&url).map_err(|e| format!("Invalid URL: {}", e))?;
-    let host = uri.host().ok_or("No host in URL")?;
-    let port = uri.port_u16().unwrap_or(if uri.scheme_str() == Some("https") { 443 } else { 80 });
-
-    println!("URI >> {:?}", uri);
-    println!("HOST >> {:?}", host);
-    println!("PORT >> {:?}", port);
-    
-    metrics.dns_lookup = dns_start.elapsed().as_secs_f64() * 1000.0;
-    
-    // tcp handshake
-    let tcp_start = Instant::now();
-    
-    // Build the socket address
-    let socket_addr = format!("{}:{}", host, port);
-
-    println!("SocketAddr >> {:?}", socket_addr);
-    
-    // domain name to ip address conversion
-    let socket_addr = match socket_addr.to_socket_addrs() {
-        Ok(mut addrs) => {
-            // take the first address available
-            match addrs.next() {
-                Some(addr) => addr,
-                None => return Err("Could not resolve host to any IP address".to_string())
-            }
-        },
-        Err(e) => {
-            // if error is an invalid address we try to parse an IP
-            if let Ok(ip) = host.parse::<std::net::IpAddr>() {
-                std::net::SocketAddr::new(ip, port)
-            } else {
-                return Err(format!("Failed to resolve address: {}", e));
-            }
-        }
-    };
-    
-    // Tokio socket to measure the tcp handshake
-    let socket = match if socket_addr.is_ipv4() {
-        TcpSocket::new_v4()
-    } else {
-        TcpSocket::new_v6()
-    } {
-        Ok(s) => s,
-        Err(e) => return Err(format!("Failed to create TCP socket: {}", e))
-    };
-
-    // todo: having this two request made at the same time is not a very good measure system
-    //       maybe we can find another way of doing that
-    //       /!\ this can lead to bad problem for the user, eg with api that have a limited nb of request per user or paying rate
-    // here we try to log for the handshake
-    // but we didnt wait for the end of the request since
-    // it's just for measuring purpose and the hyper client have it's own connection
-    let connect_result = socket.connect(socket_addr);
-    let _ = connect_result; // we ignore the result since it's just for measuring
-    
-    metrics.tcp_handshake = tcp_start.elapsed().as_secs_f64() * 1000.0;
-    
-    // start transfer
-    let transfer_start = Instant::now();
-    
-    // perform the real request
-    println!("Launch the request {:?}", request);
-    let response_result = client.request(request).await;
-    
-    metrics.transfer_start = transfer_start.elapsed().as_secs_f64() * 1000.0;
-    
-    // download
-    let download_start = Instant::now();
-    
-    let response_data = match response_result {
-        Ok(response) => {
-            let status = response.status().as_u16();
-            let status_text = response.status().canonical_reason().unwrap_or("").to_string();
-            
-            // convert headers to KeyValue
-            let headers: Vec<KeyValue> = response
-                .headers()
-                .iter()
-                .map(|(key, value)| {
-                    KeyValue {
-                        key: key.to_string(),
-                        value: String::from_utf8_lossy(value.as_bytes()).to_string(),
-                        enabled: true,
-                    }
-                })
-                .collect();
-            
-            // read body
-            let (_parts, body) = response.into_parts();
-            let body_bytes = hyper::body::to_bytes(body)
-                .await
-                .map_err(|e| format!("Failed to read body: {}", e))?;
-            
-            let body_size = body_bytes.len();
-            let body_str = String::from_utf8_lossy(&body_bytes).to_string();
-            
-            metrics.download = download_start.elapsed().as_secs_f64() * 1000.0;
-            
-            // process
-            let process_start = Instant::now();
-            
-            // create response object
-            let response_data = ResponseData {
-                id: request_data.id.clone(),
-                timestamp: chrono::Utc::now().timestamp_millis() as u64,
-                status,
-                status_text,
-                headers: Some(headers),
-                data: Some(body_str),
-                time: start_time.elapsed().as_secs_f64() * 1000.0,
-                size: body_size,
-            };
-            
-            metrics.process = process_start.elapsed().as_secs_f64() * 1000.0;
-            
-            Ok(response_data)
-        }
-        Err(err) => {
-            println!("ERROR {:?}", err);
-            let end_time = Instant::now();
-            
-            // handle different types of errors like in the ts version
-            let response_data = ResponseData {
-                id: request_data.id.clone(),
-                timestamp: chrono::Utc::now().timestamp_millis() as u64,
-                status: 0,
-                status_text: format!("Request Error: {}", err),
-                headers: None,
-                data: Some(format!("Error: {}", err)),
-                time: end_time.elapsed().as_secs_f64() * 1000.0,
-                size: 0,
-            };
-            
-            metrics.download = download_start.elapsed().as_secs_f64() * 1000.0;
-            metrics.process = 0.0;
-            
-            Ok(response_data)
-        }
-    };
-    
-    // calculate total time
-    metrics.total = start_time.elapsed().as_secs_f64() * 1000.0;
-    
-    // create return object
-    match response_data {
-        Ok(response) => {
-            // debug informations
-            let debug = vec![
-                KeyValue {
-                    key: "Postier UID".to_string(),
-                    value: request_data.id.clone(),
-                    enabled: true,
-                },
-                KeyValue {
-                    key: "Request time".to_string(),
-                    value: format!("{}ms", response.time),
-                    enabled: true,
-                },
-                KeyValue {
-                    key: "Processing time".to_string(),
-                    value: format!("{}ms", metrics.total),
-                    enabled: true,
-                },
-                KeyValue {
-                    key: "Request url".to_string(),
-                    value: url.clone(),
-                    enabled: true,
-                },
-                KeyValue {
-                    key: "Response status".to_string(),
-                    value: format!("{} ({})", response.status, response.status_text),
-                    enabled: true,
-                },
-                KeyValue {
-                    key: "Response body".to_string(),
-                    value: format!("blob size: {} bytes", response.size),
-                    enabled: true,
-                },
-                // detailed metrics
-                KeyValue {
-                    key: "Metrics - Prepare".to_string(),
-                    value: format!("{:.2}ms", metrics.prepare),
-                    enabled: true,
-                },
-                KeyValue {
-                    key: "Metrics - Socket Init".to_string(),
-                    value: format!("{:.2}ms", metrics.socket_init),
-                    enabled: true,
-                },
-                KeyValue {
-                    key: "Metrics - DNS Lookup".to_string(),
-                    value: format!("{:.2}ms", metrics.dns_lookup),
-                    enabled: true,
-                },
-                KeyValue {
-                    key: "Metrics - TCP Handshake".to_string(),
-                    value: format!("{:.2}ms", metrics.tcp_handshake),
-                    enabled: true,
-                },
-                KeyValue {
-                    key: "Metrics - Transfer Start".to_string(),
-                    value: format!("{:.2}ms", metrics.transfer_start),
-                    enabled: true,
-                },
-                KeyValue {
-                    key: "Metrics - Download".to_string(),
-                    value: format!("{:.2}ms", metrics.download),
-                    enabled: true,
-                },
-                KeyValue {
-                    key: "Metrics - Process".to_string(),
-                    value: format!("{:.2}ms", metrics.process),
-                    enabled: true,
-                },
-                KeyValue {
-                    key: "Metrics - Total".to_string(),
-                    value: format!("{:.2}ms", metrics.total),
-                    enabled: true,
-                },
-            ];
-            
-            Ok(PostierObject {
-                request: request_data,
-                response,
-                debug,
-                metrics,
-            })
-        }
-        Err(e) => Err(e),
+    // Add body if present
+    if let Some(body) = &request_data.body {
+        request_builder = request_builder.body(body.clone());
     }
+
+    // Measure TCP connection and TLS handshake time
+    let start_tcp = Instant::now();
+    let response = request_builder.send()
+        .await
+        .map_err(|e| format!("Failed to send HTTP request: {}", e))?;
+    metrics.tcp_handshake = start_tcp.elapsed().as_secs_f64() * 1000.0;
+
+    // Measure time to receive the response
+    let start_response = Instant::now();
+    let status = response.status();
+    let headers = response.headers().clone();
+    let body_bytes = response.bytes()
+        .await
+        .map_err(|e| format!("Failed to read response body: {}", e))?;
+    metrics.response_time = start_response.elapsed().as_secs_f64() * 1000.0;
+    let start_process = Instant::now();
+
+    // Convert headers to KeyValue
+    let headers: Vec<KeyValue> = headers
+        .iter()
+        .map(|(key, value)| {
+            KeyValue {
+                key: key.to_string(),
+                value: String::from_utf8_lossy(value.as_bytes()).to_string(),
+                enabled: true,
+            }
+        })
+        .collect();
+
+    let body_str = String::from_utf8_lossy(&body_bytes).to_string();
+    
+    // Create response object
+    let response_data = ResponseData {
+        id: request_data.id.clone(),
+        timestamp: chrono::Utc::now().timestamp_millis() as u64,
+        status: status.as_u16(),
+        status_text: status.canonical_reason().unwrap_or("").to_string(),
+        headers: Some(headers),
+        data: Some(body_str),
+        time: start_time.elapsed().as_secs_f64() * 1000.0,
+        size: body_bytes.len(),
+    };
+
+    metrics.process = start_process.elapsed().as_secs_f64() * 1000.0;
+
+    // Create debug information
+    let debug = vec![
+        KeyValue {
+            key: "Postier UID".to_string(),
+            value: request_data.id.clone(),
+            enabled: true,
+        },
+        KeyValue {
+            key: "Request time".to_string(),
+            value: format!("{}ms", response_data.time),
+            enabled: true,
+        },
+        KeyValue {
+            key: "Request url".to_string(),
+            value: url.clone(),
+            enabled: true,
+        },
+        KeyValue {
+            key: "Response status".to_string(),
+            value: format!("{} ({})", response_data.status, response_data.status_text),
+            enabled: true,
+        },
+        KeyValue {
+            key: "Response body".to_string(),
+            value: format!("blob size: {} bytes", response_data.size),
+            enabled: true,
+        },
+        // detailed metrics
+        KeyValue {
+            key: "Prepare".to_string(),
+            value: format!("{:.2}ms", metrics.prepare),
+            enabled: true,
+        },
+        KeyValue {
+            key: "DNS Lookup".to_string(),
+            value: format!("{:.2}ms", metrics.dns_lookup),
+            enabled: true,
+        },
+        KeyValue {
+            key: "TCP Handshake".to_string(),
+            value: format!("{:.2}ms", metrics.tcp_handshake),
+            enabled: true,
+        },
+        KeyValue {
+            key: "Response Time".to_string(),
+            value: format!("{:.2}ms", metrics.response_time),
+            enabled: true,
+        },
+        KeyValue {
+            key: "Process Time".to_string(),
+            value: format!("{:.2}ms", metrics.process),
+            enabled: true,
+        },
+    ];
+    
+    Ok(PostierObject {
+        request: request_data,
+        response: response_data,
+        debug,
+        metrics,
+    })
 } 

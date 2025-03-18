@@ -3,13 +3,20 @@ import {invoke} from "@tauri-apps/api/core";
 
 export const sendRequest = async (requestData: RequestData): Promise<PostierObjectWithMetrics> => {
   try {
-    return await invoke<PostierObjectWithMetrics>('send_request_with_metrics', {
+    const rep = await invoke<PostierObjectWithMetrics>('send_request_with_metrics', {
       requestData: {
         ...requestData,
         composed_url: requestData.composedUrl,
         content_type: requestData.contentType,
       }
     });
+    return {
+      ...rep,
+      metrics: {
+        ...rep.metrics,
+        total: rep.response.time
+      }
+    };
   } catch (error) {
     return {
       request: requestData,
@@ -28,11 +35,9 @@ export const sendRequest = async (requestData: RequestData): Promise<PostierObje
       ],
       metrics: {
         prepare: 0,
-        socketInit: 0,
         dnsLookup: 0,
         tcpHandshake: 0,
-        transferStart: 0,
-        download: 0,
+        responseTime: 0,
         process: 0,
         total: 0,
       }
