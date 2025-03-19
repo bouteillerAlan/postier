@@ -1,8 +1,9 @@
 import {useEffect, useRef, useState} from 'react';
-import {Tabs, Box, Text, Flex, Badge, Section, Table, Card, Tooltip, Separator, HoverCard, Link} from '@radix-ui/themes';
+import {Tabs, Box, Text, Flex, Badge, Section, Table, Card, Tooltip, Separator, HoverCard, Link, DataList} from '@radix-ui/themes';
 import {HttpMetrics, KeyValue, ResponseData, UserSetting, ViewMode} from '../types/types.ts';
 import {detectContentType, formatData, getStatusColor} from '../services/formatter';
 import { Highlight, themes} from 'prism-react-renderer';
+import { red } from '@radix-ui/colors';
 
 interface ResponseViewerProps {
   response: ResponseData | null;
@@ -25,8 +26,9 @@ export default function ResponseViewer(props: ResponseViewerProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('pretty');
   const [responseCodeHeight, setResponseCodeHeight] = useState<number>(0);
   const [responseDataHeight, setResponseDataHeight] = useState<number>(0);
-  const bgColors = ['var(--blue-3)', 'var(--yellow-3)', 'var(--jade-3)', 'var(--orange-3)', 'var(--cyan-3)', 'var(--ruby-3)'];
-  const bColors = ['var(--blue-6)', 'var(--yellow-6)', 'var(--jade-6)', 'var(--orange-6)', 'var(--cyan-6)', 'var(--ruby-6)'];
+  const bgColors = ['var(--ruby-3)', 'var(--orange-3)', 'var(--yellow-3)', 'var(--cyan-3)', 'var(--jade-3)'];
+  const bColors = ['var(--ruby-6)', 'var(--orange-6)', 'var(--yellow-6)', 'var(--cyan-6)', 'var(--jade-6)'];
+  const tColors = ['var(--ruby-11)', 'var(--orange-11)', 'var(--yellow-11)', 'var(--cyan-11)', 'var(--jade-11)'];
 
   /**
    * get the value of the language contain in the Content-Type header
@@ -90,36 +92,49 @@ export default function ResponseViewer(props: ResponseViewerProps) {
             </Link>
           </HoverCard.Trigger>
 
-          <HoverCard.Content size='1' maxWidth='300px'>
-            <Flex direction='column'>
-            {props.metrics && Object.entries(props.metrics).map((metric, index) => {
-              if (metric[0] !== 'total') {
-                // percentage for each value
-                const percentage = (metric[1] / response.time) * 100;
-                // pixel for each value in comparaison to the 300px max
-                const widthInPixels = (percentage / 100) * 300;
-                return (
-                  <Box
-                    key={`metrics${index}`}
-                    height='25px'
-                    width={`${widthInPixels}px`}
-                    style={{
-                      backgroundColor: bgColors[index],
-                      border: `solid 1px ${bColors[index]}`,
-                      borderRadius: 'var(--radius-2)'
-                    }}
-                  >{widthInPixels}</Box>
-                );
-              }
-            })}
-            </Flex>
+          <HoverCard.Content size='1' maxWidth='500px'>
+            <DataList.Root size='1'>
+              <DataList.Item align='center'>
+                {props.metrics && Object.entries(props.metrics).map((metric, indexA) => {
+                  if (metric[0] !== 'total') {
+                    return (
+                      <>
+                      <DataList.Label style={{display: 'flex', justifyContent: 'space-between', color: tColors[indexA]}}>
+                        {metric[0].split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} {Math.round(metric[1])}ms
+                      </DataList.Label>
+                      <DataList.Value>
+                        <Flex>
+                          {props.metrics && Object.entries(props.metrics).map((metric, index) => {
+                            if (metric[0] !== 'total') {
+                              // percentage for each value
+                              const percentage = (metric[1] / response.time) * 100;
+                              // pixel for each value in comparaison to the 300px max
+                              const widthInPixels = (percentage / 100) * 300;
+                              return (
+                                <Box
+                                  key={`metrics${index}`}
+                                  height='25px'
+                                  width={`${widthInPixels}px`}
+                                  minWidth='5px'
+                                  style={{
+                                    backgroundColor: indexA === index ? bgColors[index] : 'none',
+                                    border: `solid 1px ${indexA === index ? bColors[index] : 'none'}`,
+                                    borderRadius: 'var(--radius-2)',
+                                  }}
+                                />
+                              );
+                            }
+                          })}
+                        </Flex>
+                      </DataList.Value>
+                      </>
+                    );
+                  }
+                })}
+              </DataList.Item>
+            </DataList.Root>
           </HoverCard.Content>
-
         </HoverCard.Root>
-
-
-
-          
         
         <Separator orientation='vertical'/>
         <Tooltip content='Size of the body mesured from the blob (rounded)'>
