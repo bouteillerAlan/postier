@@ -35,11 +35,12 @@ export const sendRequest = async (requestData: RequestData): Promise<PostierObje
       ],
       metrics: {
         prepare: 0,
-        dnsLookup: 0,
-        tcpHandshake: 0,
-        responseTime: 0,
+        dns_lookup: 0,
+        tcp_handshake: 0,
+        response_time: 0,
         process: 0,
         total: 0,
+        on_error: 'total'
       }
     };
   }
