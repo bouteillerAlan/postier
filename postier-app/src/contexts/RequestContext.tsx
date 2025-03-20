@@ -34,6 +34,15 @@ export const RequestDataProvider = ({ children }: { children: ReactNode }) => {
       data: 'Send a request to see the response here.',
       time: 0,
       size: 0
+    },
+    metrics: {
+      prepare: 0,
+      dns_lookup: 0,
+      tcp_handshake: 0,
+      response_time: 0,
+      process: 0,
+      total: 0,
+      on_error: 'prepare'
     }
   });
 
