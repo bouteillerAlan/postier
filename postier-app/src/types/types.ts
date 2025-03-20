@@ -66,3 +66,20 @@ export interface Alert {
   message: string;
   show: boolean;
 }
+
+export interface HttpMetrics {
+  prepare: number;
+  dns_lookup: number;
+  tcp_handshake: number;
+  response_time: number;
+  process: number;
+  total: number;
+}
+
+export interface HttpMetricsWErr extends HttpMetrics {
+  on_error: Exclude<keyof HttpMetricsWErr, 'on_error'>;
+}
+
+export interface PostierObjectWithMetrics extends PostierObject {
+  metrics?: HttpMetricsWErr;
+}

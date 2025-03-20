@@ -1,12 +1,14 @@
 import {useEffect, useRef, useState} from 'react';
-import {Tabs, Box, Text, Flex, Badge, Section, Table, Card, Tooltip, Separator} from '@radix-ui/themes';
-import {KeyValue, ResponseData, UserSetting, ViewMode} from '../types/types.ts';
+import {Tabs, Box, Text, Flex, Badge, Section, Table, Card, Tooltip, Separator, HoverCard, Link, DataList} from '@radix-ui/themes';
+import {HttpMetricsWErr, KeyValue, ResponseData, UserSetting, ViewMode} from '../types/types.ts';
 import {detectContentType, formatData, getStatusColor} from '../services/formatter';
 import { Highlight, themes} from 'prism-react-renderer';
+import { CheckCircledIcon, CircleIcon, CrossCircledIcon } from '@radix-ui/react-icons';
 
 interface ResponseViewerProps {
   response: ResponseData | null;
   debug: KeyValue[] | [];
+  metrics: HttpMetricsWErr | undefined;
   userConfig: UserSetting;
 }
 
@@ -24,6 +26,9 @@ export default function ResponseViewer(props: ResponseViewerProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('pretty');
   const [responseCodeHeight, setResponseCodeHeight] = useState<number>(0);
   const [responseDataHeight, setResponseDataHeight] = useState<number>(0);
+  const bgColors = ['var(--ruby-3)', 'var(--orange-3)', 'var(--yellow-3)', 'var(--cyan-3)', 'var(--jade-3)'];
+  const bColors = ['var(--ruby-6)', 'var(--orange-6)', 'var(--yellow-6)', 'var(--cyan-6)', 'var(--jade-6)'];
+  const tColors = ['var(--ruby-11)', 'var(--orange-11)', 'var(--yellow-11)', 'var(--cyan-11)', 'var(--jade-11)'];
 
   /**
    * get the value of the language contain in the Content-Type header
@@ -45,6 +50,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
   const headers = response.headers;
 
   const subMenuRef = useRef<HTMLDivElement>(null);
+  let errorIsPassed = false;
 
   /**
    * calculate the height for each of the view element
@@ -61,6 +67,20 @@ export default function ResponseViewer(props: ResponseViewerProps) {
     }
   }
 
+  /**
+   * generate the right icon for the network time plot
+   * @param metric the current metric for which you want the icon
+   * @returns React.JSX.Element
+   */
+  function iconNetwork(metric: [string, any]): React.JSX.Element {
+    if (errorIsPassed) return <CircleIcon style={{marginLeft: 3}} color='gray'/>
+    if (metric[0] === props.metrics?.on_error) {
+      errorIsPassed = true;
+      return <CrossCircledIcon style={{marginLeft: 3}} color='red'/>
+    }
+    return <CheckCircledIcon style={{marginLeft: 3}} color='green'/>  
+  }
+
   useEffect(() => {
     window.addEventListener('resize', calculateResponseViewHeight);
     calculateResponseViewHeight();
@@ -75,11 +95,63 @@ export default function ResponseViewer(props: ResponseViewerProps) {
         <Badge color={statusColor} size='2'>
           {response.status} {response.statusText}
         </Badge>
-        <Tooltip content='What time take the fetch (rounded)'>
-          <Text size='1' color='gray'>
-            {Math.round(response.time)}ms
-          </Text>
-        </Tooltip>
+        
+        <HoverCard.Root>
+		      <HoverCard.Trigger>
+			      <Link href='#'>
+              <Tooltip content='What time take the fetch (rounded)'>
+                <Text size='1' color='gray'>
+                  {Math.round(response.time)}ms
+                </Text>
+              </Tooltip>
+            </Link>
+          </HoverCard.Trigger>
+
+          <HoverCard.Content size='1' maxWidth='500px'>
+            <DataList.Root size='1'>
+              <DataList.Item align='center'>
+                {props.metrics && Object.entries(props.metrics).map((metric, indexA) => {
+                  if (metric[0] !== 'total' && metric[0] !== 'on_error') {
+                    return (
+                      <>
+                      <DataList.Label key={`metrics${indexA}`} style={{display: 'flex', justifyContent: 'space-between', color: tColors[indexA]}}>
+                        {metric[0].split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} {Math.round(metric[1])}ms
+                        {iconNetwork(metric)}
+                      </DataList.Label>
+                      <DataList.Value>
+                        <Flex>
+                          {props.metrics && Object.entries(props.metrics).map((metric, index) => {
+                            if (metric[0] !== 'total') {
+                              // percentage for each value
+                              const percentage = (metric[1] / response.time) * 100;
+                              // pixel for each value in comparaison to the 300px max
+                              const widthInPixels = (percentage / 100) * 300;
+                              return (
+                                <Box
+                                  key={`metricSquare${index}`}
+                                  height='25px'
+                                  width={`${widthInPixels}px`}
+                                  minWidth='5px'
+                                  style={{
+                                    backgroundColor: indexA === index ? bgColors[index] : 'none',
+                                    border: `solid 1px ${indexA === index ? bColors[index] : 'none'}`,
+                                    borderRadius: 'var(--radius-2)',
+                                  }}
+                                />
+                              );
+                            }
+                          })}
+                        </Flex>
+                      </DataList.Value>
+                      </>
+                    );
+                  }
+                })}
+              </DataList.Item>
+            </DataList.Root>
+          </HoverCard.Content>
+        </HoverCard.Root>
+        
         <Separator orientation='vertical'/>
         <Tooltip content='Size of the body mesured from the blob (rounded)'>
           <Text size='1' color='gray'>
@@ -122,7 +194,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
                     <div style={{...style, backgroundColor: 'var(--gray-surface)', padding: 10}}>
                       <pre style={{...style, backgroundColor: 'none', margin: 0}}>
                       {tokens.map((line, i) => (
-                        <div key={i} {...getLineProps({ line })}>
+                        <div key={`codeLine${i}`} {...getLineProps({ line })}>
                           {line.map((token, key) => (
                             <span key={key} {...getTokenProps({ token })} />
                           ))}
