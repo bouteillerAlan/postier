@@ -6,11 +6,12 @@ mod client;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HttpMetrics {
-    pub prepare: f64,  // time to prepare the request
-    pub dns_lookup: f64,     // dns resolution time
-    pub tcp_handshake: f64,  // tcp connection and tls handshake time
-    pub response_time: f64,  // time to receive the response
+    pub prepare: f64,
+    pub dns_lookup: f64,
+    pub tcp_handshake: f64,
+    pub response_time: f64,
     pub process: f64,
+    pub on_error: String
 }
 
 // types that correspond to the ts types

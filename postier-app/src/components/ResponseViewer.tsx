@@ -1,14 +1,14 @@
 import {useEffect, useRef, useState} from 'react';
 import {Tabs, Box, Text, Flex, Badge, Section, Table, Card, Tooltip, Separator, HoverCard, Link, DataList} from '@radix-ui/themes';
-import {HttpMetrics, KeyValue, ResponseData, UserSetting, ViewMode} from '../types/types.ts';
+import {HttpMetricsWErr, KeyValue, ResponseData, UserSetting, ViewMode} from '../types/types.ts';
 import {detectContentType, formatData, getStatusColor} from '../services/formatter';
 import { Highlight, themes} from 'prism-react-renderer';
-import { red } from '@radix-ui/colors';
+import { CheckCircledIcon, CircleIcon, CrossCircledIcon } from '@radix-ui/react-icons';
 
 interface ResponseViewerProps {
   response: ResponseData | null;
   debug: KeyValue[] | [];
-  metrics: HttpMetrics | undefined;
+  metrics: HttpMetricsWErr | undefined;
   userConfig: UserSetting;
 }
 
@@ -50,6 +50,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
   const headers = response.headers;
 
   const subMenuRef = useRef<HTMLDivElement>(null);
+  let errorIsPassed = false;
 
   /**
    * calculate the height for each of the view element
@@ -64,6 +65,20 @@ export default function ResponseViewer(props: ResponseViewerProps) {
       setResponseCodeHeight(wh - 30);
       setResponseDataHeight((wh - 20) + rect.height);
     }
+  }
+
+  /**
+   * generate the right icon for the network time plot
+   * @param metric the current metric for which you want the icon
+   * @returns React.JSX.Element
+   */
+  function iconNetwork(metric: [string, any]): React.JSX.Element {
+    if (errorIsPassed) return <CircleIcon style={{marginLeft: 3}} color='gray'/>
+    if (metric[0] === props.metrics?.on_error) {
+      errorIsPassed = true;
+      return <CrossCircledIcon style={{marginLeft: 3}} color='red'/>
+    }
+    return <CheckCircledIcon style={{marginLeft: 3}} color='green'/>  
   }
 
   useEffect(() => {
@@ -96,11 +111,12 @@ export default function ResponseViewer(props: ResponseViewerProps) {
             <DataList.Root size='1'>
               <DataList.Item align='center'>
                 {props.metrics && Object.entries(props.metrics).map((metric, indexA) => {
-                  if (metric[0] !== 'total') {
+                  if (metric[0] !== 'total' && metric[0] !== 'on_error') {
                     return (
                       <>
-                      <DataList.Label style={{display: 'flex', justifyContent: 'space-between', color: tColors[indexA]}}>
+                      <DataList.Label key={`metrics${indexA}`} style={{display: 'flex', justifyContent: 'space-between', color: tColors[indexA]}}>
                         {metric[0].split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} {Math.round(metric[1])}ms
+                        {iconNetwork(metric)}
                       </DataList.Label>
                       <DataList.Value>
                         <Flex>
@@ -112,7 +128,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
                               const widthInPixels = (percentage / 100) * 300;
                               return (
                                 <Box
-                                  key={`metrics${index}`}
+                                  key={`metricSquare${index}`}
                                   height='25px'
                                   width={`${widthInPixels}px`}
                                   minWidth='5px'
@@ -178,7 +194,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
                     <div style={{...style, backgroundColor: 'var(--gray-surface)', padding: 10}}>
                       <pre style={{...style, backgroundColor: 'none', margin: 0}}>
                       {tokens.map((line, i) => (
-                        <div key={i} {...getLineProps({ line })}>
+                        <div key={`codeLine${i}`} {...getLineProps({ line })}>
                           {line.map((token, key) => (
                             <span key={key} {...getTokenProps({ token })} />
                           ))}

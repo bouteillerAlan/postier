@@ -136,11 +136,12 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     
     // metrics with default error values
     let mut metrics = HttpMetrics {
-        prepare: -1.0,
-        dns_lookup: -1.0,
-        tcp_handshake: -1.0,
-        response_time: -1.0,
-        process: -1.0,
+        prepare: 0.0,
+        dns_lookup: 0.0,
+        tcp_handshake: 0.0,
+        response_time: 0.0,
+        process: 0.0,
+        on_error: String::from("none"),
     };
 
     // prepare request
@@ -148,6 +149,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
         Ok(u) => u,
         Err(e) => {
             metrics.prepare = start_time.elapsed().as_secs_f64() * 1000.0;
+            metrics.on_error = String::from("prepare");
             return Ok(build_error_response(&request_data, format!("URL normalization failed: {}", e), metrics, start_time));
         }
     };
@@ -178,6 +180,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
         Ok(u) => u,
         Err(e) => {
             metrics.prepare = start_time.elapsed().as_secs_f64() * 1000.0;
+            metrics.on_error = String::from("prepare");
             return Ok(build_error_response(&request_data, format!("Failed to parse URL: {}", e), metrics, start_time));
         }
     };
@@ -186,6 +189,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
         Some(h) => h,
         None => {
             metrics.prepare = start_time.elapsed().as_secs_f64() * 1000.0;
+            metrics.on_error = String::from("prepare");
             return Ok(build_error_response(&request_data, "Could not extract host".to_string(), metrics, start_time));
         }
     };
@@ -195,6 +199,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
         Ok(r) => r,
         Err(e) => {
             metrics.prepare = start_time.elapsed().as_secs_f64() * 1000.0;
+            metrics.on_error = String::from("prepare");
             return Ok(build_error_response(&request_data, format!("Failed to create DNS resolver: {}", e), metrics, start_time));
         }
     };
@@ -204,6 +209,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
         Ok(c) => c,
         Err(e) => {
             metrics.prepare = start_time.elapsed().as_secs_f64() * 1000.0;
+            metrics.on_error = String::from("prepare");
             return Ok(build_error_response(&request_data, format!("Failed to create HTTP client: {}", e), metrics, start_time));
         }
     };
@@ -227,6 +233,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
     let start_dns = Instant::now();
     if let Err(e) = resolver.lookup_ip(host).await {
         metrics.dns_lookup = start_dns.elapsed().as_secs_f64() * 1000.0;
+        metrics.on_error = String::from("dns_lookup");
         return Ok(build_error_response(&request_data, format!("DNS resolution failed: {}", e), metrics, start_time));
     }
     metrics.dns_lookup = start_dns.elapsed().as_secs_f64() * 1000.0;
@@ -237,6 +244,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
         Ok(r) => r,
         Err(e) => {
             metrics.tcp_handshake = start_tcp.elapsed().as_secs_f64() * 1000.0;
+            metrics.on_error = String::from("tcp_handshake");
             return Ok(build_error_response(&request_data, format!("Failed to send HTTP request: {}", e), metrics, start_time));
         }
     };
@@ -250,6 +258,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
         Ok(b) => b,
         Err(e) => {
             metrics.response_time = start_response.elapsed().as_secs_f64() * 1000.0;
+            metrics.on_error = String::from("response_time");
             return Ok(build_error_response(&request_data, format!("Failed to read response body: {}", e), metrics, start_time));
         }
     };
