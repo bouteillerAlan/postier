@@ -3,7 +3,7 @@ import {Tabs, Container, Theme} from '@radix-ui/themes';
 import RequestForm from './components/RequestForm';
 import ResponseViewer from './components/ResponseViewer';
 import RequestHistory from './components/RequestHistory';
-import {RequestData, PostierObject, Alert} from './types/types.ts';
+import {RequestData, Alert, PostierObjectWithMetrics} from './types/types.ts';
 import {sendRequest} from './services/rust-http.ts';
 import {useRequestData} from './contexts/RequestContext.tsx';
 import {useHistoryData} from './contexts/HistoryContext.tsx';
@@ -27,7 +27,7 @@ function App() {
    * @param elem
    * @return void
    */
-  function replaceRequestDataContext(elem: PostierObject): void {
+  function replaceRequestDataContext(elem: PostierObjectWithMetrics): void {
     setRequestData(() => elem);
   }
 
@@ -36,7 +36,7 @@ function App() {
    * @param elem
    * @return void
    */
-  function updateContextAndGoHome(elem: PostierObject): void {
+  function updateContextAndGoHome(elem: PostierObjectWithMetrics): void {
     setIsLoading(true);
     replaceRequestDataContext(elem);
     setMainTabs('request');
@@ -51,14 +51,14 @@ function App() {
   async function handleSendRequest(requestConfig: RequestData): Promise<void> {
     setIsLoading(true);
     try {
-      const postierObject: PostierObject = await sendRequest(requestConfig);
+      const postierObject = await sendRequest(requestConfig);
       // store the response for the responseViewer
-      setRequestData((prev: PostierObject) => {
+      setRequestData((prev: PostierObjectWithMetrics) => {
         prev.debug.concat(postierObject.debug); // because we have some data already set eg: 31,32 in ResponseViewer
         return {...prev, ...postierObject};
       });
       // save all the data in the history feed
-      setHistoryData((prev: PostierObject[]) => {
+      setHistoryData((prev: PostierObjectWithMetrics[]) => {
         prev.push(postierObject);
         return [...prev];
       });
