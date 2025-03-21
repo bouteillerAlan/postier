@@ -114,7 +114,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
                   if (metric[0] !== 'total' && metric[0] !== 'on_error') {
                     return (
                       <Fragment key={`metrics${indexA}`}>
-                      <DataList.Label style={{display: 'flex', justifyContent: 'space-between', color: tColors[indexA]}}>
+                      <DataList.Label style={{display: 'flex', justifyContent: 'right', color: tColors[indexA]}}>
                         {metric[0].split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} {Math.round(metric[1])}ms
                         {iconNetwork(metric)}
                       </DataList.Label>
@@ -124,7 +124,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
                             if (metric[0] !== 'total') {
                               // percentage for each value
                               const percentage = (metric[1] / response.time) * 100;
-                              // pixel for each value in comparaison to the 300px max
+                              // pixel for each value in comparison to the 300px max
                               const widthInPixels = (percentage / 100) * 300;
                               return (
                                 <Box
