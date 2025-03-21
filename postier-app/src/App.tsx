@@ -59,7 +59,7 @@ function App() {
       });
       // save all the data in the history feed
       setHistoryData((prev: PostierObjectWithMetrics[]) => {
-        prev.push(postierObject);
+        prev.unshift(postierObject);
         return [...prev];
       });
     } catch (error) {
@@ -107,6 +107,10 @@ function App() {
     });
   }, []);
 
+  function reverseHistoryData() {
+    return [...historyData.reverse()];
+  }
+
   return (
     <ThemeProvider attribute='class'>
       <Theme
@@ -132,7 +136,7 @@ function App() {
               <RequestHistory
                 isLoading={isLoading}
                 mainTabRef={mainTabRef}
-                history={historyData}
+                history={reverseHistoryData()}
                 setHistory={setHistoryData}
                 onClickElement={updateContextAndGoHome}
               />
