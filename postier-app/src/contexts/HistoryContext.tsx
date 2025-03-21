@@ -1,15 +1,15 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react'
-import {PostierObject} from '../types/types.ts'
+import {PostierObjectWithMetrics} from '../types/types.ts'
 
 interface HistoryDataContextType {
-  historyData: PostierObject[];
-  setHistoryData: React.Dispatch<React.SetStateAction<PostierObject[]>>;
+  historyData: PostierObjectWithMetrics[];
+  setHistoryData: React.Dispatch<React.SetStateAction<PostierObjectWithMetrics[]>>;
 }
 
 export const HistoryDataContext = createContext<HistoryDataContextType | null>(null);
 
 export const HistoryDataProvider = ({ children }: { children: ReactNode }) => {
-  const [historyData, setHistoryData] = useState<PostierObject[]>([]);
+  const [historyData, setHistoryData] = useState<PostierObjectWithMetrics[]>([]);
 
   return (
     <HistoryDataContext.Provider value={{ historyData, setHistoryData }}>

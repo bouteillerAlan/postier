@@ -1,14 +1,14 @@
 import {ScrollArea, Box, Text, Flex, Badge, Separator, Card, Button, Tooltip} from '@radix-ui/themes';
 import { getStatusColor } from '../services/formatter';
-import {PostierObject} from '../types/types.ts';
+import {PostierObjectWithMetrics} from '../types/types.ts';
 import React, {RefObject, useEffect, useState} from 'react';
 import {ReloadIcon, StackIcon, TrashIcon} from '@radix-ui/react-icons';
 
 interface RequestHistoryProps {
   isLoading?: boolean;
-  history: PostierObject[];
-  setHistory: React.Dispatch<React.SetStateAction<PostierObject[]>>;
-  onClickElement: (request: PostierObject) => void;
+  history: PostierObjectWithMetrics[];
+  setHistory: React.Dispatch<React.SetStateAction<PostierObjectWithMetrics[]>>;
+  onClickElement: (request: PostierObjectWithMetrics) => void;
   mainTabRef: RefObject<HTMLDivElement>;
 }
 
@@ -37,7 +37,7 @@ export default function RequestHistory({ history, setHistory, onClickElement, ma
    * @param elem
    * @return void
    */
-  function onDeleteElement(elem: PostierObject): void {
+  function onDeleteElement(elem: PostierObjectWithMetrics): void {
     // /!\ splice edit the original array so it is mandatory to use an intermediary
     //     array and not the context directly
     let newHistory = history;
@@ -82,7 +82,7 @@ export default function RequestHistory({ history, setHistory, onClickElement, ma
     {(!isLoading && (!history || (history && history.length === 0))) && noHistoryDisplay()}
 
     {<Flex direction='column' gap='2' p='2'>
-      {(!isLoading && (history && history.length > 0)) && history.map((item: PostierObject) => (
+      {(!isLoading && (history && history.length > 0)) && history.map((item: PostierObjectWithMetrics) => (
         <Card key={`hist${item.request.id}`}>
           <Flex gap='2' align='center' justify='between'>
             <Flex gap='2' direction='column'>
