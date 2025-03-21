@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useRef, useState, Fragment} from 'react';
 import {Tabs, Box, Text, Flex, Badge, Section, Table, Card, Tooltip, Separator, HoverCard, Link, DataList} from '@radix-ui/themes';
 import {HttpMetricsWErr, KeyValue, ResponseData, UserSetting, ViewMode} from '../types/types.ts';
 import {detectContentType, formatData, getStatusColor} from '../services/formatter';
@@ -113,8 +113,8 @@ export default function ResponseViewer(props: ResponseViewerProps) {
                 {props.metrics && Object.entries(props.metrics).map((metric, indexA) => {
                   if (metric[0] !== 'total' && metric[0] !== 'on_error') {
                     return (
-                      <>
-                      <DataList.Label key={`metrics${indexA}`} style={{display: 'flex', justifyContent: 'space-between', color: tColors[indexA]}}>
+                      <Fragment key={`metrics${indexA}`}>
+                      <DataList.Label style={{display: 'flex', justifyContent: 'space-between', color: tColors[indexA]}}>
                         {metric[0].split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} {Math.round(metric[1])}ms
                         {iconNetwork(metric)}
                       </DataList.Label>
@@ -143,7 +143,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
                           })}
                         </Flex>
                       </DataList.Value>
-                      </>
+                      </Fragment>
                     );
                   }
                 })}
@@ -194,9 +194,9 @@ export default function ResponseViewer(props: ResponseViewerProps) {
                     <div style={{...style, backgroundColor: 'var(--gray-surface)', padding: 10}}>
                       <pre style={{...style, backgroundColor: 'none', margin: 0}}>
                       {tokens.map((line, i) => (
-                        <div key={`codeLine${i}`} {...getLineProps({ line })}>
+                        <div key={`codeToken${i}`} {...getLineProps({ line })}>
                           {line.map((token, key) => (
-                            <span key={key} {...getTokenProps({ token })} />
+                            <span key={`codeLine${key}`} {...getTokenProps({ token })} />
                           ))}
                         </div>
                       ))}
