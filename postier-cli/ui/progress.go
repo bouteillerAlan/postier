@@ -10,23 +10,23 @@ import (
 	"github.com/schollz/progressbar/v3"
 )
 
-// ProgressState represents the current progress of a HTTP request
+// ProgressState represents the current progress of an HTTP request
 type ProgressState struct {
-	DNSStarted          bool
-	DNSCompleted        bool
-	ConnectStarted      bool
-	ConnectCompleted    bool
-	TLSStarted          bool
-	TLSCompleted        bool
-	RequestSent         bool
-	ResponseStarted     bool
-	ResponseCompleted   bool
-	DNSDuration         time.Duration
-	ConnectDuration     time.Duration
-	TLSDuration         time.Duration
+	DNSStarted            bool
+	DNSCompleted          bool
+	ConnectStarted        bool
+	ConnectCompleted      bool
+	TLSStarted            bool
+	TLSCompleted          bool
+	RequestSent           bool
+	ResponseStarted       bool
+	ResponseCompleted     bool
+	DNSDuration           time.Duration
+	ConnectDuration       time.Duration
+	TLSDuration           time.Duration
 	ServerProcessDuration time.Duration
-	TransferDuration    time.Duration
-	StartTime           time.Time
+	TransferDuration      time.Duration
+	StartTime             time.Time
 }
 
 // ProgressUpdate is a channel message for progress updates
@@ -49,21 +49,25 @@ type ProgressDisplay struct {
 	TotalWidth   int64
 	CustomRender func(state ProgressState) string
 	RealtimeBars bool
-	firstDisplay bool // Variable statique pour éviter de remonter le curseur lors du premier affichage
+	firstDisplay bool
 }
+
+// Constants for progress bar
+const (
+	TotalBarWidth = 250
+	MsPerBlock    = 20 * time.Millisecond
+)
 
 // NewProgressDisplay creates a new progress display
 func NewProgressDisplay(enabled bool) *ProgressDisplay {
-	// Initialize with an empty progressbar, will be customized in Start
-	// Define global color palette
 	phaseColors := map[string]string{
-		"dns":      "\033[38;5;39m",  // Bleu
-		"connect":  "\033[38;5;48m",  // Vert-bleu
-		"tls":      "\033[38;5;118m", // Vert
-		"server":   "\033[38;5;226m", // Jaune
+		"dns":      "\033[38;5;39m",  // Blue
+		"connect":  "\033[38;5;48m",  // Blue-green
+		"tls":      "\033[38;5;118m", // Green
+		"server":   "\033[38;5;226m", // Yellow
 		"transfer": "\033[38;5;208m", // Orange
 	}
-	
+
 	return &ProgressDisplay{
 		Enabled:      enabled,
 		UpdateChan:   make(chan ProgressUpdate),
@@ -72,9 +76,9 @@ func NewProgressDisplay(enabled bool) *ProgressDisplay {
 		PhaseWidths:  make(map[string]int64),
 		StartTimes:   make(map[string]time.Time),
 		State:        ProgressState{StartTime: time.Now()},
-		TotalWidth:   100, // La largeur totale de la barre
-		RealtimeBars: true, // Activer par défaut l'affichage en temps réel
-		firstDisplay: true, // Variable statique pour éviter de remonter le curseur lors du premier affichage
+		TotalWidth:   TotalBarWidth,
+		RealtimeBars: true,
+		firstDisplay: true,
 	}
 }
 
@@ -84,7 +88,6 @@ func (pd *ProgressDisplay) Start() {
 		return
 	}
 
-	// Créer une barre de progression unique
 	pd.Bar = progressbar.NewOptions(100,
 		progressbar.OptionSetDescription("HTTP Request Progress"),
 		progressbar.OptionSetWidth(60),
@@ -96,71 +99,59 @@ func (pd *ProgressDisplay) Start() {
 		progressbar.OptionSetWriter(os.Stdout),
 		progressbar.OptionSetRenderBlankState(true),
 		progressbar.OptionSetTheme(progressbar.Theme{
-			BarStart:  "|",
-			BarEnd:    "|",
+			BarStart: "|",
+			BarEnd:   "|",
 		}),
 		progressbar.OptionFullWidth(),
 	)
 
-	// Start monitoring progress updates
 	go pd.monitor()
 }
 
 // getCurrentPhaseDescription returns the current active phase description
 func (pd *ProgressDisplay) getCurrentPhaseDescription() string {
-	var current string = "Waiting..."
-	var color string = "\033[0m"
-
-	if pd.State.ResponseCompleted {
-		current = "Complete"
-		color = pd.PhaseColors["transfer"]
-	} else if pd.State.ResponseStarted {
-		current = "Content Transfer"
-		color = pd.PhaseColors["transfer"]
-	} else if pd.State.RequestSent {
-		current = "Server Processing"
-		color = pd.PhaseColors["server"]
-	} else if pd.State.TLSStarted {
-		current = "TLS Handshake"
-		color = pd.PhaseColors["tls"]
-	} else if pd.State.ConnectStarted {
-		current = "TCP Connection"
-		color = pd.PhaseColors["connect"]
-	} else if pd.State.DNSStarted {
-		current = "DNS Lookup"
-		color = pd.PhaseColors["dns"]
+	phases := []struct {
+		state    bool
+		desc     string
+		colorKey string
+	}{
+		{pd.State.ResponseCompleted, "Complete", "transfer"},
+		{pd.State.ResponseStarted, "Content Transfer", "transfer"},
+		{pd.State.RequestSent, "Server Processing", "server"},
+		{pd.State.TLSStarted, "TLS Handshake", "tls"},
+		{pd.State.ConnectStarted, "TCP Connection", "connect"},
+		{pd.State.DNSStarted, "DNS Lookup", "dns"},
 	}
 
-	return fmt.Sprintf("[%s]%-17s\033[0m", color, current)
+	for _, phase := range phases {
+		if phase.state {
+			return fmt.Sprintf("[%s]%-17s\033[0m", pd.PhaseColors[phase.colorKey], phase.desc)
+		}
+	}
+	return "[Waiting...]"
 }
 
 // renderProgressBar custom renders the progress bar with colored segments
 func (pd *ProgressDisplay) renderProgressBar() string {
 	var sb strings.Builder
-
-	// Afficher un segment pour chaque phase
 	sb.WriteString("[")
-	
+
 	total := int64(0)
 	phases := []string{"dns", "connect", "tls", "server", "transfer"}
-	
+
 	for _, phase := range phases {
-		width, exists := pd.PhaseWidths[phase]
-		if !exists || width == 0 {
-			continue
+		if width, exists := pd.PhaseWidths[phase]; exists && width > 0 {
+			color := pd.PhaseColors[phase]
+			segment := strings.Repeat("█", int(width))
+			sb.WriteString(fmt.Sprintf("%s%s\033[0m", color, segment))
+			total += width
 		}
-		
-		color := pd.PhaseColors[phase]
-		segment := strings.Repeat("█", int(width)) // Utiliser le caractère bloc complet
-		sb.WriteString(fmt.Sprintf("%s%s\033[0m", color, segment))
-		total += width
 	}
-	
-	// Ajouter des espaces pour compléter la barre
+
 	if total < pd.TotalWidth {
 		sb.WriteString(strings.Repeat(" ", int(pd.TotalWidth-total)))
 	}
-	
+
 	sb.WriteString("]")
 	return sb.String()
 }
@@ -168,228 +159,17 @@ func (pd *ProgressDisplay) renderProgressBar() string {
 // monitor handles progress updates
 func (pd *ProgressDisplay) monitor() {
 	updateBar := func() {
-		// Mettre à jour la description de la barre avec la phase actuelle
 		desc := pd.getCurrentPhaseDescription()
 		pd.Bar.Describe(desc)
 
-		// Calculer la durée totale actuelle
 		totalDuration := time.Since(pd.State.StartTime).Milliseconds()
 		if totalDuration == 0 {
-			totalDuration = 1 // Éviter la division par zéro
+			totalDuration = 1
 		}
-		
-		// Mettre à jour les largeurs de segment en fonction des durées
-		if pd.State.DNSCompleted {
-			pd.PhaseWidths["dns"] = pd.State.DNSDuration.Milliseconds() * pd.TotalWidth / totalDuration
-		}
-		if pd.State.ConnectCompleted {
-			pd.PhaseWidths["connect"] = pd.State.ConnectDuration.Milliseconds() * pd.TotalWidth / totalDuration
-		}
-		if pd.State.TLSCompleted {
-			pd.PhaseWidths["tls"] = pd.State.TLSDuration.Milliseconds() * pd.TotalWidth / totalDuration
-		}
-		if pd.State.ResponseStarted {
-			pd.PhaseWidths["server"] = pd.State.ServerProcessDuration.Milliseconds() * pd.TotalWidth / totalDuration
-		}
-		if pd.State.ResponseCompleted {
-			pd.PhaseWidths["transfer"] = pd.State.TransferDuration.Milliseconds() * pd.TotalWidth / totalDuration
-		}
-		
-		// Afficher les barres en temps réel si activé
-		if pd.RealtimeBars {
-			// Chaque bloc représente 20ms
-			msPerBlock := time.Duration(20 * time.Millisecond)
-			
-			// Déterminer combien de lignes nous allons afficher pour pouvoir les effacer ensuite
-			activeLines := 0
-			if pd.State.DNSStarted { activeLines++ }
-			if pd.State.ConnectStarted { activeLines++ }
-			if pd.State.TLSStarted { activeLines++ }
-			if pd.State.RequestSent { activeLines++ }
-			if pd.State.ResponseStarted { activeLines++ }
-			
-			// Effacer les lignes précédentes - \033[A monte d'une ligne, \033[2K efface la ligne
-			if !pd.firstDisplay {
-				for i := 0; i < activeLines; i++ {
-					fmt.Fprint(os.Stdout, "\033[A\033[2K")
-				}
-			} else {
-				pd.firstDisplay = false
-			}
-			
-			// Variable pour garder la trace des durées cumulatives
-			var cumulativeDuration time.Duration = 0
-            
-			// Affichage en cours pour DNS si démarré mais pas terminé
-			if pd.State.DNSStarted {
-				var dnsDuration time.Duration
-				if pd.State.DNSCompleted {
-					dnsDuration = pd.State.DNSDuration
-				} else {
-					dnsDuration = time.Since(pd.StartTimes["dns"])
-				}
-				
-				dnsBlocks := int(math.Ceil(float64(dnsDuration) / float64(msPerBlock)))
-				if dnsBlocks < 1 {
-					dnsBlocks = 1
-				}
-				
-				fmt.Fprintf(os.Stdout, "  %sDNS Lookup\033[0m:           %12s %s█%s\033[0m\n", 
-					pd.PhaseColors["dns"],
-					dnsDuration, 
-					pd.PhaseColors["dns"],
-					strings.Repeat("█", dnsBlocks-1))
-				
-				if pd.State.DNSCompleted {
-					cumulativeDuration += dnsDuration
-				}
-			}
-			
-			// Affichage en cours pour Connect si démarré
-			if pd.State.ConnectStarted {
-				var connectDuration time.Duration
-				if pd.State.ConnectCompleted {
-					connectDuration = pd.State.ConnectDuration
-				} else {
-					connectDuration = time.Since(pd.StartTimes["connect"])
-				}
-				
-				connectBlocks := int(math.Ceil(float64(connectDuration) / float64(msPerBlock)))
-				if connectBlocks < 1 {
-					connectBlocks = 1
-				}
-				
-				prevBlocks := int(math.Ceil(float64(cumulativeDuration) / float64(msPerBlock)))
-                
-				fmt.Fprintf(os.Stdout, "  %sTCP Connection\033[0m:       %12s %s%s%s█%s\033[0m\n", 
-					pd.PhaseColors["connect"],
-					connectDuration,
-					"\033[38;5;240m", // Couleur grise pour les phases précédentes
-					strings.Repeat(" ", prevBlocks),
-					pd.PhaseColors["connect"],
-					strings.Repeat("█", connectBlocks-1))
-                
-				if pd.State.ConnectCompleted {
-					cumulativeDuration += connectDuration
-				}
-			}
-            
-			// Affichage en cours pour TLS si démarré
-			if pd.State.TLSStarted {
-				var tlsDuration time.Duration
-				if pd.State.TLSCompleted {
-					tlsDuration = pd.State.TLSDuration
-				} else {
-					tlsDuration = time.Since(pd.StartTimes["tls"])
-				}
-				
-				tlsBlocks := int(math.Ceil(float64(tlsDuration) / float64(msPerBlock)))
-				if tlsBlocks < 1 {
-					tlsBlocks = 1
-				}
-                
-				prevBlocks := int(math.Ceil(float64(cumulativeDuration) / float64(msPerBlock)))
-                
-				fmt.Fprintf(os.Stdout, "  %sTLS Handshake\033[0m:        %12s %s%s%s█%s\033[0m\n", 
-					pd.PhaseColors["tls"],
-					tlsDuration,
-					"\033[38;5;240m", // Couleur grise pour les phases précédentes
-					strings.Repeat(" ", prevBlocks),
-					pd.PhaseColors["tls"],
-					strings.Repeat("█", tlsBlocks-1))
-                
-				if pd.State.TLSCompleted {
-					cumulativeDuration += tlsDuration
-				}
-			}
-            
-			// Affichage en cours pour Server si démarré
-			if pd.State.RequestSent {
-				var serverDuration time.Duration
-				if pd.State.ResponseStarted {
-					serverDuration = pd.State.ServerProcessDuration
-				} else {
-					serverDuration = time.Since(pd.StartTimes["server"])
-				}
-				
-				serverBlocks := int(math.Ceil(float64(serverDuration) / float64(msPerBlock)))
-				if serverBlocks < 1 {
-					serverBlocks = 1
-				}
-                
-				prevBlocks := int(math.Ceil(float64(cumulativeDuration) / float64(msPerBlock)))
-                
-				fmt.Fprintf(os.Stdout, "  %sServer Process\033[0m:       %12s %s%s%s█%s\033[0m\n", 
-					pd.PhaseColors["server"],
-					serverDuration,
-					"\033[38;5;240m", // Couleur grise pour les phases précédentes
-					strings.Repeat(" ", prevBlocks),
-					pd.PhaseColors["server"],
-					strings.Repeat("█", serverBlocks-1))
-                
-				if pd.State.ResponseStarted {
-					cumulativeDuration += serverDuration
-				}
-			}
-            
-			// Affichage en cours pour Transfer si démarré
-			if pd.State.ResponseStarted {
-				var transferDuration time.Duration
-				if pd.State.ResponseCompleted {
-					transferDuration = pd.State.TransferDuration
-				} else {
-					transferDuration = time.Since(pd.StartTimes["transfer"])
-				}
-				
-				transferBlocks := int(math.Ceil(float64(transferDuration) / float64(msPerBlock)))
-				if transferBlocks < 1 {
-					transferBlocks = 1
-				}
-                
-				prevBlocks := int(math.Ceil(float64(cumulativeDuration) / float64(msPerBlock)))
-                
-				fmt.Fprintf(os.Stdout, "  %sContent Transfer\033[0m:     %12s %s%s%s█%s\033[0m\n", 
-					pd.PhaseColors["transfer"],
-					transferDuration,
-					"\033[38;5;240m", // Couleur grise pour les phases précédentes
-					strings.Repeat(" ", prevBlocks),
-					pd.PhaseColors["transfer"],
-					strings.Repeat("█", transferBlocks-1))
-			}
-		}
-		
-		// Calculer le pourcentage de progression total
-		totalPercent := 0
-		if pd.State.ResponseCompleted {
-			totalPercent = 100
-		} else if pd.State.ResponseStarted {
-			totalPercent = 80 + int((time.Since(pd.StartTimes["transfer"]).Seconds()/5)*20)
-			if totalPercent > 95 {
-				totalPercent = 95
-			}
-		} else if pd.State.RequestSent {
-			totalPercent = 60 + int((time.Since(pd.StartTimes["server"]).Seconds()/5)*20)
-			if totalPercent > 80 {
-				totalPercent = 80
-			}
-		} else if pd.State.TLSStarted {
-			totalPercent = 40
-			if pd.State.TLSCompleted {
-				totalPercent = 60
-			}
-		} else if pd.State.ConnectStarted {
-			totalPercent = 20
-			if pd.State.ConnectCompleted {
-				totalPercent = 40
-			}
-		} else if pd.State.DNSStarted {
-			totalPercent = 10
-			if pd.State.DNSCompleted {
-				totalPercent = 20
-			}
-		}
-		
-		pd.Bar.Set(totalPercent)
+
+		updatePhaseWidths(pd, totalDuration)
+		displayRealtimeBars(pd)
+		pd.Bar.Set(calculateTotalPercent(pd))
 	}
 
 	for {
@@ -398,30 +178,175 @@ func (pd *ProgressDisplay) monitor() {
 			pd.handleUpdate(update)
 			updateBar()
 		case <-pd.CompleteChan:
-			// Effacer les barres en temps réel si affichées
-			if pd.RealtimeBars {
-				// Déterminer combien de lignes nous allons afficher pour effacer
-				activeLines := 0
-				if pd.State.DNSStarted { activeLines++ }
-				if pd.State.ConnectStarted { activeLines++ }
-				if pd.State.TLSStarted { activeLines++ }
-				if pd.State.RequestSent { activeLines++ }
-				if pd.State.ResponseStarted { activeLines++ }
-				
-				// Effacer les lignes précédentes pour éviter la duplication
-				for i := 0; i < activeLines; i++ {
-					fmt.Fprint(os.Stdout, "\033[A\033[2K")
-				}
-			}
-			
-			// Complete the progress display
+			clearRealtimeBars(pd)
 			pd.completeAll()
 			return
 		case <-time.After(10 * time.Millisecond):
-			// Update periodically for smooth animation
 			updateBar()
 		}
 	}
+}
+
+// updatePhaseWidths updates the widths of each phase based on their durations
+func updatePhaseWidths(pd *ProgressDisplay, totalDuration int64) {
+	if pd.State.DNSCompleted {
+		pd.PhaseWidths["dns"] = pd.State.DNSDuration.Milliseconds() * pd.TotalWidth / totalDuration
+	}
+	if pd.State.ConnectCompleted {
+		pd.PhaseWidths["connect"] = pd.State.ConnectDuration.Milliseconds() * pd.TotalWidth / totalDuration
+	}
+	if pd.State.TLSCompleted {
+		pd.PhaseWidths["tls"] = pd.State.TLSDuration.Milliseconds() * pd.TotalWidth / totalDuration
+	}
+	if pd.State.ResponseStarted {
+		pd.PhaseWidths["server"] = pd.State.ServerProcessDuration.Milliseconds() * pd.TotalWidth / totalDuration
+	}
+	if pd.State.ResponseCompleted {
+		pd.PhaseWidths["transfer"] = pd.State.TransferDuration.Milliseconds() * pd.TotalWidth / totalDuration
+	}
+}
+
+// displayRealtimeBars displays real-time progress bars if enabled
+func displayRealtimeBars(pd *ProgressDisplay) {
+	if !pd.RealtimeBars {
+		return
+	}
+
+	clearPreviousLines(pd)
+	cumulativeDuration := time.Duration(0)
+	phases := []struct {
+		started    bool
+		completed  bool
+		colorKey   string
+		desc       string
+		durationFn func() time.Duration
+	}{
+		{pd.State.DNSStarted, pd.State.DNSCompleted, "dns", "DNS Lookup", func() time.Duration {
+			if pd.State.DNSCompleted {
+				return pd.State.DNSDuration
+			}
+			return time.Since(pd.StartTimes["dns"])
+		}},
+		{pd.State.ConnectStarted, pd.State.ConnectCompleted, "connect", "TCP Connection", func() time.Duration {
+			if pd.State.ConnectCompleted {
+				return pd.State.ConnectDuration
+			}
+			return time.Since(pd.StartTimes["connect"])
+		}},
+		{pd.State.TLSStarted, pd.State.TLSCompleted, "tls", "TLS Handshake", func() time.Duration {
+			if pd.State.TLSCompleted {
+				return pd.State.TLSDuration
+			}
+			return time.Since(pd.StartTimes["tls"])
+		}},
+		{pd.State.RequestSent, pd.State.ResponseStarted, "server", "Server Process", func() time.Duration {
+			if pd.State.ResponseStarted {
+				return pd.State.ServerProcessDuration
+			}
+			return time.Since(pd.StartTimes["server"])
+		}},
+		{pd.State.ResponseStarted, pd.State.ResponseCompleted, "transfer", "Content Transfer", func() time.Duration {
+			if pd.State.ResponseCompleted {
+				return pd.State.TransferDuration
+			}
+			return time.Since(pd.StartTimes["transfer"])
+		}},
+	}
+
+	for _, phase := range phases {
+		if phase.started {
+			duration := phase.durationFn()
+			blocks := int(math.Ceil(float64(duration) / float64(MsPerBlock)))
+			if blocks < 1 {
+				blocks = 1
+			}
+			prevBlocks := int(math.Ceil(float64(cumulativeDuration) / float64(MsPerBlock)))
+			fmt.Fprintf(os.Stdout, "  %s%s\033[0m:           %12s %s%s%s█%s\033[0m\n",
+				pd.PhaseColors[phase.colorKey], phase.desc, duration,
+				"\033[38;5;240m", strings.Repeat(" ", prevBlocks),
+				pd.PhaseColors[phase.colorKey], strings.Repeat("█", blocks-1))
+			if phase.completed {
+				cumulativeDuration += duration
+			}
+		}
+	}
+}
+
+// clearPreviousLines clears the previous lines in the terminal
+func clearPreviousLines(pd *ProgressDisplay) {
+	if !pd.firstDisplay {
+		activeLines := countActiveLines(pd)
+		for i := 0; i < activeLines; i++ {
+			fmt.Fprint(os.Stdout, "\033[A\033[2K")
+		}
+	} else {
+		pd.firstDisplay = false
+	}
+}
+
+// countActiveLines counts the number of active lines for real-time display
+func countActiveLines(pd *ProgressDisplay) int {
+	activeLines := 0
+	if pd.State.DNSStarted {
+		activeLines++
+	}
+	if pd.State.ConnectStarted {
+		activeLines++
+	}
+	if pd.State.TLSStarted {
+		activeLines++
+	}
+	if pd.State.RequestSent {
+		activeLines++
+	}
+	if pd.State.ResponseStarted {
+		activeLines++
+	}
+	return activeLines
+}
+
+// clearRealtimeBars clears the real-time progress bars from the terminal display
+func clearRealtimeBars(pd *ProgressDisplay) {
+	if pd.RealtimeBars {
+		activeLines := countActiveLines(pd)
+		for i := 0; i < activeLines; i++ {
+			fmt.Fprint(os.Stdout, "\033[A\033[2K")
+		}
+	}
+}
+
+// calculateTotalPercent calculates the total progress percentage
+func calculateTotalPercent(pd *ProgressDisplay) int {
+	totalPercent := 0
+	if pd.State.ResponseCompleted {
+		totalPercent = 100
+	} else if pd.State.ResponseStarted {
+		totalPercent = 80 + int((time.Since(pd.StartTimes["transfer"]).Seconds()/5)*20)
+		if totalPercent > 95 {
+			totalPercent = 95
+		}
+	} else if pd.State.RequestSent {
+		totalPercent = 60 + int((time.Since(pd.StartTimes["server"]).Seconds()/5)*20)
+		if totalPercent > 80 {
+			totalPercent = 80
+		}
+	} else if pd.State.TLSStarted {
+		totalPercent = 40
+		if pd.State.TLSCompleted {
+			totalPercent = 60
+		}
+	} else if pd.State.ConnectStarted {
+		totalPercent = 20
+		if pd.State.ConnectCompleted {
+			totalPercent = 40
+		}
+	} else if pd.State.DNSStarted {
+		totalPercent = 10
+		if pd.State.DNSCompleted {
+			totalPercent = 20
+		}
+	}
+	return totalPercent
 }
 
 // handleUpdate processes a progress update
@@ -430,36 +355,28 @@ func (pd *ProgressDisplay) handleUpdate(update ProgressUpdate) {
 	case "dns_start":
 		pd.StartTimes["dns"] = time.Now()
 		pd.State.DNSStarted = true
-	
 	case "dns_complete":
 		pd.State.DNSCompleted = true
 		pd.State.DNSDuration = update.Duration
-	
 	case "connect_start":
 		pd.StartTimes["connect"] = time.Now()
 		pd.State.ConnectStarted = true
-	
 	case "connect_complete":
 		pd.State.ConnectCompleted = true
 		pd.State.ConnectDuration = update.Duration
-	
 	case "tls_start":
 		pd.StartTimes["tls"] = time.Now()
 		pd.State.TLSStarted = true
-	
 	case "tls_complete":
 		pd.State.TLSCompleted = true
 		pd.State.TLSDuration = update.Duration
-	
 	case "request_sent":
 		pd.State.RequestSent = true
 		pd.StartTimes["server"] = time.Now()
-	
 	case "response_first_byte":
 		pd.State.ResponseStarted = true
 		pd.State.ServerProcessDuration = update.Duration
 		pd.StartTimes["transfer"] = time.Now()
-	
 	case "response_complete":
 		pd.State.ResponseCompleted = true
 		pd.State.TransferDuration = update.Duration
@@ -468,128 +385,61 @@ func (pd *ProgressDisplay) handleUpdate(update ProgressUpdate) {
 
 // completeAll completes the progress display
 func (pd *ProgressDisplay) completeAll() {
-	// Set progress to 100%
 	pd.Bar.Finish()
-
-	// Add a summary of durations
 	fmt.Fprintln(os.Stdout, "\nHTTP Request Timings:")
-	
-	totalDuration := pd.State.DNSDuration + pd.State.ConnectDuration + 
-		pd.State.TLSDuration + pd.State.ServerProcessDuration + pd.State.TransferDuration
-	
+
+	totalDuration := pd.State.DNSDuration + pd.State.ConnectDuration + pd.State.TLSDuration + pd.State.ServerProcessDuration + pd.State.TransferDuration
+
 	if totalDuration == 0 {
-		totalDuration = time.Millisecond // Éviter la division par zéro
+		totalDuration = time.Millisecond
 	}
-	
-	// Chaque bloc représente 20ms
-	msPerBlock := time.Duration(20 * time.Millisecond)
 
-	// Garder la trace des durées cumulées précédentes pour l'effet waterfall
-	var cumulativeDuration time.Duration = 0
-	
-	if pd.State.DNSCompleted {
-		// Calculer le nombre de blocs (1 bloc = 20ms)
-		dnsBlocks := int(math.Ceil(float64(pd.State.DNSDuration) / float64(msPerBlock)))
-		if dnsBlocks < 1 {
-			dnsBlocks = 1
-		}
-		
-		// DNS est la première phase, pas de phases précédentes
-		fmt.Fprintf(os.Stdout, "  %sDNS Lookup\033[0m:           %12s %s\u2588%s\033[0m\n", 
-			pd.PhaseColors["dns"],
-			pd.State.DNSDuration, 
-			pd.PhaseColors["dns"],
-			strings.Repeat("\u2588", dnsBlocks-1))
+	printPhaseSummary(pd, "DNS Lookup", pd.State.DNSDuration, "dns")
+	printPhaseSummary(pd, "TCP Connection", pd.State.ConnectDuration, "connect")
+	printPhaseSummary(pd, "TLS Handshake", pd.State.TLSDuration, "tls")
+	printPhaseSummary(pd, "Server Process", pd.State.ServerProcessDuration, "server")
+	printPhaseSummary(pd, "Content Transfer", pd.State.TransferDuration, "transfer")
 
-		cumulativeDuration += pd.State.DNSDuration
-	}
-	
-	if pd.State.ConnectCompleted {
-		// Calculer le nombre de blocs (1 bloc = 20ms)
-		connectBlocks := int(math.Ceil(float64(pd.State.ConnectDuration) / float64(msPerBlock)))
-		if connectBlocks < 1 {
-			connectBlocks = 1
-		}
-		
-		// Calculer le nombre de blocs pour les phases précédentes
-		prevBlocks := int(math.Ceil(float64(cumulativeDuration) / float64(msPerBlock)))
-		
-		fmt.Fprintf(os.Stdout, "  %sTCP Connection\033[0m:       %12s %s%s%s\u2588%s\033[0m\n", 
-			pd.PhaseColors["connect"],
-			pd.State.ConnectDuration,
-			"\033[38;5;240m", // Couleur grise pour les phases précédentes
-			strings.Repeat(" ", prevBlocks),
-			pd.PhaseColors["connect"],
-			strings.Repeat("\u2588", connectBlocks-1))
+	fmt.Fprintf(os.Stdout, "  %sTotal Duration\033[0m:      %12s\n",
+		"\033[1;36m", totalDuration)
+}
 
-		cumulativeDuration += pd.State.ConnectDuration
-	}
-	
-	if pd.State.TLSCompleted {
-		// Calculer le nombre de blocs (1 bloc = 20ms)
-		tlsBlocks := int(math.Ceil(float64(pd.State.TLSDuration) / float64(msPerBlock)))
-		if tlsBlocks < 1 {
-			tlsBlocks = 1
+// printPhaseSummary prints the summary for each phase
+func printPhaseSummary(pd *ProgressDisplay, desc string, duration time.Duration, colorKey string) {
+	if duration > 0 {
+		blocks := int(math.Ceil(float64(duration) / float64(MsPerBlock)))
+		if blocks < 1 {
+			blocks = 1
 		}
-		
-		// Calculer les blocs pour les phases précédentes
-		prevBlocks := int(math.Ceil(float64(cumulativeDuration) / float64(msPerBlock)))
-		
-		fmt.Fprintf(os.Stdout, "  %sTLS Handshake\033[0m:        %12s %s%s%s\u2588%s\033[0m\n", 
-			pd.PhaseColors["tls"],
-			pd.State.TLSDuration,
-			"\033[38;5;240m", // Couleur grise pour les phases précédentes
-			strings.Repeat(" ", prevBlocks),
-			pd.PhaseColors["tls"],
-			strings.Repeat("\u2588", tlsBlocks-1))
+		prevBlocks := int(math.Ceil(float64(pd.getPreviousDuration(colorKey)) / float64(MsPerBlock)))
+		fmt.Fprintf(os.Stdout, "  %s%s\033[0m:           %12s %s%s%s\u2588%s\033[0m\n",
+			pd.PhaseColors[colorKey], desc, duration,
+			"\033[38;5;240m", strings.Repeat(" ", prevBlocks),
+			pd.PhaseColors[colorKey], strings.Repeat("\u2588", blocks-1))
+	}
+}
 
-		cumulativeDuration += pd.State.TLSDuration
+// getPreviousDuration calculates the cumulative duration of previous phases
+func (pd *ProgressDisplay) getPreviousDuration(currentPhase string) time.Duration {
+	var cumulativeDuration time.Duration
+	phases := []struct {
+		key      string
+		duration time.Duration
+	}{
+		{"dns", pd.State.DNSDuration},
+		{"connect", pd.State.ConnectDuration},
+		{"tls", pd.State.TLSDuration},
+		{"server", pd.State.ServerProcessDuration},
+		{"transfer", pd.State.TransferDuration},
 	}
-	
-	if pd.State.ResponseStarted {
-		// Calculer le nombre de blocs (1 bloc = 20ms)
-		serverBlocks := int(math.Ceil(float64(pd.State.ServerProcessDuration) / float64(msPerBlock)))
-		if serverBlocks < 1 {
-			serverBlocks = 1
-		}
-		
-		// Calculer les blocs pour les phases précédentes
-		prevBlocks := int(math.Ceil(float64(cumulativeDuration) / float64(msPerBlock)))
-		
-		fmt.Fprintf(os.Stdout, "  %sServer Process\033[0m:       %12s %s%s%s\u2588%s\033[0m\n", 
-			pd.PhaseColors["server"],
-			pd.State.ServerProcessDuration,
-			"\033[38;5;240m", // Couleur grise pour les phases précédentes
-			strings.Repeat(" ", prevBlocks),
-			pd.PhaseColors["server"],
-			strings.Repeat("\u2588", serverBlocks-1))
 
-		cumulativeDuration += pd.State.ServerProcessDuration
-	}
-	
-	if pd.State.ResponseCompleted {
-		// Calculer le nombre de blocs (1 bloc = 20ms)
-		transferBlocks := int(math.Ceil(float64(pd.State.TransferDuration) / float64(msPerBlock)))
-		if transferBlocks < 1 {
-			transferBlocks = 1
+	for _, phase := range phases {
+		if phase.key == currentPhase {
+			break
 		}
-		
-		// Calculer le nombre de blocs pour les phases précédentes
-		prevBlocks := int(math.Ceil(float64(cumulativeDuration) / float64(msPerBlock)))
-		
-		fmt.Fprintf(os.Stdout, "  %sContent Transfer\033[0m:     %12s %s%s%s\u2588%s\033[0m\n", 
-			pd.PhaseColors["transfer"],
-			pd.State.TransferDuration,
-			"\033[38;5;240m", // Couleur grise pour les phases précédentes
-			strings.Repeat(" ", prevBlocks),
-			pd.PhaseColors["transfer"],
-			strings.Repeat("\u2588", transferBlocks-1))
+		cumulativeDuration += phase.duration
 	}
-	
-	// Afficher la durée totale
-	fmt.Fprintf(os.Stdout, "  %sTotal Duration\033[0m:      %12s\n", 
-		"\033[1;36m", // Cyan pour la durée totale
-		totalDuration)
+	return cumulativeDuration
 }
 
 // Update sends a progress update
@@ -604,153 +454,38 @@ func (pd *ProgressDisplay) Update(phase, state string, duration time.Duration) {
 		Duration: duration,
 	}
 
-	// Afficher les barres en temps réel si activé
 	if pd.RealtimeBars {
-		// Chaque bloc représente 20ms
-		msPerBlock := time.Duration(20 * time.Millisecond)
-		
-		// Déterminer combien de lignes nous allons afficher pour pouvoir les effacer ensuite
-		activeLines := 0
-		if pd.State.DNSStarted { activeLines++ }
-		if pd.State.ConnectStarted { activeLines++ }
-		if pd.State.TLSStarted { activeLines++ }
-		if pd.State.RequestSent { activeLines++ }
-		if pd.State.ResponseStarted { activeLines++ }
-		
-		// Effacer les lignes précédentes - \033[A monte d'une ligne, \033[2K efface la ligne
-		if !pd.firstDisplay {
-			for i := 0; i < activeLines; i++ {
-				fmt.Fprint(os.Stdout, "\033[A\033[2K")
-			}
-		} else {
-			pd.firstDisplay = false
+		clearPreviousLines(pd)
+		displayPhase(pd, phase, state, duration)
+	}
+}
+
+// displayPhase displays the current phase
+func displayPhase(pd *ProgressDisplay, phase, state string, duration time.Duration) {
+	phases := map[string]struct {
+		desc       string
+		colorKey   string
+		condition  func() bool
+		durationFn func() time.Duration
+	}{
+		"dns":      {"DNS Lookup", "dns", func() bool { return state == "complete" }, func() time.Duration { return duration }},
+		"connect":  {"TCP Connection", "connect", func() bool { return state == "complete" }, func() time.Duration { return duration }},
+		"tls":      {"TLS Handshake", "tls", func() bool { return state == "complete" }, func() time.Duration { return duration }},
+		"server":   {"Server Process", "server", func() bool { return state == "response_first_byte" }, func() time.Duration { return duration }},
+		"transfer": {"Content Transfer", "transfer", func() bool { return state == "response_complete" }, func() time.Duration { return duration }},
+	}
+
+	if phaseInfo, exists := phases[phase]; exists && phaseInfo.condition() {
+		blocks := int(math.Ceil(float64(phaseInfo.durationFn()) / float64(MsPerBlock)))
+		if blocks < 1 {
+			blocks = 1
 		}
-		
-		// Afficher la phase courrante
-		switch phase {
-		case "dns":
-			if state == "complete" {
-				dnsBlocks := int(math.Ceil(float64(duration) / float64(msPerBlock)))
-				if dnsBlocks < 1 {
-					dnsBlocks = 1
-				}
-				fmt.Fprintf(os.Stdout, "  %sDNS Lookup\033[0m:           %12s %s\u2588%s\033[0m\r", 
-					pd.PhaseColors["dns"],
-					duration, 
-					pd.PhaseColors["dns"],
-					strings.Repeat("\u2588", dnsBlocks-1))
-			}
-		case "connect":
-			if state == "complete" {
-				// Calculer les blocs pour la phase DNS précédente
-				var prevDuration time.Duration = 0
-				if pd.State.DNSCompleted {
-					prevDuration = pd.State.DNSDuration
-				}
-				prevBlocks := int(math.Ceil(float64(prevDuration) / float64(msPerBlock)))
-				
-				// Calculer les blocs pour la phase courrante
-				connectBlocks := int(math.Ceil(float64(duration) / float64(msPerBlock)))
-				if connectBlocks < 1 {
-					connectBlocks = 1
-				}
-				
-				fmt.Fprintf(os.Stdout, "  %sTCP Connection\033[0m:       %12s %s%s%s\u2588%s\033[0m\r", 
-					pd.PhaseColors["connect"],
-					duration,
-					"\033[38;5;240m", // Couleur grise pour les phases précédentes
-					strings.Repeat(" ", prevBlocks),
-					pd.PhaseColors["connect"],
-					strings.Repeat("\u2588", connectBlocks-1))
-			}
-		case "tls":
-			if state == "complete" {
-				// Calculer les blocs pour les phases précédentes
-				var prevDuration time.Duration = 0
-				if pd.State.DNSCompleted {
-					prevDuration += pd.State.DNSDuration
-				}
-				if pd.State.ConnectCompleted {
-					prevDuration += pd.State.ConnectDuration
-				}
-				prevBlocks := int(math.Ceil(float64(prevDuration) / float64(msPerBlock)))
-				
-				// Calculer les blocs pour la phase courrante
-				tlsBlocks := int(math.Ceil(float64(duration) / float64(msPerBlock)))
-				if tlsBlocks < 1 {
-					tlsBlocks = 1
-				}
-				
-				fmt.Fprintf(os.Stdout, "  %sTLS Handshake\033[0m:        %12s %s%s%s\u2588%s\033[0m\r", 
-					pd.PhaseColors["tls"],
-					duration,
-					"\033[38;5;240m", // Couleur grise pour les phases précédentes
-					strings.Repeat(" ", prevBlocks),
-					pd.PhaseColors["tls"],
-					strings.Repeat("\u2588", tlsBlocks-1))
-			}
-		case "server":
-			if state == "response_first_byte" {
-				// Calculer les blocs pour les phases précédentes
-				var prevDuration time.Duration = 0
-				if pd.State.DNSCompleted {
-					prevDuration += pd.State.DNSDuration
-				}
-				if pd.State.ConnectCompleted {
-					prevDuration += pd.State.ConnectDuration
-				}
-				if pd.State.TLSCompleted {
-					prevDuration += pd.State.TLSDuration
-				}
-				prevBlocks := int(math.Ceil(float64(prevDuration) / float64(msPerBlock)))
-				
-				// Calculer les blocs pour la phase courrante
-				serverBlocks := int(math.Ceil(float64(duration) / float64(msPerBlock)))
-				if serverBlocks < 1 {
-					serverBlocks = 1
-				}
-				
-				fmt.Fprintf(os.Stdout, "  %sServer Process\033[0m:       %12s %s%s%s\u2588%s\033[0m\r", 
-					pd.PhaseColors["server"],
-					duration,
-					"\033[38;5;240m", // Couleur grise pour les phases précédentes
-					strings.Repeat(" ", prevBlocks),
-					pd.PhaseColors["server"],
-					strings.Repeat("\u2588", serverBlocks-1))
-			}
-		case "transfer":
-			if state == "response_complete" {
-				// Calculer les blocs pour les phases précédentes
-				var prevDuration time.Duration = 0
-				if pd.State.DNSCompleted {
-					prevDuration += pd.State.DNSDuration
-				}
-				if pd.State.ConnectCompleted {
-					prevDuration += pd.State.ConnectDuration
-				}
-				if pd.State.TLSCompleted {
-					prevDuration += pd.State.TLSDuration
-				}
-				if pd.State.ResponseStarted {
-					prevDuration += pd.State.ServerProcessDuration
-				}
-				prevBlocks := int(math.Ceil(float64(prevDuration) / float64(msPerBlock)))
-				
-				// Calculer les blocs pour la phase courrante
-				transferBlocks := int(math.Ceil(float64(duration) / float64(msPerBlock)))
-				if transferBlocks < 1 {
-					transferBlocks = 1
-				}
-				
-				fmt.Fprintf(os.Stdout, "  %sContent Transfer\033[0m:     %12s %s%s%s\u2588%s\033[0m\r", 
-					pd.PhaseColors["transfer"],
-					duration,
-					"\033[38;5;240m", // Couleur grise pour les phases précédentes
-					strings.Repeat(" ", prevBlocks),
-					pd.PhaseColors["transfer"],
-					strings.Repeat("\u2588", transferBlocks-1))
-			}
-		}
+		prevDuration := pd.getPreviousDuration(phaseInfo.colorKey)
+		prevBlocks := int(math.Ceil(float64(prevDuration) / float64(MsPerBlock)))
+		fmt.Fprintf(os.Stdout, "  %s%s\033[0m:           %12s %s%s%s\u2588%s\033[0m\r",
+			pd.PhaseColors[phaseInfo.colorKey], phaseInfo.desc, phaseInfo.durationFn(),
+			"\033[38;5;240m", strings.Repeat(" ", prevBlocks),
+			pd.PhaseColors[phaseInfo.colorKey], strings.Repeat("\u2588", blocks-1))
 	}
 }
 
