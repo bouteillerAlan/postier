@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/bouteillerAlan/postier/history"
 	"github.com/bouteillerAlan/postier/http"
@@ -38,6 +39,11 @@ func handleRequest(cmd *cobra.Command, args []string, method string) error {
 	err = history.AddToHistory(method, targetURL, resp.StatusCode, resp.Time, resp.ContentLength, headers, query, body, bodyType)
 	if err != nil && verbose {
 		fmt.Fprintf(os.Stderr, "Warning: Failed to add to history: %s\n", err)
+	}
+
+	// Attendre un peu pour s'assurer que toutes les informations de timing sont affichées
+	if showProgress {
+		time.Sleep(200 * time.Millisecond)
 	}
 
 	// Process response

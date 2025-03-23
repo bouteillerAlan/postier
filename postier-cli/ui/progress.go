@@ -87,7 +87,7 @@ func (pd *ProgressDisplay) Start() {
 		progressbar.OptionShowCount(),
 		progressbar.OptionUseANSICodes(true),
 		progressbar.OptionEnableColorCodes(true),
-		progressbar.OptionSetWriter(os.Stderr),
+		progressbar.OptionSetWriter(os.Stdout),
 		progressbar.OptionSetRenderBlankState(true),
 		progressbar.OptionSetTheme(progressbar.Theme{
 			BarStart:  "|",
@@ -145,7 +145,7 @@ func (pd *ProgressDisplay) renderProgressBar() string {
 		}
 		
 		color := pd.PhaseColors[phase]
-		segment := strings.Repeat("\u2588", int(width)) // Utiliser le caractère bloc Unicode
+		segment := strings.Repeat("█", int(width)) // Utiliser le caractère bloc complet
 		sb.WriteString(fmt.Sprintf("%s%s\033[0m", color, segment))
 		total += width
 	}
@@ -287,7 +287,7 @@ func (pd *ProgressDisplay) completeAll() {
 	pd.Bar.Finish()
 
 	// Add a summary of durations
-	fmt.Fprintln(os.Stderr, "\nHTTP Request Timings:")
+	fmt.Fprintln(os.Stdout, "\nHTTP Request Timings:")
 	
 	// Créer des barres visuelles colorées pour représenter les durées
 	totalDuration := pd.State.DNSDuration + pd.State.ConnectDuration + 
@@ -304,11 +304,11 @@ func (pd *ProgressDisplay) completeAll() {
 		if dnsWidth < 1 {
 			dnsWidth = 1
 		}
-		fmt.Fprintf(os.Stderr, "  %sDNS Lookup\033[0m:       %s %s%s\033[0m %d%%\n", 
+		fmt.Fprintf(os.Stdout, "  %sDNS Lookup\033[0m:           %12s %s█%s\033[0m %3d%%\n", 
 			pd.PhaseColors["dns"],
 			pd.State.DNSDuration, 
 			pd.PhaseColors["dns"],
-			strings.Repeat("█", dnsWidth),
+			strings.Repeat("█", dnsWidth-1),
 			int(float64(pd.State.DNSDuration) / float64(totalDuration) * 100))
 	}
 	
@@ -317,11 +317,11 @@ func (pd *ProgressDisplay) completeAll() {
 		if connectWidth < 1 {
 			connectWidth = 1
 		}
-		fmt.Fprintf(os.Stderr, "  %sTCP Connection\033[0m:   %s %s%s\033[0m %d%%\n", 
+		fmt.Fprintf(os.Stdout, "  %sTCP Connection\033[0m:       %12s %s█%s\033[0m %3d%%\n", 
 			pd.PhaseColors["connect"],
 			pd.State.ConnectDuration, 
 			pd.PhaseColors["connect"],
-			strings.Repeat("█", connectWidth),
+			strings.Repeat("█", connectWidth-1),
 			int(float64(pd.State.ConnectDuration) / float64(totalDuration) * 100))
 	}
 	
@@ -330,11 +330,11 @@ func (pd *ProgressDisplay) completeAll() {
 		if tlsWidth < 1 {
 			tlsWidth = 1
 		}
-		fmt.Fprintf(os.Stderr, "  %sTLS Handshake\033[0m:    %s %s%s\033[0m %d%%\n", 
+		fmt.Fprintf(os.Stdout, "  %sTLS Handshake\033[0m:        %12s %s█%s\033[0m %3d%%\n", 
 			pd.PhaseColors["tls"],
 			pd.State.TLSDuration, 
 			pd.PhaseColors["tls"],
-			strings.Repeat("█", tlsWidth),
+			strings.Repeat("█", tlsWidth-1),
 			int(float64(pd.State.TLSDuration) / float64(totalDuration) * 100))
 	}
 	
@@ -343,11 +343,11 @@ func (pd *ProgressDisplay) completeAll() {
 		if serverWidth < 1 {
 			serverWidth = 1
 		}
-		fmt.Fprintf(os.Stderr, "  %sServer Process\033[0m:   %s %s%s\033[0m %d%%\n", 
+		fmt.Fprintf(os.Stdout, "  %sServer Process\033[0m:       %12s %s█%s\033[0m %3d%%\n", 
 			pd.PhaseColors["server"],
 			pd.State.ServerProcessDuration, 
 			pd.PhaseColors["server"],
-			strings.Repeat("█", serverWidth),
+			strings.Repeat("█", serverWidth-1),
 			int(float64(pd.State.ServerProcessDuration) / float64(totalDuration) * 100))
 	}
 	
@@ -356,19 +356,21 @@ func (pd *ProgressDisplay) completeAll() {
 		if transferWidth < 1 {
 			transferWidth = 1
 		}
-		fmt.Fprintf(os.Stderr, "  %sContent Transfer\033[0m: %s %s%s\033[0m %d%%\n", 
+		fmt.Fprintf(os.Stdout, "  %sContent Transfer\033[0m:     %12s %s█%s\033[0m %3d%%\n", 
 			pd.PhaseColors["transfer"],
 			pd.State.TransferDuration, 
 			pd.PhaseColors["transfer"],
-			strings.Repeat("█", transferWidth),
+			strings.Repeat("█", transferWidth-1),
 			int(float64(pd.State.TransferDuration) / float64(totalDuration) * 100))
 	}
 	
 	// Afficher la durée totale
-	fmt.Fprintf(os.Stderr, "  \033[37mTotal Duration\033[0m:    %s\n", totalDuration)
+	fmt.Fprintf(os.Stdout, "  \033[37mTotal Duration\033[0m:        %12s\n", totalDuration)
 
-	// Add a final newline
-	fmt.Fprintln(os.Stderr, "")
+	// Add a final newline and synchronization point
+	fmt.Fprintln(os.Stdout, "")
+	// Force flush Stdout to ensure all timing info is displayed before HTTP status
+	time.Sleep(100 * time.Millisecond)
 }
 
 // Update sends a progress update
