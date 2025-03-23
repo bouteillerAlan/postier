@@ -53,11 +53,11 @@ type ProgressDisplay struct {
 func NewProgressDisplay(enabled bool) *ProgressDisplay {
 	// Définir les couleurs pour chaque phase basées sur les couleurs du logo
 	phaseColors := map[string]string{
-		"dns":     "#EFCF4A", // Jaune doré
-		"connect": "#D95525", // Orange
-		"tls":     "#CC3B2C", // Rouge
-		"server":  "#9D2C44", // Rouge-violet
-		"transfer": "#6F364F", // Violet foncé
+		"dns":     "\033[38;5;220m", // Jaune doré
+		"connect": "\033[38;5;202m", // Orange
+		"tls":     "\033[38;5;196m", // Rouge
+		"server":  "\033[38;5;162m", // Rouge-violet
+		"transfer": "\033[38;5;127m", // Violet foncé
 	}
 
 	return &ProgressDisplay{
@@ -103,7 +103,7 @@ func (pd *ProgressDisplay) Start() {
 // getCurrentPhaseDescription returns the current active phase description
 func (pd *ProgressDisplay) getCurrentPhaseDescription() string {
 	var current string = "Waiting..."
-	var color string = "#FFFFFF"
+	var color string = "\033[0m"
 
 	if pd.State.ResponseCompleted {
 		current = "Complete"
@@ -125,7 +125,7 @@ func (pd *ProgressDisplay) getCurrentPhaseDescription() string {
 		color = pd.PhaseColors["dns"]
 	}
 
-	return fmt.Sprintf("[%s]%-17s[reset]", color, current)
+	return fmt.Sprintf("[%s]%-17s\033[0m", color, current)
 }
 
 // renderProgressBar custom renders the progress bar with colored segments
@@ -145,8 +145,8 @@ func (pd *ProgressDisplay) renderProgressBar() string {
 		}
 		
 		color := pd.PhaseColors[phase]
-		segment := strings.Repeat("█", int(width))
-		sb.WriteString(fmt.Sprintf("[%s]%s[reset]", color, segment))
+		segment := strings.Repeat("\u2588", int(width)) // Utiliser le caractère bloc Unicode
+		sb.WriteString(fmt.Sprintf("%s%s\033[0m", color, segment))
 		total += width
 	}
 	
@@ -304,7 +304,7 @@ func (pd *ProgressDisplay) completeAll() {
 		if dnsWidth < 1 {
 			dnsWidth = 1
 		}
-		fmt.Fprintf(os.Stderr, "  [%s]DNS Lookup[reset]:       %s [%s]%s[reset] %d%%\n", 
+		fmt.Fprintf(os.Stderr, "  %sDNS Lookup\033[0m:       %s %s%s\033[0m %d%%\n", 
 			pd.PhaseColors["dns"],
 			pd.State.DNSDuration, 
 			pd.PhaseColors["dns"],
@@ -317,7 +317,7 @@ func (pd *ProgressDisplay) completeAll() {
 		if connectWidth < 1 {
 			connectWidth = 1
 		}
-		fmt.Fprintf(os.Stderr, "  [%s]TCP Connection[reset]:   %s [%s]%s[reset] %d%%\n", 
+		fmt.Fprintf(os.Stderr, "  %sTCP Connection\033[0m:   %s %s%s\033[0m %d%%\n", 
 			pd.PhaseColors["connect"],
 			pd.State.ConnectDuration, 
 			pd.PhaseColors["connect"],
@@ -330,7 +330,7 @@ func (pd *ProgressDisplay) completeAll() {
 		if tlsWidth < 1 {
 			tlsWidth = 1
 		}
-		fmt.Fprintf(os.Stderr, "  [%s]TLS Handshake[reset]:    %s [%s]%s[reset] %d%%\n", 
+		fmt.Fprintf(os.Stderr, "  %sTLS Handshake\033[0m:    %s %s%s\033[0m %d%%\n", 
 			pd.PhaseColors["tls"],
 			pd.State.TLSDuration, 
 			pd.PhaseColors["tls"],
@@ -343,7 +343,7 @@ func (pd *ProgressDisplay) completeAll() {
 		if serverWidth < 1 {
 			serverWidth = 1
 		}
-		fmt.Fprintf(os.Stderr, "  [%s]Server Process[reset]:   %s [%s]%s[reset] %d%%\n", 
+		fmt.Fprintf(os.Stderr, "  %sServer Process\033[0m:   %s %s%s\033[0m %d%%\n", 
 			pd.PhaseColors["server"],
 			pd.State.ServerProcessDuration, 
 			pd.PhaseColors["server"],
@@ -356,7 +356,7 @@ func (pd *ProgressDisplay) completeAll() {
 		if transferWidth < 1 {
 			transferWidth = 1
 		}
-		fmt.Fprintf(os.Stderr, "  [%s]Content Transfer[reset]: %s [%s]%s[reset] %d%%\n", 
+		fmt.Fprintf(os.Stderr, "  %sContent Transfer\033[0m: %s %s%s\033[0m %d%%\n", 
 			pd.PhaseColors["transfer"],
 			pd.State.TransferDuration, 
 			pd.PhaseColors["transfer"],
@@ -365,7 +365,7 @@ func (pd *ProgressDisplay) completeAll() {
 	}
 	
 	// Afficher la durée totale
-	fmt.Fprintf(os.Stderr, "  [#FFFFFF]Total Duration[reset]:    %s\n", totalDuration)
+	fmt.Fprintf(os.Stderr, "  \033[37mTotal Duration\033[0m:    %s\n", totalDuration)
 
 	// Add a final newline
 	fmt.Fprintln(os.Stderr, "")
