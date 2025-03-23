@@ -298,18 +298,24 @@ func (pd *ProgressDisplay) completeAll() {
 	}
 	
 	max_width := 50 // Largeur maximum des barres visuelles
+
+	// Garder la trace des durées cumulées précédentes pour l'effet waterfall
+	var cumulativeDuration time.Duration = 0
 	
 	if pd.State.DNSCompleted {
 		dnsWidth := int(float64(pd.State.DNSDuration) / float64(totalDuration) * float64(max_width))
 		if dnsWidth < 1 {
 			dnsWidth = 1
 		}
-		fmt.Fprintf(os.Stdout, "  %sDNS Lookup\033[0m:           %12s %s█%s\033[0m %3d%%\n", 
+		
+		// DNS est la première phase, pas de phases précédentes
+		fmt.Fprintf(os.Stdout, "  %sDNS Lookup\033[0m:           %12s %s█%s\033[0m\n", 
 			pd.PhaseColors["dns"],
 			pd.State.DNSDuration, 
 			pd.PhaseColors["dns"],
-			strings.Repeat("█", dnsWidth-1),
-			int(float64(pd.State.DNSDuration) / float64(totalDuration) * 100))
+			strings.Repeat("█", dnsWidth-1))
+
+		cumulativeDuration += pd.State.DNSDuration
 	}
 	
 	if pd.State.ConnectCompleted {
@@ -317,12 +323,19 @@ func (pd *ProgressDisplay) completeAll() {
 		if connectWidth < 1 {
 			connectWidth = 1
 		}
-		fmt.Fprintf(os.Stdout, "  %sTCP Connection\033[0m:       %12s %s█%s\033[0m %3d%%\n", 
+
+		// Calculer la largeur des phases précédentes pour l'effet waterfall
+		prevWidth := int(float64(cumulativeDuration) / float64(totalDuration) * float64(max_width))
+		
+		fmt.Fprintf(os.Stdout, "  %sTCP Connection\033[0m:       %12s %s%s%s█%s\033[0m\n", 
 			pd.PhaseColors["connect"],
-			pd.State.ConnectDuration, 
+			pd.State.ConnectDuration,
+			"\033[38;5;240m", // Couleur grise pour les phases précédentes
+			strings.Repeat(" ", prevWidth),
 			pd.PhaseColors["connect"],
-			strings.Repeat("█", connectWidth-1),
-			int(float64(pd.State.ConnectDuration) / float64(totalDuration) * 100))
+			strings.Repeat("█", connectWidth-1))
+
+		cumulativeDuration += pd.State.ConnectDuration
 	}
 	
 	if pd.State.TLSCompleted {
@@ -330,12 +343,19 @@ func (pd *ProgressDisplay) completeAll() {
 		if tlsWidth < 1 {
 			tlsWidth = 1
 		}
-		fmt.Fprintf(os.Stdout, "  %sTLS Handshake\033[0m:        %12s %s█%s\033[0m %3d%%\n", 
+
+		// Calculer la largeur des phases précédentes pour l'effet waterfall
+		prevWidth := int(float64(cumulativeDuration) / float64(totalDuration) * float64(max_width))
+		
+		fmt.Fprintf(os.Stdout, "  %sTLS Handshake\033[0m:        %12s %s%s%s█%s\033[0m\n", 
 			pd.PhaseColors["tls"],
-			pd.State.TLSDuration, 
+			pd.State.TLSDuration,
+			"\033[38;5;240m", // Couleur grise pour les phases précédentes
+			strings.Repeat(" ", prevWidth),
 			pd.PhaseColors["tls"],
-			strings.Repeat("█", tlsWidth-1),
-			int(float64(pd.State.TLSDuration) / float64(totalDuration) * 100))
+			strings.Repeat("█", tlsWidth-1))
+
+		cumulativeDuration += pd.State.TLSDuration
 	}
 	
 	if pd.State.ResponseStarted {
@@ -343,12 +363,19 @@ func (pd *ProgressDisplay) completeAll() {
 		if serverWidth < 1 {
 			serverWidth = 1
 		}
-		fmt.Fprintf(os.Stdout, "  %sServer Process\033[0m:       %12s %s█%s\033[0m %3d%%\n", 
+
+		// Calculer la largeur des phases précédentes pour l'effet waterfall
+		prevWidth := int(float64(cumulativeDuration) / float64(totalDuration) * float64(max_width))
+		
+		fmt.Fprintf(os.Stdout, "  %sServer Process\033[0m:       %12s %s%s%s█%s\033[0m\n", 
 			pd.PhaseColors["server"],
-			pd.State.ServerProcessDuration, 
+			pd.State.ServerProcessDuration,
+			"\033[38;5;240m", // Couleur grise pour les phases précédentes
+			strings.Repeat(" ", prevWidth),
 			pd.PhaseColors["server"],
-			strings.Repeat("█", serverWidth-1),
-			int(float64(pd.State.ServerProcessDuration) / float64(totalDuration) * 100))
+			strings.Repeat("█", serverWidth-1))
+
+		cumulativeDuration += pd.State.ServerProcessDuration
 	}
 	
 	if pd.State.ResponseCompleted {
@@ -356,12 +383,17 @@ func (pd *ProgressDisplay) completeAll() {
 		if transferWidth < 1 {
 			transferWidth = 1
 		}
-		fmt.Fprintf(os.Stdout, "  %sContent Transfer\033[0m:     %12s %s█%s\033[0m %3d%%\n", 
+
+		// Calculer la largeur des phases précédentes pour l'effet waterfall
+		prevWidth := int(float64(cumulativeDuration) / float64(totalDuration) * float64(max_width))
+		
+		fmt.Fprintf(os.Stdout, "  %sContent Transfer\033[0m:     %12s %s%s%s█%s\033[0m\n", 
 			pd.PhaseColors["transfer"],
-			pd.State.TransferDuration, 
+			pd.State.TransferDuration,
+			"\033[38;5;240m", // Couleur grise pour les phases précédentes
+			strings.Repeat(" ", prevWidth),
 			pd.PhaseColors["transfer"],
-			strings.Repeat("█", transferWidth-1),
-			int(float64(pd.State.TransferDuration) / float64(totalDuration) * 100))
+			strings.Repeat("█", transferWidth-1))
 	}
 	
 	// Afficher la durée totale
