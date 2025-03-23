@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Box, Text, Heading } from '@radix-ui/themes';
+import { Text, Heading } from '@radix-ui/themes';
 import { HomeIcon, LayersIcon, ClockIcon, GearIcon, PlusIcon } from '@radix-ui/react-icons';
 
 const SidebarContainer = styled.div`
@@ -27,6 +27,11 @@ const SidebarLogo = styled.div`
   svg {
     color: var(--orange);
   }
+`;
+
+const LogoImage = styled.img`
+  height: 24px;
+  width: auto;
 `;
 
 const SidebarSection = styled.div`
@@ -93,7 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
     <SidebarContainer>
       <SidebarHeader>
         <SidebarLogo>
-          <Box style={{ color: '#D95525', fontSize: '24px' }}>ud83dudce8</Box>
+          <LogoImage src="/postier.svg" alt="Postier Logo" />
           <Heading size="4" style={{ fontWeight: 600 }}>Postier</Heading>
         </SidebarLogo>
       </SidebarHeader>

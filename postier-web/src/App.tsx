@@ -1,10 +1,6 @@
 import { Theme } from '@radix-ui/themes'
 import '@radix-ui/themes/styles.css'
-
-// Import our global styles
 import { GlobalStyles } from './theme/styled'
-
-// Import components
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Features from './components/Features'
@@ -16,8 +12,8 @@ function App() {
   return (
     <>
       <GlobalStyles />
-      <Theme>
-        <Navbar />
+      <Theme appearance="dark">
+        <Navbar/>
         <main>
           <Hero />
           <Features />

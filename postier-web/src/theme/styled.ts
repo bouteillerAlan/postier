@@ -1,6 +1,5 @@
 import { createGlobalStyle } from 'styled-components';
 
-// Global styles
 export const GlobalStyles = createGlobalStyle`
   :root {
     --yellow: #EFCF4A;
@@ -8,8 +7,8 @@ export const GlobalStyles = createGlobalStyle`
     --red: #CC3B2C;
     --pink: #9D2C44;
     --purple: #6F364F;
-    
-    --background: #0A0A0B;
+
+    --background: #242424;
     --foreground: #FFFFFF;
     --card: #101113;
     --card-foreground: #FFFFFF;

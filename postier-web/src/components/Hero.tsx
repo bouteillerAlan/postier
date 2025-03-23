@@ -52,7 +52,7 @@ const HeroImage = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(180deg, rgba(10, 10, 11, 0) 0%, rgba(10, 10, 11, 1) 100%);
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%);
     pointer-events: none;
     border-radius: 8px;
   }
@@ -83,7 +83,7 @@ const Hero: React.FC = () => {
       </Flex>
       
       <HeroImage>
-        <img src="/screenshot.png" alt="Postier interface showing an HTTP request" />
+        <img src="/mainScreen.png" alt="Postier interface showing an HTTP request" />
       </HeroImage>
     </HeroContainer>
   );

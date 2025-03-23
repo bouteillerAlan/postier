@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Box, Flex, Text } from '@radix-ui/themes';
+import { Flex, Text } from '@radix-ui/themes';
 import { GitHubLogoIcon } from '@radix-ui/react-icons';
 
 const NavContainer = styled.nav`
@@ -9,7 +9,7 @@ const NavContainer = styled.nav`
   top: 0;
   left: 0;
   right: 0;
-  background-color: rgba(10, 10, 11, 0.8);
+  background-color: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(10px);
   z-index: 100;
   border-bottom: 1px solid var(--border);
@@ -31,6 +31,11 @@ const Logo = styled.div`
   gap: 8px;
   font-weight: 600;
   font-size: 18px;
+`;
+
+const LogoImage = styled.img`
+  height: 24px;
+  width: auto;
 `;
 
 const NavLinks = styled.div`
@@ -68,7 +73,7 @@ const Navbar: React.FC = () => {
     <NavContainer>
       <NavInner>
         <Logo>
-          <Box style={{ color: '#D95525', fontSize: '24px' }}>ud83dudce8</Box>
+          <LogoImage src="/postier.svg" alt="Postier Logo" />
           <span>Postier</span>
         </Logo>
         
