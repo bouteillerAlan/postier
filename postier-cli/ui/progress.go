@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strings"
 	"time"
@@ -289,7 +290,6 @@ func (pd *ProgressDisplay) completeAll() {
 	// Add a summary of durations
 	fmt.Fprintln(os.Stdout, "\nHTTP Request Timings:")
 	
-	// Créer des barres visuelles colorées pour représenter les durées
 	totalDuration := pd.State.DNSDuration + pd.State.ConnectDuration + 
 		pd.State.TLSDuration + pd.State.ServerProcessDuration + pd.State.TransferDuration
 	
@@ -297,15 +297,17 @@ func (pd *ProgressDisplay) completeAll() {
 		totalDuration = time.Millisecond // Éviter la division par zéro
 	}
 	
-	max_width := 50 // Largeur maximum des barres visuelles
+	// Chaque bloc représente 20ms
+	msPerBlock := time.Duration(20 * time.Millisecond)
 
 	// Garder la trace des durées cumulées précédentes pour l'effet waterfall
 	var cumulativeDuration time.Duration = 0
 	
 	if pd.State.DNSCompleted {
-		dnsWidth := int(float64(pd.State.DNSDuration) / float64(totalDuration) * float64(max_width))
-		if dnsWidth < 1 {
-			dnsWidth = 1
+		// Calculer le nombre de blocs (1 bloc = 20ms)
+		dnsBlocks := int(math.Ceil(float64(pd.State.DNSDuration) / float64(msPerBlock)))
+		if dnsBlocks < 1 {
+			dnsBlocks = 1
 		}
 		
 		// DNS est la première phase, pas de phases précédentes
@@ -313,87 +315,91 @@ func (pd *ProgressDisplay) completeAll() {
 			pd.PhaseColors["dns"],
 			pd.State.DNSDuration, 
 			pd.PhaseColors["dns"],
-			strings.Repeat("█", dnsWidth-1))
+			strings.Repeat("█", dnsBlocks-1))
 
 		cumulativeDuration += pd.State.DNSDuration
 	}
 	
 	if pd.State.ConnectCompleted {
-		connectWidth := int(float64(pd.State.ConnectDuration) / float64(totalDuration) * float64(max_width))
-		if connectWidth < 1 {
-			connectWidth = 1
+		// Calculer le nombre de blocs (1 bloc = 20ms)
+		connectBlocks := int(math.Ceil(float64(pd.State.ConnectDuration) / float64(msPerBlock)))
+		if connectBlocks < 1 {
+			connectBlocks = 1
 		}
-
-		// Calculer la largeur des phases précédentes pour l'effet waterfall
-		prevWidth := int(float64(cumulativeDuration) / float64(totalDuration) * float64(max_width))
+		
+		// Calculer le nombre de blocs pour les phases précédentes
+		prevBlocks := int(math.Ceil(float64(cumulativeDuration) / float64(msPerBlock)))
 		
 		fmt.Fprintf(os.Stdout, "  %sTCP Connection\033[0m:       %12s %s%s%s█%s\033[0m\n", 
 			pd.PhaseColors["connect"],
 			pd.State.ConnectDuration,
 			"\033[38;5;240m", // Couleur grise pour les phases précédentes
-			strings.Repeat(" ", prevWidth),
+			strings.Repeat(" ", prevBlocks),
 			pd.PhaseColors["connect"],
-			strings.Repeat("█", connectWidth-1))
+			strings.Repeat("█", connectBlocks-1))
 
 		cumulativeDuration += pd.State.ConnectDuration
 	}
 	
 	if pd.State.TLSCompleted {
-		tlsWidth := int(float64(pd.State.TLSDuration) / float64(totalDuration) * float64(max_width))
-		if tlsWidth < 1 {
-			tlsWidth = 1
+		// Calculer le nombre de blocs (1 bloc = 20ms)
+		tlsBlocks := int(math.Ceil(float64(pd.State.TLSDuration) / float64(msPerBlock)))
+		if tlsBlocks < 1 {
+			tlsBlocks = 1
 		}
-
-		// Calculer la largeur des phases précédentes pour l'effet waterfall
-		prevWidth := int(float64(cumulativeDuration) / float64(totalDuration) * float64(max_width))
+		
+		// Calculer le nombre de blocs pour les phases précédentes
+		prevBlocks := int(math.Ceil(float64(cumulativeDuration) / float64(msPerBlock)))
 		
 		fmt.Fprintf(os.Stdout, "  %sTLS Handshake\033[0m:        %12s %s%s%s█%s\033[0m\n", 
 			pd.PhaseColors["tls"],
 			pd.State.TLSDuration,
 			"\033[38;5;240m", // Couleur grise pour les phases précédentes
-			strings.Repeat(" ", prevWidth),
+			strings.Repeat(" ", prevBlocks),
 			pd.PhaseColors["tls"],
-			strings.Repeat("█", tlsWidth-1))
+			strings.Repeat("█", tlsBlocks-1))
 
 		cumulativeDuration += pd.State.TLSDuration
 	}
 	
 	if pd.State.ResponseStarted {
-		serverWidth := int(float64(pd.State.ServerProcessDuration) / float64(totalDuration) * float64(max_width))
-		if serverWidth < 1 {
-			serverWidth = 1
+		// Calculer le nombre de blocs (1 bloc = 20ms)
+		serverBlocks := int(math.Ceil(float64(pd.State.ServerProcessDuration) / float64(msPerBlock)))
+		if serverBlocks < 1 {
+			serverBlocks = 1
 		}
-
-		// Calculer la largeur des phases précédentes pour l'effet waterfall
-		prevWidth := int(float64(cumulativeDuration) / float64(totalDuration) * float64(max_width))
+		
+		// Calculer le nombre de blocs pour les phases précédentes
+		prevBlocks := int(math.Ceil(float64(cumulativeDuration) / float64(msPerBlock)))
 		
 		fmt.Fprintf(os.Stdout, "  %sServer Process\033[0m:       %12s %s%s%s█%s\033[0m\n", 
 			pd.PhaseColors["server"],
 			pd.State.ServerProcessDuration,
 			"\033[38;5;240m", // Couleur grise pour les phases précédentes
-			strings.Repeat(" ", prevWidth),
+			strings.Repeat(" ", prevBlocks),
 			pd.PhaseColors["server"],
-			strings.Repeat("█", serverWidth-1))
+			strings.Repeat("█", serverBlocks-1))
 
 		cumulativeDuration += pd.State.ServerProcessDuration
 	}
 	
 	if pd.State.ResponseCompleted {
-		transferWidth := int(float64(pd.State.TransferDuration) / float64(totalDuration) * float64(max_width))
-		if transferWidth < 1 {
-			transferWidth = 1
+		// Calculer le nombre de blocs (1 bloc = 20ms)
+		transferBlocks := int(math.Ceil(float64(pd.State.TransferDuration) / float64(msPerBlock)))
+		if transferBlocks < 1 {
+			transferBlocks = 1
 		}
-
-		// Calculer la largeur des phases précédentes pour l'effet waterfall
-		prevWidth := int(float64(cumulativeDuration) / float64(totalDuration) * float64(max_width))
+		
+		// Calculer le nombre de blocs pour les phases précédentes
+		prevBlocks := int(math.Ceil(float64(cumulativeDuration) / float64(msPerBlock)))
 		
 		fmt.Fprintf(os.Stdout, "  %sContent Transfer\033[0m:     %12s %s%s%s█%s\033[0m\n", 
 			pd.PhaseColors["transfer"],
 			pd.State.TransferDuration,
 			"\033[38;5;240m", // Couleur grise pour les phases précédentes
-			strings.Repeat(" ", prevWidth),
+			strings.Repeat(" ", prevBlocks),
 			pd.PhaseColors["transfer"],
-			strings.Repeat("█", transferWidth-1))
+			strings.Repeat("█", transferBlocks-1))
 	}
 	
 	// Afficher la durée totale
