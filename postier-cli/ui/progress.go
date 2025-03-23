@@ -61,7 +61,10 @@ func (pd *ProgressDisplay) Start() {
 		return
 	}
 
-	// Create progress bars
+	// Make sure we start with fresh lines for each progress bar
+	fmt.Fprintln(os.Stderr, "")
+
+	// Create progress bars with vertical layout
 	pd.Bars["dns"] = createProgressBar("DNS Lookup")
 	pd.Bars["connect"] = createProgressBar("TCP Connection")
 	pd.Bars["tls"] = createProgressBar("TLS Handshake")
@@ -82,6 +85,11 @@ func createProgressBar(description string) *progressbar.ProgressBar {
 		progressbar.OptionSetPredictTime(false),
 		progressbar.OptionShowCount(),
 		progressbar.OptionSpinnerType(14),
+		progressbar.OptionUseANSICodes(true),
+		progressbar.OptionEnableColorCodes(true),
+		progressbar.OptionSetWriter(os.Stderr),
+		progressbar.OptionSetRenderBlankState(true),
+		progressbar.OptionOnCompletion(func() { fmt.Fprintf(os.Stderr, "\n") }),
 	)
 }
 
@@ -208,7 +216,25 @@ func (pd *ProgressDisplay) completeAll() {
 		bar.Finish()
 	}
 
-	// Add a newline after all bars
+	// Add a summary of durations
+	fmt.Fprintln(os.Stderr, "\nHTTP Request Timings:")
+	if pd.State.DNSCompleted {
+		fmt.Fprintf(os.Stderr, "  DNS Lookup:       %s\n", pd.State.DNSDuration)
+	}
+	if pd.State.ConnectCompleted {
+		fmt.Fprintf(os.Stderr, "  TCP Connection:   %s\n", pd.State.ConnectDuration)
+	}
+	if pd.State.TLSCompleted {
+		fmt.Fprintf(os.Stderr, "  TLS Handshake:    %s\n", pd.State.TLSDuration)
+	}
+	if pd.State.ResponseStarted {
+		fmt.Fprintf(os.Stderr, "  Server Process:   %s\n", pd.State.ServerProcessDuration)
+	}
+	if pd.State.ResponseCompleted {
+		fmt.Fprintf(os.Stderr, "  Content Transfer: %s\n", pd.State.TransferDuration)
+	}
+
+	// Add a final newline
 	fmt.Fprintln(os.Stderr, "")
 }
 
