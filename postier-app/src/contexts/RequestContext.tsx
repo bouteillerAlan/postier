@@ -3,8 +3,8 @@ import {PostierObjectWithMetrics} from '../types/types.ts';
 
 // Shape of the context value
 interface RequestDataContextType {
-  requestData: PostierObjectWithMetrics;
-  setRequestData: React.Dispatch<React.SetStateAction<PostierObjectWithMetrics>>;
+  requestData: PostierObjectWithMetrics[];
+  setRequestData: React.Dispatch<React.SetStateAction<PostierObjectWithMetrics[]>>;
 }
 
 // Context with default value
@@ -12,7 +12,7 @@ export const RequestDataContext = createContext<RequestDataContextType | null>(n
 
 // Provider
 export const RequestDataProvider = ({ children }: { children: ReactNode }) => {
-  const [requestData, setRequestData] = useState<PostierObjectWithMetrics>({
+  const [requestData, setRequestData] = useState<PostierObjectWithMetrics[]>([{
     debug: [],
     request: {
       id: '',
@@ -44,7 +44,7 @@ export const RequestDataProvider = ({ children }: { children: ReactNode }) => {
       total: 0,
       on_error: 'prepare'
     }
-  });
+  }]);
 
   return (
     <RequestDataContext.Provider value={{ requestData, setRequestData }}>
