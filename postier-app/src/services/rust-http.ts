@@ -1,7 +1,9 @@
 import {PostierObjectWithMetrics, RequestData} from '../types/types.ts';
-import {invoke} from "@tauri-apps/api/core";
+import {invoke} from '@tauri-apps/api/core';
+import {v4 as uuidv4} from 'uuid';
 
 export const sendRequest = async (requestData: RequestData): Promise<PostierObjectWithMetrics> => {
+  const uid = uuidv4();
   try {
     const rep = await invoke<PostierObjectWithMetrics>('send_request_with_metrics', {
       requestData: {
