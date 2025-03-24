@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from 'react';
-import {Box, Container, Tabs, Theme} from '@radix-ui/themes';
+import {Box, Container, SegmentedControl, Tabs, Theme, Text, Button, ScrollArea} from '@radix-ui/themes';
 import RequestForm from './components/RequestForm';
 import ResponseViewer from './components/ResponseViewer';
 import RequestHistory from './components/RequestHistory';
@@ -12,6 +12,8 @@ import {useSetting} from './contexts/SettingContext.tsx';
 import UserSetting from './components/UserSetting.tsx';
 import AlertCard from './components/AlertCard.tsx';
 import {getContentFromFile, writeContentInFile} from './services/fileStorage.ts';
+import {PlusIcon} from '@radix-ui/react-icons';
+import {getRequestDefault} from './services/defaultData.ts';
 
 function App() {
   const { setting, setSetting } = useSetting();
@@ -21,6 +23,7 @@ function App() {
   const [mainTabs, setMainTabs] = useState<string>('request');
   const [alert, setAlert] = useState<Alert[]>([{title: '', message: '', show: false}]);
   const mainTabRef = useRef<HTMLDivElement>(null);
+  const [tabIndex, setTabIndex] = useState<string>(requestData[0].request.id);
 
   /**
    * replace the current data in the request context by the new one
@@ -28,7 +31,12 @@ function App() {
    * @return void
    */
   function replaceRequestDataContext(elem: PostierObjectWithMetrics): void {
-    setRequestData(() => elem);
+    setRequestData((prev: PostierObjectWithMetrics[]) => {
+      const oldData = prev;
+      const keyToReplace = prev.findIndex((v) => v.request.id === elem.request.id);
+      oldData.splice(keyToReplace, 1, elem);
+      return oldData;
+    });
   }
 
   /**
@@ -53,9 +61,12 @@ function App() {
     try {
       const postierObject = await sendRequest(requestConfig);
       // store the response for the responseViewer
-      setRequestData((prev: PostierObjectWithMetrics) => {
-        prev.debug.concat(postierObject.debug); // because we have some data already set eg: 31,32 in ResponseViewer
-        return {...prev, ...postierObject};
+      setRequestData((prev: PostierObjectWithMetrics[]) => {
+        const prevData = prev;
+        const editedIndex = prevData.findIndex((v) => v.request.id === postierObject.request.id);
+        prevData.splice(editedIndex, 1, postierObject);
+        //postierObject.debug.concat(prevData.debug); // because we have some data already set in ResponseViewer
+        return prevData;
       });
       // save all the data in the history feed
       setHistoryData((prev: PostierObjectWithMetrics[]) => {
@@ -99,8 +110,39 @@ function App() {
     });
   }, []);
 
-  function reverseHistoryData() {
-    return [...historyData.reverse()];
+  /**
+   * handle all the value change for the request form
+   * @param key the key of the value the form changed
+   * @param value the new value you want to put on the key
+   * @param id the id of the request object
+   */
+  function handleRequestData(key: keyof RequestData, value: any, id: string): void {
+    console.log(key, value, id);
+    setRequestData((prev: PostierObjectWithMetrics[]) => {
+      const prevData = prev;
+      const dataIndex = prevData.findIndex((v) => v.request.id === id);
+      prevData[dataIndex].request[key] = value as never; // todo: never can be, maybe replaced with real type
+      return [...prevData];
+    });
+  }
+
+  /**
+   * return the index of the request id
+   * @return number the index of the request in the requestData context array
+   */
+  function getRequestIndex(): number {
+    return requestData.findIndex((v) => v.request.id === tabIndex);
+  }
+
+  /**
+   * add a request, so a tab, and set the tabIndex with this new id
+   */
+  function addARequest() {
+    const newRequest = getRequestDefault();
+    setRequestData((prev) => {
+      return [...prev, newRequest];
+    });
+    setTabIndex(newRequest.request.id);
   }
 
   return (
@@ -120,15 +162,36 @@ function App() {
             </Tabs.List>
 
             <Tabs.Content value='request'>
-              <RequestForm onSubmit={handleSendRequest} isLoading={isLoading}/>
-              <ResponseViewer response={requestData.response} debug={requestData.debug} metrics={requestData.metrics} userConfig={setting}/>
+
+              <ScrollArea>
+                <SegmentedControl.Root value={tabIndex} mt='5'>
+                  {(requestData && requestData.length > 0) ? requestData.map((rdata) => (
+                    <SegmentedControl.Item key={rdata.request.id} onClick={() => setTabIndex(rdata.request.id)} value={rdata.request.id}>{rdata.request.id.slice(0, 4)}</SegmentedControl.Item>
+                  )) : <Text>Error no default requestData</Text>}
+                  <Button onClick={addARequest}><PlusIcon/></Button>
+                </SegmentedControl.Root>
+              </ScrollArea>
+
+              <RequestForm
+                onSubmit={handleSendRequest}
+                isLoading={isLoading}
+                requestData={requestData[getRequestIndex()]}
+                setRequestData={handleRequestData}
+              />
+              <ResponseViewer
+                response={requestData[getRequestIndex()].response}
+                debug={requestData[getRequestIndex()].debug}
+                metrics={requestData[getRequestIndex()].metrics}
+                userConfig={setting}
+              />
+
             </Tabs.Content>
 
             <Tabs.Content value='history'>
               <RequestHistory
                 isLoading={isLoading}
                 mainTabRef={mainTabRef}
-                history={reverseHistoryData()}
+                history={historyData}
                 setHistory={setHistoryData}
                 onClickElement={updateContextAndGoHome}
               />
@@ -141,7 +204,7 @@ function App() {
           </Tabs.Root>
         </Container>
 
-        <Box style={{position: 'absolute', bottom: 10, right: 10, height: "fit-content", display: "flex", flexDirection: "column"}}>
+        <Box style={{position: 'absolute', bottom: 10, right: 10, height: 'fit-content', display: 'flex', flexDirection: 'column'}}>
           {alert.length > 0 && alert.map((e, index) => (
             <AlertCard key={`AlertCard${index}`} title={e.title} message={e.message} show={e.show}/>
           ))}

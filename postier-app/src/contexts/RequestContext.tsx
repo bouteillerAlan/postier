@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import {PostierObjectWithMetrics} from '../types/types.ts';
+import {getRequestDefault} from "../services/defaultData.ts";
 
 // Shape of the context value
 interface RequestDataContextType {
@@ -12,39 +13,7 @@ export const RequestDataContext = createContext<RequestDataContextType | null>(n
 
 // Provider
 export const RequestDataProvider = ({ children }: { children: ReactNode }) => {
-  const [requestData, setRequestData] = useState<PostierObjectWithMetrics[]>([{
-    debug: [],
-    request: {
-      id: '',
-      timestamp: 0,
-      url: '',
-      composedUrl: '',
-      method: 'GET',
-      headers: null,
-      query: null,
-      contentType: null,
-      body: null,
-    },
-    response: {
-      id: '',
-      timestamp: 0,
-      status: 0,
-      statusText: 'No request sent',
-      headers: null,
-      data: 'Send a request to see the response here.',
-      time: 0,
-      size: 0
-    },
-    metrics: {
-      prepare: 0,
-      dns_lookup: 0,
-      tcp_handshake: 0,
-      response_time: 0,
-      process: 0,
-      total: 0,
-      on_error: 'prepare'
-    }
-  }]);
+  const [requestData, setRequestData] = useState<PostierObjectWithMetrics[]>([getRequestDefault()]);
 
   return (
     <RequestDataContext.Provider value={{ requestData, setRequestData }}>

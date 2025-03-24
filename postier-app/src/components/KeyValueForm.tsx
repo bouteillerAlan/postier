@@ -27,6 +27,13 @@ export default function KeyValueForm(props: {getKeyValues: (data: KeyValue[]) =>
     props.getKeyValues(keyValues);
   }, [keyValues]);
 
+  /**
+   * force the maj of the data when props.setKeyValues change
+   */
+  useEffect(() => {
+    setKeyValues((props.setKeyValues && props.setKeyValues.length > 0) ? props.setKeyValues : [{ key: '', value: '', enabled: true }]);
+  }, [props.setKeyValues]);
+
   return (
     <Section size='1' pb='0'>
       <Text as='p' size='2' weight='bold' mb='2'>{props.title}</Text>
