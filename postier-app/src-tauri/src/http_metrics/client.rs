@@ -301,6 +301,11 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
             enabled: true,
         },
         KeyValue {
+            key: "Tab UID".to_string(),
+            value: request_data.identity.clone().unwrap().tab_id.clone(),
+            enabled: true,
+        },
+        KeyValue {
             key: "Request time".to_string(),
             value: format!("{}ms", response_data.time),
             enabled: true,
