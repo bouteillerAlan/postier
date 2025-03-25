@@ -5,7 +5,7 @@ export function getRequestDefault(): PostierObjectWithMetrics {
   return {
     debug: [],
     request: {
-      id: uuidv4(),
+      id: `r#${uuidv4()}`,
       timestamp: 0,
       url: '',
       composedUrl: '',
@@ -14,6 +14,9 @@ export function getRequestDefault(): PostierObjectWithMetrics {
       query: null,
       contentType: null,
       body: null,
+      identity: {
+        tabId: `t#${uuidv4()}`,
+      }
     },
     response: {
       id: '',

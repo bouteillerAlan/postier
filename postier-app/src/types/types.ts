@@ -33,6 +33,14 @@ export interface RequestData {
   query: KeyValue[] | null;
   contentType: ContentType | null;
   body: string | null;
+  identity: IdentityData;
+}
+
+export interface RequestDataFromRust extends Omit<RequestData, 'identity'>{
+  identity: {
+    tab_id: string;
+    tabId?: string;
+  }
 }
 
 export interface ResponseData {
@@ -44,6 +52,10 @@ export interface ResponseData {
   data: string | null;
   time: number;
   size: number;
+}
+
+export interface IdentityData {
+  tabId: string;
 }
 
 export interface PostierObject {
@@ -82,4 +94,8 @@ export interface HttpMetricsWErr extends HttpMetrics {
 
 export interface PostierObjectWithMetrics extends PostierObject {
   metrics: HttpMetricsWErr;
+}
+
+export interface PostierObjectWithMetricsFromRust extends Omit<PostierObjectWithMetrics, 'request'> {
+  request: RequestDataFromRust;
 }

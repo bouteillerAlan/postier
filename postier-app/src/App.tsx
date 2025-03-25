@@ -1,5 +1,19 @@
 import {useEffect, useRef, useState} from 'react';
-import {Box, Container, SegmentedControl, Tabs, Theme, Text, Button, ScrollArea} from '@radix-ui/themes';
+import {
+  Box,
+  Container,
+  SegmentedControl,
+  Tabs,
+  Theme,
+  Text,
+  Button,
+  ScrollArea,
+  Flex,
+  RadioCards,
+  TabNav,
+  Card,
+  IconButton
+} from '@radix-ui/themes';
 import RequestForm from './components/RequestForm';
 import ResponseViewer from './components/ResponseViewer';
 import RequestHistory from './components/RequestHistory';
@@ -12,7 +26,7 @@ import {useSetting} from './contexts/SettingContext.tsx';
 import UserSetting from './components/UserSetting.tsx';
 import AlertCard from './components/AlertCard.tsx';
 import {getContentFromFile, writeContentInFile} from './services/fileStorage.ts';
-import {PlusIcon} from '@radix-ui/react-icons';
+import {PlusIcon, TrashIcon} from '@radix-ui/react-icons';
 import {getRequestDefault} from './services/defaultData.ts';
 
 function App() {
@@ -23,7 +37,8 @@ function App() {
   const [mainTabs, setMainTabs] = useState<string>('request');
   const [alert, setAlert] = useState<Alert[]>([{title: '', message: '', show: false}]);
   const mainTabRef = useRef<HTMLDivElement>(null);
-  const [tabIndex, setTabIndex] = useState<string>(requestData[0].request.id);
+  const [tabIndex, setTabIndex] = useState<string>(requestData[0].request.identity.tabId);
+  const [requestIndex, setRequestIndex] = useState<number>(0);
 
   /**
    * replace the current data in the request context by the new one
@@ -62,10 +77,14 @@ function App() {
       const postierObject = await sendRequest(requestConfig);
       // store the response for the responseViewer
       setRequestData((prev: PostierObjectWithMetrics[]) => {
-        const prevData = prev;
+        let prevData = prev;
         const editedIndex = prevData.findIndex((v) => v.request.id === postierObject.request.id);
-        prevData.splice(editedIndex, 1, postierObject);
-        //postierObject.debug.concat(prevData.debug); // because we have some data already set in ResponseViewer
+        // merge the new data with the old
+        const mergedData = {...prevData[editedIndex], ...postierObject};
+        console.log(mergedData)
+        prevData.splice(editedIndex, 1, mergedData);
+        //todo: check if all the data is set
+        // postierObject.debug.concat(prevData.debug); // because we have some data already set in ResponseViewer
         return prevData;
       });
       // save all the data in the history feed
@@ -97,6 +116,7 @@ function App() {
 
   useEffect(() => {
     if (setting.debug) setAlert(prev => [...prev, {title: 'Debug', message: 'request updated', show: setting.debug}]);
+    setRequestIndex(getRequestIndex());
   }, [requestData]);
 
   useEffect(() => {
@@ -117,7 +137,6 @@ function App() {
    * @param id the id of the request object
    */
   function handleRequestData(key: keyof RequestData, value: any, id: string): void {
-    console.log(key, value, id);
     setRequestData((prev: PostierObjectWithMetrics[]) => {
       const prevData = prev;
       const dataIndex = prevData.findIndex((v) => v.request.id === id);
@@ -131,7 +150,7 @@ function App() {
    * @return number the index of the request in the requestData context array
    */
   function getRequestIndex(): number {
-    return requestData.findIndex((v) => v.request.id === tabIndex);
+    return requestData.findIndex((v) => v.request.identity.tabId === tabIndex);
   }
 
   /**
@@ -142,7 +161,38 @@ function App() {
     setRequestData((prev) => {
       return [...prev, newRequest];
     });
-    setTabIndex(newRequest.request.id);
+    setTabIndex(newRequest.request.identity.tabId);
+  }
+
+  function deleteARequest(tabId: string) {
+    const requests = requestData;
+    const idToRemove = requests.findIndex((v) => v.request.identity.tabId === tabId);
+    requests.splice(idToRemove, 1);
+
+    console.log(requestData.length, requests.length)
+
+    // move the user if needed
+    // if (requestData.length > 1) {
+    //   setTabIndex(requestData[0].request.identity.tabId);
+    // } else {
+    //   setTabIndex(requestData[0].request.identity.tabId);
+    // }
+    setTabIndex(requestData[0].request.identity.tabId)
+
+    setRequestData(() => requests);
+  }
+
+  /**
+   * set the border value for each button on the tab list
+   * @param index number the index of the element (the button)
+   */
+  function setBorderValue(index: number) {
+    if (requestData.length > 1) {
+      if (index > 0 && index !== requestData.length - 1) return {borderRadius: '0', borderRight: 'none'};
+      if (index === 0) return {borderRadius: 'var(--radius-3) 0 0 var(--radius-3)', borderRight: 'none'};
+      if (index === requestData.length - 1) return {borderRadius: '0 var(--radius-3) var(--radius-3) 0'};
+    }
+    return {borderRadius: 'var(--radius-3)'};
   }
 
   return (
@@ -163,25 +213,43 @@ function App() {
 
             <Tabs.Content value='request'>
 
-              <ScrollArea>
-                <SegmentedControl.Root value={tabIndex} mt='5'>
-                  {(requestData && requestData.length > 0) ? requestData.map((rdata) => (
-                    <SegmentedControl.Item key={rdata.request.id} onClick={() => setTabIndex(rdata.request.id)} value={rdata.request.id}>{rdata.request.id.slice(0, 4)}</SegmentedControl.Item>
-                  )) : <Text>Error no default requestData</Text>}
-                  <Button onClick={addARequest}><PlusIcon/></Button>
-                </SegmentedControl.Root>
-              </ScrollArea>
+              <Flex align={'center'}>
+                <Button size='3' style={{marginRight: '5px', marginTop: '12px'}} onClick={addARequest}><PlusIcon/></Button>
+                <ScrollArea style={{padding: '10px 0', marginTop: '12px'}} scrollbars='horizontal'>
+                  <Flex>
+                    {(requestData && requestData.length > 0) && requestData.map((rdata, index) => (
+                        <Button
+                          size='3'
+                          variant={(tabIndex === rdata.request.identity.tabId) ? 'solid' : 'outline'}
+                          style={setBorderValue(index)}
+                          key={rdata.request.identity.tabId}
+                          onClick={() => setTabIndex(rdata.request.identity.tabId)}
+                        >
+                          <Flex align='center'>
+                            <Text size='2' mr={requestData.length > 1 ? '3' : '0'}>
+                              {rdata.request.identity.tabId.slice(0, 6)}
+                            </Text>
+                            {/*fixme: btn can't be btn children but rn this is also a good solution that work...*/}
+                            {requestData.length > 1 && <IconButton color='crimson' variant='soft'>
+                              <TrashIcon width='18' height='18' onClick={() => deleteARequest(rdata.request.identity.tabId)} />
+                            </IconButton>}
+                          </Flex>
+                        </Button>
+                      ))}
+                  </Flex>
+                </ScrollArea>
+              </Flex>
 
               <RequestForm
                 onSubmit={handleSendRequest}
                 isLoading={isLoading}
-                requestData={requestData[getRequestIndex()]}
+                requestData={requestData[requestIndex]}
                 setRequestData={handleRequestData}
               />
               <ResponseViewer
-                response={requestData[getRequestIndex()].response}
-                debug={requestData[getRequestIndex()].debug}
-                metrics={requestData[getRequestIndex()].metrics}
+                response={requestData[requestIndex].response}
+                debug={requestData[requestIndex].debug}
+                metrics={requestData[requestIndex].metrics}
                 userConfig={setting}
               />
 
