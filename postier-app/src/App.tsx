@@ -1,17 +1,13 @@
-import {useEffect, useRef, useState} from 'react';
+import {Fragment, useEffect, useRef, useState} from 'react';
 import {
   Box,
   Container,
-  SegmentedControl,
   Tabs,
   Theme,
   Text,
   Button,
   ScrollArea,
   Flex,
-  RadioCards,
-  TabNav,
-  Card,
   IconButton
 } from '@radix-ui/themes';
 import RequestForm from './components/RequestForm';
@@ -116,7 +112,6 @@ function App() {
 
   useEffect(() => {
     if (setting.debug) setAlert(prev => [...prev, {title: 'Debug', message: 'request updated', show: setting.debug}]);
-    setRequestIndex(getRequestIndex());
   }, [requestData]);
 
   useEffect(() => {
@@ -165,21 +160,19 @@ function App() {
   }
 
   function deleteARequest(tabId: string) {
-    const requests = requestData;
-    const idToRemove = requests.findIndex((v) => v.request.identity.tabId === tabId);
-    requests.splice(idToRemove, 1);
-
-    console.log(requestData.length, requests.length)
-
-    // move the user if needed
-    // if (requestData.length > 1) {
-    //   setTabIndex(requestData[0].request.identity.tabId);
-    // } else {
-    //   setTabIndex(requestData[0].request.identity.tabId);
-    // }
-    setTabIndex(requestData[0].request.identity.tabId)
-
-    setRequestData(() => requests);
+    let keyToDelete = -1;
+    setRequestData((prev: PostierObjectWithMetrics[]) => {
+      const oldData = [...prev]; // for some reason all this fc crash if I don't destruct the array
+      keyToDelete = oldData.findIndex((v) => v.request.identity.tabId === tabId);
+      oldData.splice(keyToDelete, 1);
+      return oldData;
+    });
+    if (requestData[keyToDelete].request.identity.tabId === tabIndex) {
+      if (keyToDelete === -1) return; // just in case
+      if (keyToDelete === 0) setTabIndex(requestData[1].request.identity.tabId);
+      if (keyToDelete === requestData.length) setTabIndex(requestData[requestData.length-1].request.identity.tabId);
+      setTabIndex(requestData[keyToDelete-1].request.identity.tabId);
+    }
   }
 
   /**
@@ -218,6 +211,7 @@ function App() {
                 <ScrollArea style={{padding: '10px 0', marginTop: '12px'}} scrollbars='horizontal'>
                   <Flex>
                     {(requestData && requestData.length > 0) && requestData.map((rdata, index) => (
+                      <Fragment key={`tabs${index}`}>
                         <Button
                           size='3'
                           variant={(tabIndex === rdata.request.identity.tabId) ? 'solid' : 'outline'}
@@ -229,12 +223,14 @@ function App() {
                             <Text size='2' mr={requestData.length > 1 ? '3' : '0'}>
                               {rdata.request.identity.tabId.slice(0, 6)}
                             </Text>
-                            {/*fixme: btn can't be btn children but rn this is also a good solution that work...*/}
-                            {requestData.length > 1 && <IconButton color='crimson' variant='soft'>
-                              <TrashIcon width='18' height='18' onClick={() => deleteARequest(rdata.request.identity.tabId)} />
-                            </IconButton>}
                           </Flex>
                         </Button>
+                        {requestData.length > 1 &&
+                          <IconButton size='3' color='crimson' variant='soft' onClick={() => deleteARequest(rdata.request.identity.tabId)}>
+                            <TrashIcon/>
+                          </IconButton>
+                        }
+                      </Fragment>
                       ))}
                   </Flex>
                 </ScrollArea>
@@ -243,13 +239,13 @@ function App() {
               <RequestForm
                 onSubmit={handleSendRequest}
                 isLoading={isLoading}
-                requestData={requestData[requestIndex]}
+                requestData={requestData[getRequestIndex()]}
                 setRequestData={handleRequestData}
               />
               <ResponseViewer
-                response={requestData[requestIndex].response}
-                debug={requestData[requestIndex].debug}
-                metrics={requestData[requestIndex].metrics}
+                response={requestData[getRequestIndex()].response}
+                debug={requestData[getRequestIndex()].debug}
+                metrics={requestData[getRequestIndex()].metrics}
                 userConfig={setting}
               />
 
