@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {Fragment, useEffect, useRef, useState} from 'react';
 import {
   Box,
   Container,
@@ -8,7 +8,7 @@ import {
   Button,
   ScrollArea,
   Flex,
-  IconButton, Em
+  IconButton, Em, Separator
 } from '@radix-ui/themes';
 import RequestForm from './components/RequestForm';
 import ResponseViewer from './components/ResponseViewer';
@@ -213,12 +213,12 @@ function App() {
               <Flex align='center'>
                 <Button size='3' style={{marginRight: '5px', marginTop: '12px'}} onClick={addARequest}><PlusIcon/></Button>
                 <ScrollArea style={{padding: '10px 0', marginTop: '12px'}} scrollbars='horizontal'>
-                  <Flex gap='1'>
+                  <Flex gap='0'>
                     {(requestData && requestData.length > 0) && requestData.map((rdata, index) => (
-                      <Box key={`tabs${index}`}>
+                      <Fragment key={`tabs${index}`}>
                         <Button
                           size='3'
-                          variant={(tabIndex === rdata.request.identity.tabId) ? 'solid' : 'outline'}
+                          variant={(tabIndex === rdata.request.identity.tabId) ? 'solid' : 'soft'}
                           style={setBorderValue(index, false)}
                           key={rdata.request.identity.tabId}
                           onClick={() => setTabIndex(rdata.request.identity.tabId)}
@@ -232,18 +232,22 @@ function App() {
                             </Text>
                           </Flex>
                         </Button>
+
+                        <Flex align='center' style={{backgroundColor: 'var(--accent-a3)'}}>
+                          <Separator orientation='vertical' size='1'/>
+                        </Flex>
+
                         {requestData.length > 1 &&
                           <IconButton
                             size='3'
-                            color='var(--accent)'
-                            variant={(tabIndex === rdata.request.identity.tabId) ? 'solid' : 'outline'}
-                            style={{borderLeft: 'none', ...setBorderValue(index, true)}}
+                            variant={(tabIndex === rdata.request.identity.tabId) ? 'solid' : 'soft'}
+                            style={{...setBorderValue(index, true), marginRight: '5px'}}
                             onClick={() => deleteARequest(rdata.request.identity.tabId)}
                           >
                             <TrashIcon/>
                           </IconButton>
                         }
-                      </Box>
+                      </Fragment>
                       ))}
                   </Flex>
                 </ScrollArea>
