@@ -233,7 +233,7 @@ function App() {
                           </Flex>
                         </Button>
 
-                        <Flex align='center' style={{backgroundColor: 'var(--accent-a3)'}}>
+                        <Flex align='center' style={{backgroundColor: tabIndex === rdata.request.identity.tabId ? 'var(--accent-a9)' : 'var(--accent-a3)'}}>
                           <Separator orientation='vertical' size='1'/>
                         </Flex>
 
