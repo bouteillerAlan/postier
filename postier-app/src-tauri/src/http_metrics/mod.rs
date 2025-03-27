@@ -52,6 +52,11 @@ pub struct KeyValue {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct IdentityData {
+    pub tab_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RequestData {
     pub id: String,
     pub timestamp: u64,
@@ -62,6 +67,7 @@ pub struct RequestData {
     pub query: Option<Vec<KeyValue>>,
     pub content_type: Option<ContentType>,
     pub body: Option<String>,
+    pub identity: Option<IdentityData>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

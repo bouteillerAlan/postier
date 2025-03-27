@@ -1,22 +1,30 @@
-import {PostierObjectWithMetrics, RequestData} from '../types/types.ts';
-import {invoke} from "@tauri-apps/api/core";
+import {PostierObjectWithMetrics, PostierObjectWithMetricsFromRust, RequestData} from '../types/types.ts';
+import {invoke} from '@tauri-apps/api/core';
 
 export const sendRequest = async (requestData: RequestData): Promise<PostierObjectWithMetrics> => {
   try {
-    const rep = await invoke<PostierObjectWithMetrics>('send_request_with_metrics', {
+
+    const rep = await invoke<PostierObjectWithMetricsFromRust>('send_request_with_metrics', {
       requestData: {
         ...requestData,
         composed_url: requestData.composedUrl,
         content_type: requestData.contentType,
+        identity: {
+          tab_id: requestData.identity.tabId
+        }
       }
     });
+    // transform the rust key to the typescript key
+    rep.request.identity.tabId = rep.request.identity.tab_id;
+
     return {
       ...rep,
       metrics: {
         ...rep.metrics,
         total: rep.response.time
       }
-    };
+    } as PostierObjectWithMetrics;
+
   } catch (error) {
     return {
       request: requestData,

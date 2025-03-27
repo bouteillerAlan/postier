@@ -14,6 +14,17 @@ export default function BodyForm(props: {getBody: (data: string) => void; getCon
     props.getContentType(contentType);
   }, [contentType]);
 
+  /**
+   * force the maj of the data when props.setKeyValues change
+   */
+  useEffect(() => {
+    setContentType(props.setContentType ?? 'json')
+  }, [props.setContentType]);
+
+  useEffect(() => {
+    setBody(props.setBody ?? '')
+  }, [props.setBody]);
+
   return (
     <Section size='1'>
       <Text as='p' size='2' weight='bold' mb='2'>Body</Text>

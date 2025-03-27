@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import { Box, Button, Container, Flex, Section, Select, Tabs, TextField } from '@radix-ui/themes';
 import KeyValueForm from './KeyValueForm.tsx';
 import BodyForm from './BodyForm.tsx';
@@ -10,18 +9,18 @@ import {
   PostierObjectWithMetrics,
   RequestData
 } from '../types/types.ts';
-import {useRequestData} from '../contexts/RequestContext.tsx';
 import {HttpMethodColorCustom, HttpMethodColorRadixUI} from '../services/formatter.ts';
 import {useEffect, useRef} from 'react';
 import {PaperPlaneIcon} from '@radix-ui/react-icons';
 
 interface RequestFormProps {
   onSubmit: (requestData: RequestData) => void;
+  requestData: PostierObjectWithMetrics;
+  setRequestData: (key: keyof RequestData, value: any, id: string) => void;
   isLoading: boolean;
 }
 
-export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
-  const { requestData, setRequestData } = useRequestData();
+export default function RequestForm({ onSubmit, isLoading, requestData, setRequestData }: RequestFormProps) {
   const urlInputRef = useRef<HTMLInputElement>(null);
 
   /**
@@ -79,12 +78,15 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
   const handleSubmit = (): void => {
     onSubmit({
       ...requestData.request,
-      id: uuidv4(),
       composedUrl: `${safeUrl()}${buildQueryString()}`,
       timestamp: Date.now()
     });
   };
 
+  /**
+   * handle the enter key press for the url input
+   * @param e KeyboardEvent
+   */
   const handleKeyPress = (e: KeyboardEvent): void => {
     if (isLoading || !requestData.request?.url) return;
     if (e.key === 'Enter') handleSubmit();
@@ -101,9 +103,7 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
     <Container>
       <Section size='1'>
         <Flex gap='2' justify='between' align='center'>
-          <Select.Root value={requestData.request?.method} onValueChange={(value) => setRequestData((prev: PostierObjectWithMetrics) => {
-            return { ...prev, request: {...prev.request, method: value as HttpMethod}};
-          })}>
+          <Select.Root value={requestData.request?.method} onValueChange={(value) => setRequestData('method', value as HttpMethod, requestData.request.id)}>
             <Select.Trigger color={HttpMethodColorRadixUI(requestData.request?.method ?? 'GET')} variant='soft' />
             <Select.Content position='popper' variant='soft'>
               {httpMethods.map((e, i) => (
@@ -117,9 +117,7 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
             placeholder='Enter URL'
             value={requestData.request?.url}
             className='fw'
-            onChange={(e) => setRequestData((prev: PostierObjectWithMetrics) => {
-              return { ...prev, request: {...prev.request, url: e.target.value}};
-            })}
+            onChange={(e) => setRequestData('url', e.target.value, requestData.request.id)}
           />
 
           <Button onClick={handleSubmit} disabled={!requestData.request?.url || isLoading} loading={isLoading}>
@@ -139,9 +137,7 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
           <Box>
             <Tabs.Content value='query'>
               <KeyValueForm
-                getKeyValues={(data: KeyValue[]): void => setRequestData((prev: PostierObjectWithMetrics) => {
-                  return { ...prev, request: {...prev.request, query: data}};
-                })}
+                getKeyValues={(data: KeyValue[]): void => setRequestData('query', data, requestData.request.id)}
                 setKeyValues={requestData.request?.query ?? null}
                 title='Query'
               />
@@ -149,9 +145,7 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
 
             <Tabs.Content value='header'>
               <KeyValueForm
-                getKeyValues={(data: KeyValue[]): void => setRequestData((prev: PostierObjectWithMetrics) => {
-                  return { ...prev, request: {...prev.request, headers: data}};
-                })}
+                getKeyValues={(data: KeyValue[]): void => setRequestData('headers', data, requestData.request.id)}
                 setKeyValues={requestData.request?.headers ?? null}
                 title='Header'
               />
@@ -159,12 +153,8 @@ export default function RequestForm({ onSubmit, isLoading }: RequestFormProps) {
 
             <Tabs.Content value='body'>
               <BodyForm
-                getBody={(data: string): void => setRequestData((prev: PostierObjectWithMetrics) => {
-                  return { ...prev, request: {...prev.request, body: data}};
-                })}
-                getContentType={(data: ContentType): void => setRequestData((prev: PostierObjectWithMetrics) => {
-                  return { ...prev, request: {...prev.request, contentType: data}};
-                })}
+                getBody={(data: string): void => setRequestData('body', data, requestData.request.id)}
+                getContentType={(data: ContentType): void => setRequestData('contentType', data, requestData.request.id)}
                 setBody={requestData.request?.body ?? null}
                 setContentType={requestData.request?.contentType ?? null}
               />
