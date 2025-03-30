@@ -8,7 +8,7 @@ import {
   Button,
   ScrollArea,
   Flex,
-  IconButton, Em, Separator
+  IconButton, Separator, Tooltip
 } from '@radix-ui/themes';
 import RequestForm from './components/RequestForm';
 import ResponseViewer from './components/ResponseViewer';
@@ -25,8 +25,9 @@ import {getContentFromFile, writeContentInFile} from './services/fileStorage.ts'
 import {PlusIcon, TrashIcon} from '@radix-ui/react-icons';
 import {getRequestDefault} from './services/defaultData.ts';
 import {HttpMethodColorRadixUI} from "./services/formatter.ts";
+import {v4 as uuidv4} from 'uuid';
 
-function App() {
+export default function App() {
   const { setting, setSetting } = useSetting();
   const { requestData, setRequestData } = useRequestData();
   const { historyData, setHistoryData } = useHistoryData();
@@ -38,26 +39,21 @@ function App() {
 
   /**
    * replace the current data in the request context by the new one
-   * @param elem
    * @return void
+   * @param postierObj
    */
-  function replaceRequestDataContext(elem: PostierObjectWithMetrics): void {
-    setRequestData((prev: PostierObjectWithMetrics[]) => {
-      const oldData = prev;
-      const keyToReplace = prev.findIndex((v) => v.request.id === elem.request.id);
-      oldData.splice(keyToReplace, 1, elem);
+  function pushHistoryRequest(postierObj: PostierObjectWithMetrics): void {
+    setIsLoading(true);
+
+    setRequestData((prev) => {
+      const newRequest = {...postierObj};
+      const oldData = [...prev];
+      newRequest.request.identity.tabId = `t#${uuidv4()}`;
+      oldData.push(newRequest);
+      setTabIndex(newRequest.request.identity.tabId);
       return oldData;
     });
-  }
 
-  /**
-   * update the context and move the user to the request tab
-   * @param elem
-   * @return void
-   */
-  function updateContextAndGoHome(elem: PostierObjectWithMetrics): void {
-    setIsLoading(true);
-    replaceRequestDataContext(elem);
     setMainTabs('request');
   }
 
@@ -73,20 +69,15 @@ function App() {
       const postierObject = await sendRequest(requestConfig);
       // store the response for the responseViewer
       setRequestData((prev: PostierObjectWithMetrics[]) => {
-        let prevData = prev;
-        const editedIndex = prevData.findIndex((v) => v.request.id === postierObject.request.id);
+        const editedIndex = prev.findIndex((v) => v.request.id === postierObject.request.id);
         // merge the new data with the old
-        const mergedData = {...prevData[editedIndex], ...postierObject};
-        console.log(mergedData)
-        prevData.splice(editedIndex, 1, mergedData);
-        //todo: check if all the data is set
-        // postierObject.debug.concat(prevData.debug); // because we have some data already set in ResponseViewer
-        return prevData;
+        const mergedData = {...prev[editedIndex], ...postierObject};
+        prev.splice(editedIndex, 1, mergedData);
+        return prev;
       });
       // save all the data in the history feed
       setHistoryData((prev: PostierObjectWithMetrics[]) => {
-        prev.unshift(postierObject);
-        return [...prev];
+        return [{...postierObject}, ...prev];
       });
     } catch (error) {
       console.error('Error sending request:', error);
@@ -95,25 +86,40 @@ function App() {
     }
   }
 
+  /**
+   * set loading to false after loading the component
+   */
   useEffect(() => {
     // set loading to false after the user come back from other page
     if (mainTabs === 'request') setIsLoading(false);
   }, [mainTabs]);
 
+  /**
+   * write the config in the config file
+   */
   useEffect(() => {
     if (setting.debug) setAlert(prev => [...prev, {title: 'Debug', message: 'setting updated', show: setting.debug}]);
     writeContentInFile(JSON.stringify(setting), 'config.txt');
   }, [setting]);
 
+  /**
+   * write the history in the history file
+   */
   useEffect(() => {
     if (setting.debug) setAlert(prev => [...prev, {title: 'Debug', message: 'history updated', show: setting.debug}]);
     writeContentInFile(JSON.stringify(historyData), 'history.txt');
   }, [historyData]);
 
+  /**
+   * debug requestData
+   */
   useEffect(() => {
     if (setting.debug) setAlert(prev => [...prev, {title: 'Debug', message: 'request updated', show: setting.debug}]);
   }, [requestData]);
 
+  /**
+   * get the content of the history file & config file
+   */
   useEffect(() => {
     getContentFromFile('config.txt').then((value: string) => {
       const configParsed = JSON.parse(value);
@@ -133,25 +139,24 @@ function App() {
    */
   function handleRequestData(key: keyof RequestData, value: any, id: string): void {
     setRequestData((prev: PostierObjectWithMetrics[]) => {
-      const prevData = prev;
-      const dataIndex = prevData.findIndex((v) => v.request.id === id);
-      prevData[dataIndex].request[key] = value as never; // todo: never can be, maybe replaced with real type
-      return [...prevData];
+      const dataIndex = prev.findIndex((v) => v.request.id === id);
+      prev[dataIndex].request[key] = value as never;
+      return [...prev];
     });
   }
 
   /**
-   * return the index of the request id
+   * return the index (in the requestData array) of the active request tab
    * @return number the index of the request in the requestData context array
    */
-  function getRequestIndex(): number {
+  function getActiveRequestIndex(): number {
     return requestData.findIndex((v) => v.request.identity.tabId === tabIndex);
   }
 
   /**
-   * add a request, so a tab, and set the tabIndex with this new id
+   * add a default request, so a tab, and set the tabIndex with this new id
    */
-  function addARequest() {
+  function addADefaultRequest() {
     const newRequest = getRequestDefault();
     setRequestData((prev) => {
       return [...prev, newRequest];
@@ -159,10 +164,14 @@ function App() {
     setTabIndex(newRequest.request.identity.tabId);
   }
 
+  /**
+   * delete a request and move the user to a new tab
+   * @param tabId
+   */
   function deleteARequest(tabId: string) {
     let keyToDelete = -1;
     setRequestData((prev: PostierObjectWithMetrics[]) => {
-      const oldData = [...prev]; // for some reason all this fc crash if I don't destruct the array
+      const oldData = [...prev];
       keyToDelete = oldData.findIndex((v) => v.request.identity.tabId === tabId);
       oldData.splice(keyToDelete, 1);
       return oldData;
@@ -212,28 +221,30 @@ function App() {
             <Tabs.Content value='request'>
 
               <Flex align='center'>
-                <Button size='3' style={{marginRight: '5px', marginTop: '12px'}} onClick={addARequest}><PlusIcon/></Button>
+                <Button size='3' style={{marginRight: '5px', marginTop: '12px'}} onClick={addADefaultRequest}><PlusIcon/></Button>
                 <ScrollArea style={{padding: '10px 0', marginTop: '12px'}} scrollbars='horizontal'>
                   <Flex gap='0'>
                     {(requestData && requestData.length > 0) && requestData.map((rdata, index) => (
                       <Fragment key={`tabs${index}`}>
-                        <Button
-                          color={HttpMethodColorRadixUI(rdata.request.method)}
-                          size='3'
-                          variant={(tabIndex === rdata.request.identity.tabId) ? 'solid' : 'soft'}
-                          style={{...setBorderValue(index, false), width: '100px'}}
-                          key={rdata.request.identity.tabId}
-                          onClick={() => setTabIndex(rdata.request.identity.tabId)}
-                        >
-                          <Flex align='center' style={{width: '100px'}}>
-                            <Text size='2' mr={requestData.length > 1 ? '3' : '0'}>
-                              <Flex direction='column' align='baseline'>
-                                <Text truncate size='3' trim='both'>{rdata.request.method}</Text>
-                                <Text truncate size='1' style={{maxWidth: '75px'}}>{rdata.request.url === '' ? 'no url' : rdata.request.url}</Text>
-                              </Flex>
-                            </Text>
-                          </Flex>
-                        </Button>
+                        <Tooltip content={rdata.request.identity.tabId}>
+                          <Button
+                            color={HttpMethodColorRadixUI(rdata.request.method)}
+                            size='3'
+                            variant={(tabIndex === rdata.request.identity.tabId) ? 'solid' : 'soft'}
+                            style={{...setBorderValue(index, false), width: '100px'}}
+                            key={rdata.request.identity.tabId}
+                            onClick={() => setTabIndex(rdata.request.identity.tabId)}
+                          >
+                            <Flex align='center' style={{width: '100px'}}>
+                              <Text size='2' mr={requestData.length > 1 ? '3' : '0'}>
+                                <Flex direction='column' align='baseline'>
+                                  <Text truncate size='3' trim='both'>{rdata.request.method}</Text>
+                                  <Text truncate size='1' style={{maxWidth: '75px'}}>{rdata.request.url === '' ? 'no url' : rdata.request.url}</Text>
+                                </Flex>
+                              </Text>
+                            </Flex>
+                          </Button>
+                        </Tooltip>
 
                         <Flex
                           align='center'
@@ -265,13 +276,13 @@ function App() {
               <RequestForm
                 onSubmit={handleSendRequest}
                 isLoading={isLoading}
-                requestData={requestData[getRequestIndex()]}
+                requestData={requestData[getActiveRequestIndex()]}
                 setRequestData={handleRequestData}
               />
               <ResponseViewer
-                response={requestData[getRequestIndex()].response}
-                debug={requestData[getRequestIndex()].debug}
-                metrics={requestData[getRequestIndex()].metrics}
+                response={requestData[getActiveRequestIndex()].response}
+                debug={requestData[getActiveRequestIndex()].debug}
+                metrics={requestData[getActiveRequestIndex()].metrics}
                 userConfig={setting}
               />
 
@@ -283,7 +294,7 @@ function App() {
                 mainTabRef={mainTabRef}
                 history={historyData}
                 setHistory={setHistoryData}
-                onClickElement={updateContextAndGoHome}
+                onClickElement={pushHistoryRequest}
               />
             </Tabs.Content>
 
@@ -304,5 +315,3 @@ function App() {
     </ThemeProvider>
   );
 }
-
-export default App;
