@@ -131,7 +131,6 @@ export const sendRequest = async (requestData: RequestData): Promise<PostierObje
         size: 0,
       };
     } else {
-      console.log('oo', error)
       // Something happened in setting up the request that triggered an Error
       responseData = {
         ...responseData,

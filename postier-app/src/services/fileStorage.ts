@@ -31,7 +31,7 @@ export async function writeContentInFile(data: string, file: 'config.txt' | 'his
     }
     return true;
   } catch (e) {
-    console.log(e);
+    console.error(e);
     return false;
   }
 }
