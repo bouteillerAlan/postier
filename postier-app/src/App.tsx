@@ -24,8 +24,7 @@ import AlertCard from './components/AlertCard.tsx';
 import {getContentFromFile, writeContentInFile} from './services/fileStorage.ts';
 import {PlusIcon, TrashIcon} from '@radix-ui/react-icons';
 import {getRequestDefault} from './services/defaultData.ts';
-import {HttpMethodColorRadixUI} from "./services/formatter.ts";
-import {v4 as uuidv4} from 'uuid';
+import {HttpMethodColorRadixUI} from './services/formatter.ts';
 
 export default function App() {
   const { setting, setSetting } = useSetting();
@@ -42,13 +41,12 @@ export default function App() {
    * @return void
    * @param postierObj
    */
-  function pushHistoryRequest(postierObj: PostierObjectWithMetrics): void {
+  function pullHistoryRequest(postierObj: PostierObjectWithMetrics): void {
     setIsLoading(true);
 
     setRequestData((prev) => {
       const newRequest = {...postierObj};
       const oldData = [...prev];
-      newRequest.request.identity.tabId = `t#${uuidv4()}`;
       oldData.push(newRequest);
       setTabIndex(newRequest.request.identity.tabId);
       return oldData;
@@ -67,17 +65,19 @@ export default function App() {
     setIsLoading(true);
     try {
       const postierObject = await sendRequest(requestConfig);
+      const editedIndex = requestData.findIndex((v) => v.request.id === postierObject.request.id);
+      // merge the new data with the old, for keeping not updated older data just in case
+      const mergedData = {...requestData[editedIndex], ...postierObject};
+
       // store the response for the responseViewer
       setRequestData((prev: PostierObjectWithMetrics[]) => {
-        const editedIndex = prev.findIndex((v) => v.request.id === postierObject.request.id);
-        // merge the new data with the old
-        const mergedData = {...prev[editedIndex], ...postierObject};
         prev.splice(editedIndex, 1, mergedData);
         return prev;
       });
       // save all the data in the history feed
       setHistoryData((prev: PostierObjectWithMetrics[]) => {
-        return [{...postierObject}, ...prev];
+        // it's mandatory to rebuild the object like this because request have a weird inheritance with the requestData object
+        return [{...mergedData, request: {...mergedData.request}}, ...prev];
       });
     } catch (error) {
       console.error('Error sending request:', error);
@@ -170,17 +170,28 @@ export default function App() {
    */
   function deleteARequest(tabId: string) {
     let keyToDelete = -1;
+
     setRequestData((prev: PostierObjectWithMetrics[]) => {
-      const oldData = [...prev];
+      const oldData = [...prev]; // the destruct is mandatory here
       keyToDelete = oldData.findIndex((v) => v.request.identity.tabId === tabId);
       oldData.splice(keyToDelete, 1);
       return oldData;
     });
+
+    // for seeing the array with the deleted elems we have to, first, update the state
+    // so the minus or plus have to be set to 2 and not 1 (-2 and +2) because it's calculated on the old data
+
+    // if the elem to delete is selected
     if (requestData[keyToDelete].request.identity.tabId === tabIndex) {
-      if (keyToDelete === -1) return; // just in case
-      if (keyToDelete === 0) setTabIndex(requestData[1].request.identity.tabId);
-      if (keyToDelete === requestData.length) setTabIndex(requestData[requestData.length-1].request.identity.tabId);
-      setTabIndex(requestData[keyToDelete-1].request.identity.tabId);
+      if (keyToDelete === -1) { // just in case
+        return;
+      } else if (keyToDelete === 0) { // if first elem
+        setTabIndex(requestData[1].request.identity.tabId);
+      } else if (keyToDelete === requestData.length-1) { // if last elem
+        setTabIndex(requestData[requestData.length - 2].request.identity.tabId);
+      } else {
+        setTabIndex(requestData[keyToDelete - 1].request.identity.tabId);
+      }
     }
   }
 
@@ -294,7 +305,7 @@ export default function App() {
                 mainTabRef={mainTabRef}
                 history={historyData}
                 setHistory={setHistoryData}
-                onClickElement={pushHistoryRequest}
+                onClickElement={pullHistoryRequest}
               />
             </Tabs.Content>
 

@@ -114,6 +114,11 @@ export default function RequestHistory({ history, setHistory, onClickElement, ma
               </Button>
             </Flex>
           </Flex>
+          {/*<Flex gap='2' direction='column' width='fit-content'>*/}
+          {/*  <Badge>{item.request.id}</Badge>*/}
+          {/*  <Badge>{item.request.identity.tabId}</Badge>*/}
+          {/*  <Badge>{`hist${item.request.id}`}</Badge>*/}
+          {/*</Flex>*/}
         </Card>
       ))}
     </Flex>}
