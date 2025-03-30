@@ -24,6 +24,7 @@ import AlertCard from './components/AlertCard.tsx';
 import {getContentFromFile, writeContentInFile} from './services/fileStorage.ts';
 import {PlusIcon, TrashIcon} from '@radix-ui/react-icons';
 import {getRequestDefault} from './services/defaultData.ts';
+import {HttpMethodColorRadixUI} from "./services/formatter.ts";
 
 function App() {
   const { setting, setSetting } = useSetting();
@@ -185,11 +186,15 @@ function App() {
         (index > 0 && index !== requestData.length - 1) ||
         (index === 0 && isTrashBtn) ||
         (index === requestData.length - 1 && !isTrashBtn)
-      ) return {borderRadius: '0', borderRight: 'none'};
-      if (index === 0 && !isTrashBtn) return {borderRadius: 'var(--radius-3) 0 0 var(--radius-3)', borderRight: 'none'};
+      ) return {borderRadius: '0', borderRight: 'none', paddingRight: 0};
+      if (index === 0 && !isTrashBtn) return {borderRadius: 'var(--radius-3) 0 0 var(--radius-3)', borderRight: 'none', paddingRight: 0};
       if (index === requestData.length - 1 && isTrashBtn) return {borderRadius: '0 var(--radius-3) var(--radius-3) 0'};
     }
     return {borderRadius: 'var(--radius-3)'};
+  }
+
+  function getTabName(url: string): string {
+    return url.split('/')[1];
   }
 
   return (
@@ -217,9 +222,10 @@ function App() {
                     {(requestData && requestData.length > 0) && requestData.map((rdata, index) => (
                       <Fragment key={`tabs${index}`}>
                         <Button
+                          color={HttpMethodColorRadixUI(rdata.request.method)}
                           size='3'
                           variant={(tabIndex === rdata.request.identity.tabId) ? 'solid' : 'soft'}
-                          style={setBorderValue(index, false)}
+                          style={{...setBorderValue(index, false)}}
                           key={rdata.request.identity.tabId}
                           onClick={() => setTabIndex(rdata.request.identity.tabId)}
                         >
@@ -227,18 +233,25 @@ function App() {
                             <Text size='2' mr={requestData.length > 1 ? '3' : '0'}>
                               <Flex direction='column' align='baseline'>
                                 <Text size='3' trim='start'>{rdata.request.method}</Text>
-                                <Text size='1' trim='both'><Em>{rdata.request.url === '' ? 'no url' : rdata.request.url.slice(0, 8)}</Em></Text>
+                                <Text size='1' trim='both'><Em>{rdata.request.url === '' ? 'no url' : getTabName(rdata.request.url)}</Em></Text>
                               </Flex>
                             </Text>
                           </Flex>
                         </Button>
 
-                        <Flex align='center' style={{backgroundColor: tabIndex === rdata.request.identity.tabId ? 'var(--accent-a9)' : 'var(--accent-a3)'}}>
+                        <Flex
+                          align='center'
+                          style={{backgroundColor: tabIndex === rdata.request.identity.tabId ?
+                              `var(--${HttpMethodColorRadixUI(rdata.request.method)}-9)` :
+                              `var(--${HttpMethodColorRadixUI(rdata.request.method)}-3)`
+                          }}
+                        >
                           {requestData.length > 1 && <Separator orientation='vertical' size='1'/>}
                         </Flex>
 
                         {requestData.length > 1 &&
                           <IconButton
+                            color={HttpMethodColorRadixUI(rdata.request.method)}
                             size='3'
                             variant={(tabIndex === rdata.request.identity.tabId) ? 'solid' : 'soft'}
                             style={{...setBorderValue(index, true), marginRight: '5px'}}

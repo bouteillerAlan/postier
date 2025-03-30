@@ -9,3 +9,7 @@ body {
 .fw {
     width: 100%;
 }
+
+.radix-themes {
+    --cursor-button: pointer;
+}
