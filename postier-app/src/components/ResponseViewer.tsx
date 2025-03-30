@@ -93,7 +93,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
     <Section size='1' p='0'>
       <Flex gap='2' mb='4' align='center'>
         <Badge color={statusColor} size='2'>
-          {response.status} {response.statusText}
+          {response.status}, {response.statusText ?? 'undefined status text'}
         </Badge>
         
         <HoverCard.Root>

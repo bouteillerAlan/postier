@@ -92,15 +92,16 @@ export default function RequestHistory({ history, setHistory, onClickElement, ma
                     <StackIcon/>
                   </Badge>
                 </Tooltip>
-                <Text color='gray'>{new Date(item.request.timestamp).toLocaleString()}</Text>
+                <Text truncate color='gray'>{new Date(item.request.timestamp).toLocaleString()}</Text>
                 <Separator/>
-                <Text color='gray'>{Math.round(item.response.time)}ms</Text>
+                <Text truncate color='gray'>{item.request.id}</Text>
               </Flex>
               <Flex align='center' gap='2'>
-                <Badge variant='soft'>{item.request.method}</Badge>
+                <Badge>{item.request.method}</Badge>
                 <Tooltip content={`${item.response.status}, ${item.response.statusText}`}>
                   <Badge color={getStatusColor(item.response.status) as any}>{item.response.status}</Badge>
                 </Tooltip>
+                <Badge>{Math.round(item.response.time)}ms</Badge>
                 <Text style={{ wordBreak: 'break-all' }}>{item.request.url}</Text>
               </Flex>
             </Flex>
