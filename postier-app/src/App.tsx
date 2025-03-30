@@ -25,6 +25,7 @@ import {getContentFromFile, writeContentInFile} from './services/fileStorage.ts'
 import {PlusIcon, TrashIcon} from '@radix-ui/react-icons';
 import {getRequestDefault} from './services/defaultData.ts';
 import {HttpMethodColorRadixUI} from './services/formatter.ts';
+import {v4 as uuidv4} from "uuid";
 
 export default function App() {
   const { setting, setSetting } = useSetting();
@@ -44,14 +45,16 @@ export default function App() {
   function pullHistoryRequest(postierObj: PostierObjectWithMetrics): void {
     setIsLoading(true);
 
+    // it's mandatory to rebuild the object like this because request have a weird inheritance with the requestData object
+    const newRequest = {...postierObj, request: { ...postierObj.request, identity: {tabId: `t#${uuidv4()}`} }};
+
     setRequestData((prev) => {
-      const newRequest = {...postierObj};
       const oldData = [...prev];
       oldData.push(newRequest);
-      setTabIndex(newRequest.request.identity.tabId);
       return oldData;
     });
 
+    setTabIndex(newRequest.request.identity.tabId);
     setMainTabs('request');
   }
 
