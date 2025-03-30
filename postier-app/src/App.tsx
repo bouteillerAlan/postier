@@ -186,15 +186,11 @@ function App() {
         (index > 0 && index !== requestData.length - 1) ||
         (index === 0 && isTrashBtn) ||
         (index === requestData.length - 1 && !isTrashBtn)
-      ) return {borderRadius: '0', borderRight: 'none', paddingRight: 0};
-      if (index === 0 && !isTrashBtn) return {borderRadius: 'var(--radius-3) 0 0 var(--radius-3)', borderRight: 'none', paddingRight: 0};
+      ) return {borderRadius: '0', borderRight: 'none'};
+      if (index === 0 && !isTrashBtn) return {borderRadius: 'var(--radius-3) 0 0 var(--radius-3)', borderRight: 'none'};
       if (index === requestData.length - 1 && isTrashBtn) return {borderRadius: '0 var(--radius-3) var(--radius-3) 0'};
     }
     return {borderRadius: 'var(--radius-3)'};
-  }
-
-  function getTabName(url: string): string {
-    return url.split('/')[1];
   }
 
   return (
@@ -225,15 +221,15 @@ function App() {
                           color={HttpMethodColorRadixUI(rdata.request.method)}
                           size='3'
                           variant={(tabIndex === rdata.request.identity.tabId) ? 'solid' : 'soft'}
-                          style={{...setBorderValue(index, false)}}
+                          style={{...setBorderValue(index, false), width: '100px'}}
                           key={rdata.request.identity.tabId}
                           onClick={() => setTabIndex(rdata.request.identity.tabId)}
                         >
-                          <Flex align='center'>
+                          <Flex align='center' style={{width: '100px'}}>
                             <Text size='2' mr={requestData.length > 1 ? '3' : '0'}>
                               <Flex direction='column' align='baseline'>
-                                <Text size='3' trim='start'>{rdata.request.method}</Text>
-                                <Text size='1' trim='both'><Em>{rdata.request.url === '' ? 'no url' : getTabName(rdata.request.url)}</Em></Text>
+                                <Text truncate size='3' trim='both'>{rdata.request.method}</Text>
+                                <Text truncate size='1' style={{maxWidth: '75px'}}>{rdata.request.url === '' ? 'no url' : rdata.request.url}</Text>
                               </Flex>
                             </Text>
                           </Flex>
