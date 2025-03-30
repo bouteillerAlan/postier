@@ -1,8 +1,19 @@
-import {ScrollArea, Box, Text, Flex, Badge, Separator, Card, Button, Tooltip} from '@radix-ui/themes';
+import {
+  ScrollArea,
+  Box,
+  Text,
+  Flex,
+  Badge,
+  Separator,
+  Card,
+  Button,
+  Tooltip,
+  HoverCard,
+} from '@radix-ui/themes';
 import { getStatusColor } from '../services/formatter';
 import {PostierObjectWithMetrics} from '../types/types.ts';
 import React, {RefObject, useEffect, useState} from 'react';
-import {ReloadIcon, StackIcon, TrashIcon} from '@radix-ui/react-icons';
+import {MagnifyingGlassIcon, ReloadIcon, StackIcon, TrashIcon} from '@radix-ui/react-icons';
 
 interface RequestHistoryProps {
   isLoading?: boolean;
@@ -85,40 +96,57 @@ export default function RequestHistory({ history, setHistory, onClickElement, ma
       {(!isLoading && (history && history.length > 0)) && history.map((item: PostierObjectWithMetrics) => (
         <Card key={`hist${item.request.id}`}>
           <Flex gap='2' align='center' justify='between'>
+
             <Flex gap='2' direction='column'>
               <Flex gap='2' align='center' mb='1'>
+                <Badge color='gray'>{new Date(item.request.timestamp).toLocaleString()}</Badge>
+                <Separator/>
+
+
+                <HoverCard.Root>
+                  <HoverCard.Trigger>
+                    <Badge>
+                      <MagnifyingGlassIcon/>
+                    </Badge>
+                  </HoverCard.Trigger>
+                  <HoverCard.Content size='1' maxWidth='500px' height='250px'>
+                    <pre>{JSON.stringify(item, undefined, 2)}</pre>
+                  </HoverCard.Content>
+                </HoverCard.Root>
+
+
+                <Badge>{item.request.method}</Badge>
+                <Tooltip content={`${item.response.status}, ${item.response.statusText}`}>
+                  <Badge color={getStatusColor(item.response.status) as any}>{item.response.status}</Badge>
+                </Tooltip>
+                <Text truncate color='gray' weight='bold'>{item.request.url}</Text>
+              </Flex>
+
+              <Flex align='center' gap='2'>
                 <Tooltip content={`request id ${item.request.id.slice(0, 5)} match response id ${item.response.id.slice(0, 5)}`}>
                   <Badge color={item.request.id === item.response.id ? 'green' : 'red'}>
                     <StackIcon/>
                   </Badge>
                 </Tooltip>
-                <Text truncate color='gray'>{new Date(item.request.timestamp).toLocaleString()}</Text>
-                <Separator/>
-                <Text truncate color='gray'>{item.request.id}</Text>
-              </Flex>
-              <Flex align='center' gap='2'>
-                <Badge>{item.request.method}</Badge>
-                <Tooltip content={`${item.response.status}, ${item.response.statusText}`}>
-                  <Badge color={getStatusColor(item.response.status) as any}>{item.response.status}</Badge>
+                <Tooltip content='tab id'>
+                  <Badge color='gray'>{item.request.identity.tabId.slice(0, 6)}</Badge>
                 </Tooltip>
-                <Badge>{Math.round(item.response.time)}ms</Badge>
-                <Text style={{ wordBreak: 'break-all' }}>{item.request.url}</Text>
+                <Tooltip content='request id'>
+                  <Badge color='gray'>{item.request.id.slice(0, 6)}</Badge>
+                </Tooltip>
               </Flex>
             </Flex>
+
             <Flex gap='2' direction='column'>
               <Button color='orange' variant='soft' onClick={() => onClickElement(item)}>
-                <ReloadIcon/> Replace current request
+                <ReloadIcon/> Load the request
               </Button>
               <Button color='crimson' variant='soft' onClick={() => onDeleteElement(item)}>
-                <TrashIcon/> Delete from history
+                <TrashIcon/> Delete the request
               </Button>
             </Flex>
+
           </Flex>
-          {/*<Flex gap='2' direction='column' width='fit-content'>*/}
-          {/*  <Badge>{item.request.id}</Badge>*/}
-          {/*  <Badge>{item.request.identity.tabId}</Badge>*/}
-          {/*  <Badge>{`hist${item.request.id}`}</Badge>*/}
-          {/*</Flex>*/}
         </Card>
       ))}
     </Flex>}

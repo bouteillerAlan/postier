@@ -25,7 +25,7 @@ import {getContentFromFile, writeContentInFile} from './services/fileStorage.ts'
 import {PlusIcon, TrashIcon} from '@radix-ui/react-icons';
 import {getRequestDefault} from './services/defaultData.ts';
 import {HttpMethodColorRadixUI} from './services/formatter.ts';
-import {v4 as uuidv4} from "uuid";
+import {v4 as uuidv4} from 'uuid';
 
 export default function App() {
   const { setting, setSetting } = useSetting();
