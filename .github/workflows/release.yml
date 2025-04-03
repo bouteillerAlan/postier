@@ -48,6 +48,10 @@ jobs:
         run:  |
           npm install -g pnpm
           pnpm install
+      
+      - name: test to build the web ---------
+        working-directory: ./postier-web
+        run: pnpm install
 
       - name: Import GPG key
         if: matrix.platform == 'ubuntu-22.04'
