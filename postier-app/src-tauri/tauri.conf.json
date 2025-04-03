@@ -9,7 +9,7 @@
     "beforeBuildCommand": {
       "script": "pnpm build",
       "cwd": "../"
-    }
+    },
     "frontendDist": "../dist"
   },
   "app": {
