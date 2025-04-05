@@ -1,5 +1,19 @@
 import React, {useEffect, useRef, useState, Fragment} from 'react';
-import {Tabs, Box, Text, Flex, Badge, Section, Table, Tooltip, Separator, HoverCard, Link, DataList} from '@radix-ui/themes';
+import {
+  Tabs,
+  Box,
+  Text,
+  Flex,
+  Badge,
+  Section,
+  Table,
+  Tooltip,
+  Separator,
+  HoverCard,
+  Link,
+  DataList,
+  ScrollArea
+} from '@radix-ui/themes';
 import {HttpMetricsWErr, KeyValue, ResponseData, UserSetting, ViewMode} from '../../types/types.ts';
 import {detectContentType, formatData, getStatusColor} from '../../services/formatter.ts';
 import {themes} from 'prism-react-renderer';
@@ -193,7 +207,8 @@ export default function ResponseViewer(props: ResponseViewerProps) {
 
         <Tabs.Content value='headers'>
           <Section p='0' style={{ height: responseDataHeight, overflow: 'auto' }}>
-              <Table.Root size='1' layout='fixed'>
+            <ScrollArea>
+              <Table.Root size='1' layout='fixed' style={{paddingRight: 10}}>
                 <Table.Header>
                   <Table.Row>
                     <Table.ColumnHeaderCell>Key</Table.ColumnHeaderCell>
@@ -210,28 +225,31 @@ export default function ResponseViewer(props: ResponseViewerProps) {
                   ))}
                 </Table.Body>
               </Table.Root>
+            </ScrollArea>
           </Section>
         </Tabs.Content>
 
         <Tabs.Content value='debug'>
-          <Section p='0' style={{ height: responseDataHeight, overflow: 'auto' }}>
-            <Table.Root size='1' layout='fixed'>
-              <Table.Header>
-                <Table.Row>
-                  <Table.ColumnHeaderCell>Key</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
-                </Table.Row>
-              </Table.Header>
-
-              <Table.Body>
-                {props.debug.length > 0 && props.debug.map((debug: KeyValue, index: number) => (
-                  <Table.Row key={`debug${index}`}>
-                    <Table.RowHeaderCell>{debug.key}</Table.RowHeaderCell>
-                    <Table.Cell>{debug.value}</Table.Cell>
+          <Section p='0' style={{ height: responseDataHeight }}>
+            <ScrollArea>
+              <Table.Root size='1' layout='fixed' style={{paddingRight: 10}}>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeaderCell>Key</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
                   </Table.Row>
-                ))}
-              </Table.Body>
-            </Table.Root>
+                </Table.Header>
+
+                <Table.Body>
+                  {props.debug.length > 0 && props.debug.map((debug: KeyValue, index: number) => (
+                    <Table.Row key={`debug${index}`}>
+                      <Table.RowHeaderCell>{debug.key}</Table.RowHeaderCell>
+                      <Table.Cell>{debug.value}</Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Root>
+            </ScrollArea>
           </Section>
         </Tabs.Content>
 
