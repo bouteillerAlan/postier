@@ -178,21 +178,15 @@ export default function ResponseViewer(props: ResponseViewerProps) {
           </Tabs.Root>
 
           {viewMode === 'pretty' ? (
-            <Box
-              style={{
-                maxHeight: responseCodeHeight,
-                overflow: 'auto'
-              }}
-            >
-              <Card style={{overflowX: 'auto', overflowY: 'auto', minWidth: 'fit-content', padding: 0}}>
-                <Highlight
-                  theme={themes[props.userConfig.codeTheme]}
-                  code={formattedData}
-                  language={ctheader}
-                >
-                  {({ style, tokens, getLineProps, getTokenProps }) => (
-                    <div style={{...style, backgroundColor: 'var(--gray-surface)', padding: 10}}>
-                      <pre style={{...style, backgroundColor: 'none', margin: 0}}>
+            <Card style={{padding: 0, height: responseCodeHeight}}>
+              <Highlight
+                theme={themes[props.userConfig.codeTheme]}
+                code={formattedData}
+                language={ctheader}
+              >
+                {({ style, tokens, getLineProps, getTokenProps }) => (
+                  <div style={{...style, padding: 10, height: responseCodeHeight-20, overflow: 'auto'}}>
+                    <pre style={{...style, backgroundColor: 'none', margin: 0}}>
                       {tokens.map((line, i) => (
                         <div key={`codeToken${i}`} {...getLineProps({ line })}>
                           {line.map((token, key) => (
@@ -201,23 +195,16 @@ export default function ResponseViewer(props: ResponseViewerProps) {
                         </div>
                       ))}
                     </pre>
-                    </div>
-                  )}
-                </Highlight>
-              </Card>
-            </Box>
+                  </div>
+                )}
+              </Highlight>
+            </Card>
           ) : viewMode === 'raw' ? (
-            <Box
-              style={{
-                maxHeight: responseCodeHeight,
-                overflow: 'auto',
-                backgroundColor: 'var(--gray-surface)',
-              }}
-            >
-              <Card style={{overflowX: 'auto', width: 'calc(100vw-40px)', padding: 16}}>
+            <Card style={{padding: 0, height: responseCodeHeight}}>
+              <div style={{padding: 10, height: responseCodeHeight-20, overflow: 'auto'}}>
                 {formattedData}
-              </Card>
-            </Box>
+              </div>
+            </Card>
           ) : (
             <Card
               style={{
