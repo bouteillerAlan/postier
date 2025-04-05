@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import Request from './pages/Request.tsx';
 import '@radix-ui/themes/styles.css';
 import './styles/style.css';
 import {RequestDataProvider} from './contexts/RequestContext.tsx';
@@ -12,7 +12,7 @@ function RootComponent() {
     <SettingProvider>
       <RequestDataProvider>
         <HistoryDataProvider>
-          <App/>
+          <Request/>
         </HistoryDataProvider>
       </RequestDataProvider>
     </SettingProvider>

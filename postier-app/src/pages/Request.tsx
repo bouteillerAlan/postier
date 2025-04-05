@@ -10,24 +10,24 @@ import {
   Flex,
   IconButton, Separator, Tooltip
 } from '@radix-ui/themes';
-import RequestForm from './components/RequestForm';
-import ResponseViewer from './components/ResponseViewer';
-import RequestHistory from './components/RequestHistory';
-import {Alert, PostierObjectWithMetrics, RequestData} from './types/types.ts';
-import {sendRequest} from './services/rust-http.ts';
-import {useRequestData} from './contexts/RequestContext.tsx';
-import {useHistoryData} from './contexts/HistoryContext.tsx';
+import RequestForm from '../components/forms/RequestForm.tsx';
+import ResponseViewer from '../components/response/ResponseViewer.tsx';
+import RequestHistory from './RequestHistory.tsx';
+import {Alert, PostierObjectWithMetrics, RequestData} from '../types/types.ts';
+import {sendRequest} from '../services/rust-http.ts';
+import {useRequestData} from '../contexts/RequestContext.tsx';
+import {useHistoryData} from '../contexts/HistoryContext.tsx';
 import {ThemeProvider} from 'next-themes';
-import {useSetting} from './contexts/SettingContext.tsx';
-import UserSetting from './components/UserSetting.tsx';
-import AlertCard from './components/AlertCard.tsx';
-import {getContentFromFile, writeContentInFile} from './services/fileStorage.ts';
+import {useSetting} from '../contexts/SettingContext.tsx';
+import UserSetting from './UserSetting.tsx';
+import AlertCard from '../components/alert/AlertCard.tsx';
+import {getContentFromFile, writeContentInFile} from '../services/fileStorage.ts';
 import {PlusIcon, TrashIcon} from '@radix-ui/react-icons';
-import {getRequestDefault} from './services/defaultData.ts';
-import {HttpMethodColorRadixUI} from './services/formatter.ts';
+import {getRequestDefault} from '../services/defaultData.ts';
+import {HttpMethodColorRadixUI} from '../services/formatter.ts';
 import {v4 as uuidv4} from 'uuid';
 
-export default function App() {
+export default function Request() {
   const { setting, setSetting } = useSetting();
   const { requestData, setRequestData } = useRequestData();
   const { historyData, setHistoryData } = useHistoryData();

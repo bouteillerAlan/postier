@@ -1,12 +1,12 @@
-import {useEffect, useRef, useState, Fragment} from 'react';
+import React, {useEffect, useRef, useState, Fragment} from 'react';
 import {Tabs, Box, Text, Flex, Badge, Section, Table, Tooltip, Separator, HoverCard, Link, DataList} from '@radix-ui/themes';
-import {HttpMetricsWErr, KeyValue, ResponseData, UserSetting, ViewMode} from '../types/types.ts';
-import {detectContentType, formatData, getStatusColor} from '../services/formatter';
+import {HttpMetricsWErr, KeyValue, ResponseData, UserSetting, ViewMode} from '../../types/types.ts';
+import {detectContentType, formatData, getStatusColor} from '../../services/formatter.ts';
 import {themes} from 'prism-react-renderer';
 import {CheckCircledIcon, CircleIcon, CrossCircledIcon} from '@radix-ui/react-icons';
-import RawResponse from './response/raw.tsx';
-import PreviewResponse from './response/preview.tsx';
-import PrettyResponse from './response/pretty.tsx';
+import RawResponse from './Raw.tsx';
+import PreviewResponse from './Preview.tsx';
+import PrettyResponse from './Pretty.tsx';
 
 interface ResponseViewerProps {
   response: ResponseData | null;
@@ -60,14 +60,15 @@ export default function ResponseViewer(props: ResponseViewerProps) {
    * @return void
    */
   function calculateResponseViewHeight(): void {
+    const wh = window.innerHeight;
     if (subMenuRef && subMenuRef.current) {
       const rect = subMenuRef.current.getBoundingClientRect();
       // rect.bottom = size from the top of the window to the bottom of the 'pretty/raw/preview' sub tab menu
-      // 30 & 20 is the size of the remaining padding and margin
-      const wh = window.innerHeight - rect.bottom;
-      setResponseCodeHeight(wh - 30);
-      setResponseDataHeight((wh - 20) + rect.height);
+      // 30 is the size of the remaining padding and margin
+      setResponseCodeHeight(wh - rect.bottom - 30);
     }
+    // 500 is a magic value, but it's fine and calculate this is just IO waste
+    setResponseDataHeight(wh - 500);
   }
 
   /**

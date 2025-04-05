@@ -10,7 +10,7 @@ import {
   Tooltip,
   HoverCard,
 } from '@radix-ui/themes';
-import { getStatusColor } from '../services/formatter';
+import { getStatusColor } from '../services/formatter.ts';
 import {PostierObjectWithMetrics} from '../types/types.ts';
 import React, {RefObject, useEffect, useState} from 'react';
 import {MagnifyingGlassIcon, ReloadIcon, StackIcon, TrashIcon} from '@radix-ui/react-icons';
@@ -39,7 +39,7 @@ export default function RequestHistory({ history, setHistory, onClickElement, ma
    * @return void
    */
   function calculateViewHeight(): void {
-    // here 32 is the size of the padding and margin apply from the element on App.tsx
+    // here 32 is the size of the padding and margin apply from the element on Request.tsx
     setWh(mainTabRef.current ? window.innerHeight - (mainTabRef.current?.offsetHeight + 32) : window.innerHeight - 32);
   }
 
