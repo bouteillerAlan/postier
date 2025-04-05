@@ -207,16 +207,17 @@ export default function ResponseViewer(props: ResponseViewerProps) {
               </Card>
             </Box>
           ) : viewMode === 'raw' ? (
-            <Card
+            <Box
               style={{
                 maxHeight: responseCodeHeight,
                 overflow: 'auto',
-                padding: '16px',
                 backgroundColor: 'var(--gray-surface)',
               }}
             >
-              {formattedData}
-            </Card>
+              <Card style={{overflowX: 'auto', width: 'calc(100vw-40px)', padding: 16}}>
+                {formattedData}
+              </Card>
+            </Box>
           ) : (
             <Card
               style={{
