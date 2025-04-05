@@ -8,8 +8,8 @@ import {
   KeyValue,
   PostierObjectWithMetrics,
   RequestData
-} from '../types/types.ts';
-import {HttpMethodColorCustom, HttpMethodColorRadixUI} from '../services/formatter.ts';
+} from '../../types/types.ts';
+import {HttpMethodColorCustom, HttpMethodColorRadixUI} from '../../services/formatter.ts';
 import {useEffect, useRef} from 'react';
 import {PaperPlaneIcon} from '@radix-ui/react-icons';
 

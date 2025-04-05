@@ -1,8 +1,8 @@
 import {Box, Card, Text} from '@radix-ui/themes';
 import {BellIcon} from '@radix-ui/react-icons';
-import {Alert} from '../types/types.ts';
+import {Alert} from '../../types/types.ts';
 import {useEffect, useRef, useState} from 'react';
-import {CircularProgress} from "./CircularProgress.tsx";
+import {CircularProgress} from "../ui/CircularProgress.tsx";
 
 export default function AlertCard(props: Alert) {
   const cardRef = useRef<HTMLDivElement>(null);

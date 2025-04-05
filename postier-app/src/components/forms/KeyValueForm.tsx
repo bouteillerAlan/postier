@@ -1,5 +1,5 @@
 import {Button, Flex, IconButton, Section, Text, TextField} from '@radix-ui/themes';
-import {KeyValue} from '../types/types.ts';
+import {KeyValue} from '../../types/types.ts';
 import {useEffect, useState} from 'react';
 
 export default function KeyValueForm(props: {getKeyValues: (data: KeyValue[]) => void, setKeyValues: KeyValue[] | null, title: string}) {
