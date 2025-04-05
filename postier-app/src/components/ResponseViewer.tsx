@@ -1,9 +1,12 @@
 import {useEffect, useRef, useState, Fragment} from 'react';
-import {Tabs, Box, Text, Flex, Badge, Section, Table, Card, Tooltip, Separator, HoverCard, Link, DataList} from '@radix-ui/themes';
+import {Tabs, Box, Text, Flex, Badge, Section, Table, Tooltip, Separator, HoverCard, Link, DataList} from '@radix-ui/themes';
 import {HttpMetricsWErr, KeyValue, ResponseData, UserSetting, ViewMode} from '../types/types.ts';
 import {detectContentType, formatData, getStatusColor} from '../services/formatter';
-import { Highlight, themes} from 'prism-react-renderer';
-import { CheckCircledIcon, CircleIcon, CrossCircledIcon } from '@radix-ui/react-icons';
+import {themes} from 'prism-react-renderer';
+import {CheckCircledIcon, CircleIcon, CrossCircledIcon} from '@radix-ui/react-icons';
+import RawResponse from './response/raw.tsx';
+import PreviewResponse from './response/preview.tsx';
+import PrettyResponse from './response/pretty.tsx';
 
 interface ResponseViewerProps {
   response: ResponseData | null;
@@ -177,49 +180,12 @@ export default function ResponseViewer(props: ResponseViewerProps) {
             </Tabs.List>
           </Tabs.Root>
 
-          {viewMode === 'pretty' ? (
-            <Card style={{padding: 0, height: responseCodeHeight}}>
-              <Highlight
-                theme={themes[props.userConfig.codeTheme]}
-                code={formattedData}
-                language={ctheader}
-              >
-                {({ style, tokens, getLineProps, getTokenProps }) => (
-                  <div style={{...style, padding: 10, height: responseCodeHeight-20, overflow: 'auto'}}>
-                    <pre style={{...style, backgroundColor: 'none', margin: 0}}>
-                      {tokens.map((line, i) => (
-                        <div key={`codeToken${i}`} {...getLineProps({ line })}>
-                          {line.map((token, key) => (
-                            <span key={`codeLine${key}`} {...getTokenProps({ token })} />
-                          ))}
-                        </div>
-                      ))}
-                    </pre>
-                  </div>
-                )}
-              </Highlight>
-            </Card>
-          ) : viewMode === 'raw' ? (
-            <Card style={{padding: 0, height: responseCodeHeight}}>
-              <div style={{padding: 10, height: responseCodeHeight-20, overflow: 'auto'}}>
-                {formattedData}
-              </div>
-            </Card>
-          ) : (
-            <Card
-              style={{
-                height: responseCodeHeight,
-                padding: '16px',
-                backgroundColor: 'var(--gray-surface)',
-              }}
-            >
-              {contentType === 'html' ? (
-                <iframe srcDoc={formattedData} height='100%' width='100%'/>
-              ) : (
-                formattedData
-              )}
-            </Card>
-          )}
+          {
+            viewMode === 'pretty' ?
+            <PrettyResponse data={formattedData} viewHeight={responseCodeHeight} contentType={ctheader} codeTheme={themes[props.userConfig.codeTheme]}/> :
+            viewMode === 'raw' ? <RawResponse data={formattedData} viewHeight={responseCodeHeight}/> :
+            <PreviewResponse data={formattedData} viewHeight={responseCodeHeight} contentType={contentType}/>
+          }
         </Tabs.Content>
 
         <Tabs.Content value='headers'>
