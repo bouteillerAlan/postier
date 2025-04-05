@@ -61,14 +61,16 @@ export default function ResponseViewer(props: ResponseViewerProps) {
    */
   function calculateResponseViewHeight(): void {
     const wh = window.innerHeight;
-    if (subMenuRef && subMenuRef.current) {
-      const rect = subMenuRef.current.getBoundingClientRect();
-      // rect.bottom = size from the top of the window to the bottom of the 'pretty/raw/preview' sub tab menu
-      // 30 is the size of the remaining padding and margin
-      setResponseCodeHeight(wh - rect.bottom - 30);
-    }
+    // if (subMenuRef && subMenuRef.current) {
+    //   const rect = subMenuRef.current.getBoundingClientRect();
+    //   // rect.bottom = size from the top of the window to the bottom of the 'pretty/raw/preview' sub tab menu
+    //   // 30 is the size of the remaining padding and margin
+    //   setResponseCodeHeight(wh - rect.bottom - 30);
+    // }
     // 500 is a magic value, but it's fine and calculate this is just IO waste
+    // same for the 516 calculated with rect.bottom
     setResponseDataHeight(wh - 500);
+    setResponseCodeHeight(wh - 516 - 30);
   }
 
   /**
