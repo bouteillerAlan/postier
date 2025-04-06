@@ -1,16 +1,15 @@
 import React, {useEffect, useState} from 'react';
 import {
-  accentTheme,
-  accentThemes,
-  gTheme,
-  gThemes,
-  hlTheme,
-  hlThemes,
+  accentTheme, accentThemes,
+  gTheme, gThemes,
+  hlTheme, hlThemes,
   scaleTheme, scaleThemes,
   UserSetting as US
 } from '../types/types.ts';
-import {Checkbox, Code, Container, DataList, Select} from '@radix-ui/themes';
+import {Button, Checkbox, Code, Container, DataList, Select} from '@radix-ui/themes';
 import { path } from '@tauri-apps/api'
+import {ReloadIcon} from '@radix-ui/react-icons';
+import {getDefaultSetting} from "../services/defaultData.ts";
 
 interface UserSettingProps {
   setSetting: React.Dispatch<React.SetStateAction<US>>;
@@ -26,6 +25,10 @@ export default function UserSetting(props: UserSettingProps) {
     path.appConfigDir().then((path: string) => setAppConfigDirPath(path));
     path.appLocalDataDir().then((path: string) => setAppLocalDataDirPath(path));
   }, []);
+
+  function resetSetting() {
+    props.setSetting(() => getDefaultSetting());
+  }
 
   return (
     <Container pt='5'>
@@ -125,6 +128,13 @@ export default function UserSetting(props: UserSettingProps) {
           <DataList.Value>
             <Code>{appConfigDirPath}</Code>
           </DataList.Value>
+        </DataList.Item>
+
+        <DataList.Item align='center'>
+          <DataList.Label>
+            <Button color='crimson' variant='soft' onClick={resetSetting}><ReloadIcon/> Reset to default</Button>
+          </DataList.Label>
+          <DataList.Value></DataList.Value>
         </DataList.Item>
 
       </DataList.Root>
