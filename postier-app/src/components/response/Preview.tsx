@@ -3,7 +3,7 @@ import {Card} from '@radix-ui/themes';
 export default function PreviewResponse (props: {data: string, viewHeight: number, contentType: string}) {
   return (
       props.contentType === 'html' ? (
-        <iframe srcDoc={props.data} height='100%' width='100%'/>
+        <iframe srcDoc={props.data} height={props.viewHeight-10} width='100%'/>
       ) : (
         <Card
           style={{
