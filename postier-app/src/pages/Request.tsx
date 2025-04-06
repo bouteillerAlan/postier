@@ -67,7 +67,10 @@ export default function Request() {
   async function handleSendRequest(requestConfig: RequestData): Promise<void> {
     setIsLoading(true);
     try {
-      const postierObject = await sendRequest(requestConfig);
+      const postierObject = await sendRequest({
+        ...requestConfig,
+        id: `r#${uuidv4()}` // change the id to preserve uniqueness when the user made another request from the same tab
+      });
 
       const editedIndex = requestData.findIndex((v) => v.request.id === postierObject.request.id);
       // merge the new data with the old, for keeping not updated older data just in case
@@ -75,9 +78,10 @@ export default function Request() {
 
       // store the response for the responseViewer
       setRequestData((prev: PostierObjectWithMetrics[]) => {
-        prev.splice(editedIndex, 1, mergedData);
+        prev.splice(editedIndex, 1, {...mergedData});
         return prev;
       });
+
       // save all the data in the history feed
       setHistoryData((prev: PostierObjectWithMetrics[]) => {
         // it's mandatory to rebuild the object like this because request have a weird inheritance with the requestData object
@@ -255,7 +259,8 @@ export default function Request() {
                               <Badge className='methods' color={HttpMethodColorRadixUI(rdata.request.method)} style={{marginRight: 5}}>
                                 {rdata.request.method.slice(0,1)}
                               </Badge>
-                              {`${rdata.request.url === '' ? 'no url' : rdata.request.url}`}
+                              {/*{`${rdata.request.url === '' ? 'no url' : rdata.request.url}`}*/}
+                              {rdata.request.identity.tabId}
                             </Text>
                           </Button>
                         </Tooltip>
