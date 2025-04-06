@@ -26,7 +26,7 @@ export default function BodyForm(props: {getBody: (data: string) => void; getCon
   }, [props.setBody]);
 
   return (
-    <Section size='1' pt='2'>
+    <Section size='1' pt='2' pb='0'>
       <Text as='p' size='2' weight='bold' mb='2'>Body</Text>
       <Box>
         <Flex justify='between' align='center' mb='2'>
