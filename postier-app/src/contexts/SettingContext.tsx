@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import {UserSetting} from '../types/types.ts';
+import {getDefaultSetting} from "../services/defaultData.ts";
 
 interface SettingContextType {
   setting: UserSetting;
@@ -9,13 +10,7 @@ interface SettingContextType {
 export const SettingContext = createContext<SettingContextType | null>(null);
 
 export const SettingProvider = ({children}: { children: ReactNode }) => {
-  const [setting, setSetting] = useState<UserSetting>({
-    codeTheme: 'duotoneDark',
-    accentTheme: 'cyan',
-    debug: false,
-    scaleTheme: '100%',
-    globalTheme: 'auto'
-  });
+  const [setting, setSetting] = useState<UserSetting>(getDefaultSetting());
 
   return (
     <SettingContext.Provider value={{setting, setSetting}}>

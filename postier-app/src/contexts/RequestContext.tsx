@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import {PostierObjectWithMetrics} from '../types/types.ts';
-import {getRequestDefault} from "../services/defaultData.ts";
+import {getDefaultRequest} from "../services/defaultData.ts";
 
 // Shape of the context value
 interface RequestDataContextType {
@@ -13,7 +13,7 @@ export const RequestDataContext = createContext<RequestDataContextType | null>(n
 
 // Provider
 export const RequestDataProvider = ({ children }: { children: ReactNode }) => {
-  const [requestData, setRequestData] = useState<PostierObjectWithMetrics[]>([getRequestDefault()]);
+  const [requestData, setRequestData] = useState<PostierObjectWithMetrics[]>([getDefaultRequest()]);
 
   return (
     <RequestDataContext.Provider value={{ requestData, setRequestData }}>

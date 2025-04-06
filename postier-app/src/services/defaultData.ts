@@ -1,7 +1,7 @@
 import {v4 as uuidv4} from 'uuid';
-import {PostierObjectWithMetrics} from '../types/types.ts';
+import {PostierObjectWithMetrics, UserSetting} from '../types/types.ts';
 
-export function getRequestDefault(): PostierObjectWithMetrics {
+export function getDefaultRequest(): PostierObjectWithMetrics {
   return {
     debug: [],
     request: {
@@ -37,5 +37,15 @@ export function getRequestDefault(): PostierObjectWithMetrics {
       total: 0,
       on_error: 'prepare'
     }
+  };
+}
+
+export function getDefaultSetting(): UserSetting {
+  return {
+    codeTheme: 'duotoneDark',
+    accentTheme: 'violet',
+    debug: false,
+    scaleTheme: '100%',
+    globalTheme: 'dark'
   };
 }

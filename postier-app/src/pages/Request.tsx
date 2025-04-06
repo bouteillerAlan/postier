@@ -23,7 +23,7 @@ import UserSetting from './UserSetting.tsx';
 import AlertCard from '../components/alert/AlertCard.tsx';
 import {getContentFromFile, writeContentInFile} from '../services/fileStorage.ts';
 import {PlusIcon, TrashIcon} from '@radix-ui/react-icons';
-import {getRequestDefault} from '../services/defaultData.ts';
+import {getDefaultRequest} from '../services/defaultData.ts';
 import {HttpMethodColorRadixUI} from '../services/formatter.ts';
 import {v4 as uuidv4} from 'uuid';
 
@@ -68,6 +68,7 @@ export default function Request() {
     setIsLoading(true);
     try {
       const postierObject = await sendRequest(requestConfig);
+
       const editedIndex = requestData.findIndex((v) => v.request.id === postierObject.request.id);
       // merge the new data with the old, for keeping not updated older data just in case
       const mergedData = {...requestData[editedIndex], ...postierObject};
@@ -160,7 +161,7 @@ export default function Request() {
    * add a default request, so a tab, and set the tabIndex with this new id
    */
   function addADefaultRequest() {
-    const newRequest = getRequestDefault();
+    const newRequest = getDefaultRequest();
     setRequestData((prev) => {
       return [...prev, newRequest];
     });
