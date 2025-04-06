@@ -101,7 +101,7 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
 
   return (
     <Container>
-      <Section size='1'>
+      <Section size='1' style={{paddingTop: 12}}>
         <Flex gap='2' justify='between' align='center'>
           <Select.Root value={requestData.request?.method} onValueChange={(value) => setRequestData('method', value as HttpMethod, requestData.request.id)}>
             <Select.Trigger color={HttpMethodColorRadixUI(requestData.request?.method ?? 'GET')} variant='soft' />

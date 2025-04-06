@@ -8,7 +8,7 @@ import {
   Button,
   ScrollArea,
   Flex,
-  IconButton, Separator, Tooltip
+  IconButton, Separator, Tooltip, Badge
 } from '@radix-ui/themes';
 import RequestForm from '../components/forms/RequestForm.tsx';
 import ResponseViewer from '../components/response/ResponseViewer.tsx';
@@ -235,45 +235,41 @@ export default function Request() {
             <Tabs.Content value='request'>
 
               <Flex align='center'>
-                <Button size='3' style={{marginRight: '5px', marginTop: '12px'}} onClick={addADefaultRequest}><PlusIcon/></Button>
+                <Button size='2' style={{marginRight: '5px', marginTop: '12px'}} variant='soft' onClick={addADefaultRequest}><PlusIcon/></Button>
+
                 <ScrollArea style={{padding: '10px 0', marginTop: '12px'}} scrollbars='horizontal'>
                   <Flex gap='0'>
                     {(requestData && requestData.length > 0) && requestData.map((rdata, index) => (
                       <Fragment key={`tabs${index}`}>
-                        <Tooltip content={rdata.request.identity.tabId}>
+                        <Tooltip content={rdata.request.url === '' ? 'no url' : rdata.request.url}>
                           <Button
-                            color={HttpMethodColorRadixUI(rdata.request.method)}
-                            size='3'
+                            color='gray'
+                            size='2'
                             variant={(tabIndex === rdata.request.identity.tabId) ? 'solid' : 'soft'}
                             style={{...setBorderValue(index, false), width: '100px'}}
                             key={rdata.request.identity.tabId}
                             onClick={() => setTabIndex(rdata.request.identity.tabId)}
                           >
-                            <Flex align='center' style={{width: '100px'}}>
-                              <Text size='2' mr={requestData.length > 1 ? '3' : '0'}>
-                                <Flex direction='column' align='baseline'>
-                                  <Text truncate size='3' trim='both'>{rdata.request.method}</Text>
-                                  <Text truncate size='1' style={{maxWidth: '75px'}}>{rdata.request.url === '' ? 'no url' : rdata.request.url}</Text>
-                                </Flex>
-                              </Text>
-                            </Flex>
+                            <Text truncate size='1' style={{minWidth: '100%', textAlign: 'left'}}>
+                              <Badge className='methods' color={HttpMethodColorRadixUI(rdata.request.method)} style={{marginRight: 5}}>
+                                {rdata.request.method.slice(0,1)}
+                              </Badge>
+                              {`${rdata.request.url === '' ? 'no url' : rdata.request.url}`}
+                            </Text>
                           </Button>
                         </Tooltip>
 
                         <Flex
                           align='center'
-                          style={{backgroundColor: tabIndex === rdata.request.identity.tabId ?
-                              `var(--${HttpMethodColorRadixUI(rdata.request.method)}-9)` :
-                              `var(--${HttpMethodColorRadixUI(rdata.request.method)}-3)`
-                          }}
+                          style={{backgroundColor: tabIndex === rdata.request.identity.tabId ? `var(--gray-9)` : `var(--gray-3)`}}
                         >
                           {requestData.length > 1 && <Separator orientation='vertical' size='1'/>}
                         </Flex>
 
                         {requestData.length > 1 &&
                           <IconButton
-                            color={HttpMethodColorRadixUI(rdata.request.method)}
-                            size='3'
+                            color='gray'
+                            size='2'
                             variant={(tabIndex === rdata.request.identity.tabId) ? 'solid' : 'soft'}
                             style={{...setBorderValue(index, true), marginRight: '5px'}}
                             onClick={() => deleteARequest(rdata.request.identity.tabId)}

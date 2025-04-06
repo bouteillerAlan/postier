@@ -1,6 +1,7 @@
-import {Button, Flex, IconButton, Section, Text, TextField} from '@radix-ui/themes';
+import {Flex, IconButton, Section, Text, TextField, Tooltip} from '@radix-ui/themes';
 import {KeyValue} from '../../types/types.ts';
 import {useEffect, useState} from 'react';
+import {PlusIcon} from "@radix-ui/react-icons";
 
 export default function KeyValueForm(props: {getKeyValues: (data: KeyValue[]) => void, setKeyValues: KeyValue[] | null, title: string}) {
   const [keyValues, setKeyValues] = useState<KeyValue[]>(
@@ -28,8 +29,14 @@ export default function KeyValueForm(props: {getKeyValues: (data: KeyValue[]) =>
   }, [keyValues]);
 
   return (
-    <Section size='1' pb='0'>
-      <Text as='p' size='2' weight='bold' mb='2'>{props.title}</Text>
+    <Section size='1' pb='0' pt='2'>
+
+      <Flex gap='3' mb='2'>
+        <Tooltip content={`Add a new ${props.title.toLowerCase()}`}>
+          <IconButton size='1' variant='soft' onClick={addKeyValue}><PlusIcon/></IconButton>
+        </Tooltip>
+        <Text size='2' weight='bold'>{props.title}</Text>
+      </Flex>
 
       <Flex direction='column' gap='2'>
         {keyValues.map((header, index) => (
@@ -51,9 +58,6 @@ export default function KeyValueForm(props: {getKeyValues: (data: KeyValue[]) =>
             >✕</IconButton>
           </Flex>
         ))}
-        <Button variant='soft' onClick={addKeyValue}>
-          Add a new {props.title.toLowerCase()}
-        </Button>
       </Flex>
     </Section>
   );

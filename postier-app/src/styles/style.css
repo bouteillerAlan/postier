@@ -1,3 +1,10 @@
+@font-face {
+    font-family: "KhandRegular";
+    src: local("KhandRegular"),
+    url("../../fonts/Khand-Medium.ttf") format("opentype");
+    font-weight: normal;
+}
+
 body {
     margin: 0;
 }
@@ -12,4 +19,8 @@ body {
 
 .radix-themes {
     --cursor-button: pointer;
+}
+
+.methods {
+    font-family: 'KhandRegular', sans-serif;
 }
