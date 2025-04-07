@@ -69,10 +69,10 @@ export default function Request() {
     try {
       const postierObject = await sendRequest({
         ...requestConfig,
-        id: `r#${uuidv4()}` // change the id to preserve uniqueness when the user made another request from the same tab
+        id: `u#${uuidv4()}` // change the id to preserve uniqueness when the user made another request from the same tab
       });
 
-      const editedIndex = requestData.findIndex((v) => v.request.id === postierObject.request.id);
+      const editedIndex = requestData.findIndex((v) => v.request.identity.tabId === postierObject.request.identity.tabId);
       // merge the new data with the old, for keeping not updated older data just in case
       const mergedData = {...requestData[editedIndex], ...postierObject};
 
