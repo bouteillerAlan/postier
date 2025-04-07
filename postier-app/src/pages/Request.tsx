@@ -259,8 +259,7 @@ export default function Request() {
                               <Badge className='methods' color={HttpMethodColorRadixUI(rdata.request.method)} style={{marginRight: 5}}>
                                 {rdata.request.method.slice(0,1)}
                               </Badge>
-                              {/*{`${rdata.request.url === '' ? 'no url' : rdata.request.url}`}*/}
-                              {rdata.request.identity.tabId}
+                              {`${rdata.request.url === '' ? 'no url' : rdata.request.url}`}
                             </Text>
                           </Button>
                         </Tooltip>
