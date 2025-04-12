@@ -128,8 +128,8 @@ export default function RequestHistory({ history, setHistory, onClickElement, ma
                     <StackIcon/>
                   </Badge>
                 </Tooltip>
-                <Tooltip content='tab id'>
-                  <Badge color='gray'>{item.request.identity.tabId.slice(0, 6)}</Badge>
+                <Tooltip content={item.request.identity ? 'tab id' : 'pre 1.4.0 version request'}>
+                  <Badge color='gray'>{item.request.identity?.tabId.slice(0, 6) ?? 'no tab id'}</Badge>
                 </Tooltip>
                 <Tooltip content='request id'>
                   <Badge color='gray'>{item.request.id.slice(0, 6)}</Badge>
