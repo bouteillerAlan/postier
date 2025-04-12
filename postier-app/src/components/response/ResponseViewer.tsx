@@ -51,17 +51,21 @@ export default function ResponseViewer(props: ResponseViewerProps) {
    * get the value of the language contain in the Content-Type header
    * @return string
    */
-  function getCTheader(): string {
+  function getCTheader(): string | null {
     const cth = response.headers?.find((header: KeyValue) => header.key.toLowerCase() === 'content-type');
     // for example google.fr send text/html; charset=utf-8
     // and we just need the mid-part (html)
+    // and some api can send something like problem+json
     // reminder: https://stackoverflow.com/questions/23714383/what-are-all-the-possible-values-for-http-content-type-header
-    return cth ? cth.value.split(';')[0].split('/')[1] : '';
+    if (cth) {
+      const possibleValue = cth.value.split(';')[0].split('/')[1];
+      return possibleValue.split('').includes('+') ? possibleValue.split('+')[1] : possibleValue;
+    }
+    return null;
   }
 
-  const ctheader = getCTheader();
-  const contentType = ctheader ?? detectContentType(response.data);
-  const formattedData = formatData(response.data, viewMode, contentType);
+  const ctheader = getCTheader() ?? detectContentType(response.data);
+  const formattedData = formatData(response.data, viewMode, ctheader);
 
   const statusColor = getStatusColor(response.status);
   const headers = response.headers;
@@ -201,7 +205,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
             viewMode === 'pretty' ?
             <PrettyResponse data={formattedData} viewHeight={responseCodeHeight} contentType={ctheader} codeTheme={themes[props.userConfig.codeTheme]}/> :
             viewMode === 'raw' ? <RawResponse data={formattedData} viewHeight={responseCodeHeight}/> :
-            <PreviewResponse data={formattedData} viewHeight={responseCodeHeight} contentType={contentType}/>
+            <PreviewResponse data={formattedData} viewHeight={responseCodeHeight} contentType={ctheader}/>
           }
         </Tabs.Content>
 
