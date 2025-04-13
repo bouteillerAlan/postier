@@ -2,10 +2,12 @@ import {Box, Flex, Section, Select, Text} from '@radix-ui/themes';
 import {ContentType} from '../../types/types.ts';
 import {useEffect, useState} from 'react';
 import CodeEditor from '@uiw/react-textarea-code-editor';
+import {useSetting} from '../../contexts/SettingContext.tsx';
 
 export default function BodyForm(props: {getBody: (data: string) => void; getContentType: (data: ContentType) => void; setBody: string | null; setContentType: ContentType | null}) {
   const [body, setBody] = useState<string>(props.setBody ?? '');
   const [contentType, setContentType] = useState<ContentType>(props.setContentType ?? 'json');
+  const { setting } = useSetting();
 
   useEffect(() => {
     props.getBody(body);
@@ -51,9 +53,10 @@ export default function BodyForm(props: {getBody: (data: string) => void; getCon
           placeholder={`Enter ${contentType} body`}
           onChange={(e) => setBody(e.target.value)}
           padding={15}
+          data-color-mode={setting.globalTheme === 'auto' ? undefined : setting.globalTheme}
           style={{
-            fontFamily: "var(--code-font-family)",
-            fontSize: "var(--default-font-size)"
+            fontFamily: 'var(--code-font-family)',
+            fontSize: 'var(--default-font-size)'
           }}
         />
 
