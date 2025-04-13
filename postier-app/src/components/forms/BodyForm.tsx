@@ -1,6 +1,7 @@
-import {Box, Flex, Section, Select, Text, TextArea} from '@radix-ui/themes';
+import {Box, Flex, Section, Select, Text} from '@radix-ui/themes';
 import {ContentType} from '../../types/types.ts';
 import {useEffect, useState} from 'react';
+import CodeEditor from '@uiw/react-textarea-code-editor';
 
 export default function BodyForm(props: {getBody: (data: string) => void; getContentType: (data: ContentType) => void; setBody: string | null; setContentType: ContentType | null}) {
   const [body, setBody] = useState<string>(props.setBody ?? '');
@@ -43,12 +44,19 @@ export default function BodyForm(props: {getBody: (data: string) => void; getCon
             </Select.Content>
           </Select.Root>
         </Flex>
-        <TextArea
-          placeholder={`Enter ${contentType} body`}
+
+        <CodeEditor
           value={body}
+          language={contentType}
+          placeholder={`Enter ${contentType} body`}
           onChange={(e) => setBody(e.target.value)}
-          style={{ minHeight: '150px' }}
+          padding={15}
+          style={{
+            fontFamily: "var(--code-font-family)",
+            fontSize: "var(--default-font-size)"
+          }}
         />
+
       </Box>
     </Section>
   );
