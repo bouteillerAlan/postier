@@ -2,10 +2,11 @@ import {v4 as uuidv4} from 'uuid';
 import {PostierObjectWithMetrics, UserSetting} from '../types/types.ts';
 
 export function getDefaultRequest(): PostierObjectWithMetrics {
+  const uid = uuidv4();
   return {
     debug: [],
     request: {
-      id: `r#${uuidv4()}`,
+      id: `r#${uid}`,
       timestamp: 0,
       url: '',
       composedUrl: '',
@@ -19,7 +20,7 @@ export function getDefaultRequest(): PostierObjectWithMetrics {
       }
     },
     response: {
-      id: '',
+      id: `r#${uid}`,
       timestamp: 0,
       status: 0,
       statusText: 'No request sent',

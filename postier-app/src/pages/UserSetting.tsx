@@ -117,7 +117,7 @@ export default function UserSetting(props: UserSettingProps) {
         </DataList.Item>
 
         <DataList.Item align='center'>
-          <DataList.Label>History is located in</DataList.Label>
+          <DataList.Label>Data are located in</DataList.Label>
           <DataList.Value>
             <Code>{appLocalDataDirPath}</Code>
           </DataList.Value>

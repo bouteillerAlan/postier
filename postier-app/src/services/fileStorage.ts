@@ -18,7 +18,7 @@ async function createAppFolderIfNotExist(): Promise<void> {
  * @param data string the data you want to write in the file
  * @param file 'config.json' | 'history.json' name of the file with extension
  */
-export async function writeContentInFile(data: string, file: 'config.txt' | 'history.txt'): Promise<boolean> {
+export async function writeContentInFile(data: string, file: 'config.txt' | 'request.txt' | 'history.txt'): Promise<boolean> {
   const encoder: TextEncoder = new TextEncoder();
   const dataUint: Uint8Array = encoder.encode(data);
 
@@ -26,7 +26,9 @@ export async function writeContentInFile(data: string, file: 'config.txt' | 'his
     await createAppFolderIfNotExist();
     if (file === 'config.txt') {
       await writeFile(file, dataUint, {baseDir: BaseDirectory.AppConfig});
-    } else {
+    } else if (file === 'request.txt') {
+      await writeFile(file, dataUint, {baseDir: BaseDirectory.AppLocalData});
+    } else if (file === 'history.txt') {
       await writeFile(file, dataUint, {baseDir: BaseDirectory.AppLocalData});
     }
     return true;
@@ -41,12 +43,15 @@ export async function writeContentInFile(data: string, file: 'config.txt' | 'his
  * @param file 'config.json' | 'history.json' name of the file with extension
  * @return string
  */
-export async function getContentFromFile(file: 'config.txt' | 'history.txt'): Promise<string> {
+export async function getContentFromFile(file: 'config.txt' | 'request.txt' | 'history.txt'): Promise<string> {
   const decoder: TextDecoder = new TextDecoder();
 
   try {
     if (file === 'config.txt') {
       const data: Uint8Array = await readFile(file, {baseDir: BaseDirectory.AppConfig});
+      return decoder.decode(data);
+    } else if (file === 'history.txt') {
+      const data: Uint8Array = await readFile(file, {baseDir: BaseDirectory.AppLocalData});
       return decoder.decode(data);
     } else {
       const data: Uint8Array = await readFile(file, {baseDir: BaseDirectory.AppLocalData});

@@ -123,6 +123,7 @@ export default function Request() {
    */
   useEffect(() => {
     if (setting.debug) setAlert(prev => [...prev, {title: 'Debug', message: 'request updated', show: setting.debug}]);
+    writeContentInFile(JSON.stringify(requestData), 'request.txt');
   }, [requestData]);
 
   /**
@@ -136,6 +137,10 @@ export default function Request() {
     getContentFromFile('history.txt').then((value: string) => {
       const historyParsed = JSON.parse(value);
       if (historyParsed && typeof historyParsed === 'object') setHistoryData(() => ([...historyParsed]));
+    });
+    getContentFromFile('request.txt').then((value: string) => {
+      const requestParsed = JSON.parse(value);
+      if (requestParsed && typeof requestParsed === 'object') setRequestData(() => ([...requestParsed]));
     });
   }, []);
 
@@ -158,7 +163,8 @@ export default function Request() {
    * @return number the index of the request in the requestData context array
    */
   function getActiveRequestIndex(): number {
-    return requestData.findIndex((v) => v.request.identity.tabId === tabIndex);
+    const x = requestData.findIndex((v) => v.request.identity.tabId === tabIndex);
+    return x === -1 ? 0 : x;
   }
 
   /**
@@ -288,18 +294,18 @@ export default function Request() {
                 </ScrollArea>
               </Flex>
 
-              <RequestForm
+              {getActiveRequestIndex() !== -1 && <RequestForm
                 onSubmit={handleSendRequest}
                 isLoading={isLoading}
                 requestData={requestData[getActiveRequestIndex()]}
                 setRequestData={handleRequestData}
-              />
-              <ResponseViewer
+              />}
+              {getActiveRequestIndex() !== -1 && <ResponseViewer
                 response={requestData[getActiveRequestIndex()].response}
                 debug={requestData[getActiveRequestIndex()].debug}
                 metrics={requestData[getActiveRequestIndex()].metrics}
                 userConfig={setting}
-              />
+              />}
 
             </Tabs.Content>
 
