@@ -65,7 +65,8 @@ export default function ResponseViewer(props: ResponseViewerProps) {
   }
 
   const ctheader = getCTheader() ?? detectContentType(response.data);
-  const formattedData = formatData(response.data, viewMode, ctheader);
+  let formattedData = formatData(response.data, viewMode, ctheader);
+  if (formattedData === '') formattedData = 'No body returned for response';
 
   const statusColor = getStatusColor(response.status);
   const headers = response.headers;
