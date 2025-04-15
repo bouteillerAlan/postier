@@ -11,7 +11,7 @@ import {
 } from '../../types/types.ts';
 import {HttpMethodColorCustom, HttpMethodColorRadixUI} from '../../services/formatter.ts';
 import {useEffect, useRef} from 'react';
-import {PaperPlaneIcon} from '@radix-ui/react-icons';
+import {FilePlusIcon, PaperPlaneIcon} from '@radix-ui/react-icons';
 
 interface RequestFormProps {
   onSubmit: (requestData: RequestData) => void;
@@ -57,15 +57,17 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
   const safeUrl = (): string => {
     if (requestData.request?.url) {
       const httpPattern = /^https?:\/\//;
+      const localhostPattern = /^localhost/;
       const ip4Pattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
       const ip6Pattern = /^((?:[A-Fa-f0-9]{1,4}:){7}[A-Fa-f0-9]{1,4}|(?:[A-Fa-f0-9]{1,4}:){1,7}:|(?:[A-Fa-f0-9]{1,4}:){1,6}:[A-Fa-f0-9]{1,4}|(?:[A-Fa-f0-9]{1,4}:){1,5}(?::[A-Fa-f0-9]{1,4}){1,2}|(?:[A-Fa-f0-9]{1,4}:){1,4}(?::[A-Fa-f0-9]{1,4}){1,3}|(?:[A-Fa-f0-9]{1,4}:){1,3}(?::[A-Fa-f0-9]{1,4}){1,4}|(?:[A-Fa-f0-9]{1,4}:){1,2}(?::[A-Fa-f0-9]{1,4}){1,5}|[A-Fa-f0-9]{1,4}:(?::[A-Fa-f0-9]{1,4}){1,6}|:(?:(?::[A-Fa-f0-9]{1,4}){1,7}|:)|fe80:(?::[A-Fa-f0-9]{0,4}){0,4}%[0-9a-zA-Z]+|::(ffff(?::0{1,4})?:)?(?:[0-9]{1,3}\.){3}[0-9]{1,3}|(?:[A-Fa-f0-9]{1,4}:){1,4}:(?:[0-9]{1,3}\.){3}[0-9]{1,3})$/;
 
       const hasHttp = httpPattern.test(requestData.request.url);
+      const isLocal = localhostPattern.test(requestData.request.url);
       const isIPV4 = ip4Pattern.test(requestData.request.url);
       const isIPV6 = ip6Pattern.test(requestData.request.url);
 
       if (hasHttp) return requestData.request.url;
-      if (isIPV4 || isIPV6) return `http://${requestData.request.url}`;
+      if (isIPV4 || isIPV6 || isLocal) return `http://${requestData.request.url}`;
       return `https://${requestData.request.url}`;
     }
     return '';
@@ -90,6 +92,16 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
   const handleKeyPress = (e: KeyboardEvent): void => {
     if (isLoading || !requestData.request?.url) return;
     if (e.key === 'Enter') handleSubmit();
+  }
+
+  function countNotEmptyArrayValue(array: KeyValue[] | null): number {
+    if (!array) return 0;
+    return array.filter((p) => p.value !== '' && p.key !== '').length;
+  }
+
+  function oneOrMoreKeyValueIsValid(query: KeyValue[] | null): boolean {
+    if (!query) return false;
+    return countNotEmptyArrayValue(query) > 0;
   }
 
   useEffect(() => {
@@ -129,9 +141,22 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
       <Section size='1' pt='0'>
         <Tabs.Root defaultValue='query'>
           <Tabs.List>
-            <Tabs.Trigger value='query'>Query</Tabs.Trigger>
-            <Tabs.Trigger value='header'>Header</Tabs.Trigger>
-            <Tabs.Trigger value='body'>Body</Tabs.Trigger>
+            <Tabs.Trigger value='query'>
+              Query
+              <span style={{color: 'var(--green-a9)', paddingLeft: 5, display: oneOrMoreKeyValueIsValid(requestData.request.query) ? '' : 'none'}}>
+                {countNotEmptyArrayValue(requestData.request.query)}
+              </span>
+            </Tabs.Trigger>
+            <Tabs.Trigger value='header'>
+              Header
+              <span style={{color: 'var(--green-a9)', paddingLeft: 5, display: oneOrMoreKeyValueIsValid(requestData.request.headers) ? '' : 'none'}}>
+                {countNotEmptyArrayValue(requestData.request.headers)}
+              </span>
+            </Tabs.Trigger>
+            <Tabs.Trigger value='body'>
+              Body
+              <FilePlusIcon color='var(--green-a9)' style={{paddingLeft: 5, display: requestData.request.body ? '' : 'none'}} />
+            </Tabs.Trigger>
           </Tabs.List>
 
           <Box>
