@@ -78,6 +78,8 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
    * @return void
    */
   const handleSubmit = (): void => {
+    // in case the value is empty
+    if (!requestData.request.contentType) requestData.request.contentType = 'none';
     onSubmit({
       ...requestData.request,
       composedUrl: `${safeUrl()}${buildQueryString()}`,
@@ -94,11 +96,19 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
     if (e.key === 'Enter') handleSubmit();
   }
 
+  /**
+   * you give a KeyValue array and the function give you the total of complete elements
+   * @param array
+   */
   function countNotEmptyArrayValue(array: KeyValue[] | null): number {
     if (!array) return 0;
     return array.filter((p) => p.value !== '' && p.key !== '').length;
   }
 
+  /**
+   * return true if the array contain more than 0 complete value
+   * @param query
+   */
   function oneOrMoreKeyValueIsValid(query: KeyValue[] | null): boolean {
     if (!query) return false;
     return countNotEmptyArrayValue(query) > 0;
