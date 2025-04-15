@@ -3,7 +3,6 @@ import {invoke} from '@tauri-apps/api/core';
 
 export const sendRequest = async (requestData: RequestData): Promise<PostierObjectWithMetrics> => {
   try {
-
     const rep = await invoke<PostierObjectWithMetricsFromRust>('send_request_with_metrics', {
       requestData: {
         ...requestData,

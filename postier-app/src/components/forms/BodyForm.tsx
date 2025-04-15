@@ -6,7 +6,7 @@ import {useSetting} from '../../contexts/SettingContext.tsx';
 
 export default function BodyForm(props: {getBody: (data: string) => void; getContentType: (data: ContentType) => void; setBody: string | null; setContentType: ContentType | null}) {
   const [body, setBody] = useState<string>(props.setBody ?? '');
-  const [contentType, setContentType] = useState<ContentType>(props.setContentType ?? 'json');
+  const [contentType, setContentType] = useState<ContentType>(props.setContentType ?? 'none');
   const { setting } = useSetting();
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export default function BodyForm(props: {getBody: (data: string) => void; getCon
    * force the maj of the data when props.setKeyValues change
    */
   useEffect(() => {
-    setContentType(props.setContentType ?? 'json')
+    setContentType(props.setContentType ?? 'none')
   }, [props.setContentType]);
 
   useEffect(() => {
