@@ -12,7 +12,7 @@ import {
 } from '@radix-ui/themes';
 import { getStatusColor } from '../services/formatter.ts';
 import {PostierObjectWithMetrics} from '../types/types.ts';
-import React, {RefObject, useEffect, useState} from 'react';
+import React, {RefObject, useEffect, useRef, useState} from 'react';
 import {MagnifyingGlassIcon, ReloadIcon, StackIcon, TrashIcon} from '@radix-ui/react-icons';
 
 interface RequestHistoryProps {
@@ -24,13 +24,18 @@ interface RequestHistoryProps {
 }
 
 export default function RequestHistory({ history, setHistory, onClickElement, mainTabRef, isLoading = false }: RequestHistoryProps) {
-  const [wh, setWh] = useState<number>(0);
+  const [vh, setVh] = useState<number>(0);
+  const [bw, setBw] = useState<number | 'auto'>(0);
+  const boxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    window.addEventListener('resize', calculateViewHeight);
     calculateViewHeight();
+    calculateBoxWidth();
+    window.addEventListener('resize', calculateViewHeight);
+    window.addEventListener('resize', calculateBoxWidth);
     return () => {
       window.removeEventListener('resize', calculateViewHeight);
+      window.removeEventListener('resize', calculateBoxWidth);
     };
   }, []);
 
@@ -40,7 +45,19 @@ export default function RequestHistory({ history, setHistory, onClickElement, ma
    */
   function calculateViewHeight(): void {
     // here 32 is the size of the padding and margin apply from the element on Request.tsx
-    setWh(mainTabRef.current ? window.innerHeight - (mainTabRef.current?.offsetHeight + 32) : window.innerHeight - 32);
+    setVh(mainTabRef.current ? window.innerHeight - (mainTabRef.current?.offsetHeight + 32) : window.innerHeight - 32);
+  }
+
+  /**
+   * calculate the width for the card and set the value for the text uri or auto
+   * @return void
+   */
+  function calculateBoxWidth(): void {
+    if (boxRef.current) {
+      setBw(boxRef.current.clientWidth - 214);
+    } else {
+      setBw('auto');
+    }
   }
 
   /**
@@ -87,21 +104,20 @@ export default function RequestHistory({ history, setHistory, onClickElement, ma
   }
 
   return (
-  <ScrollArea type='auto' scrollbars='vertical' style={{ height: wh }}>
+  <ScrollArea type='auto' scrollbars='vertical' style={{height: vh}}>
 
     {isLoading && loadingDisplay()}
     {(!isLoading && (!history || (history && history.length === 0))) && noHistoryDisplay()}
 
-    {<Flex direction='column' gap='2' p='2'>
+    {<Flex direction='column' gap='2' p='2' ref={boxRef}>
       {(!isLoading && (history && history.length > 0)) && history.map((item: PostierObjectWithMetrics) => (
         <Card key={`hist${item.request.id}`}>
           <Flex gap='2' align='center' justify='between'>
 
             <Flex gap='2' direction='column'>
-              <Flex gap='2' align='center' mb='1'>
+              <Flex gap='2' align='center' mb='1' style={{width: bw}}>
                 <Badge color='gray'>{new Date(item.request.timestamp).toLocaleString()}</Badge>
                 <Separator/>
-
 
                 <HoverCard.Root>
                   <HoverCard.Trigger>
