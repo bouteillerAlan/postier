@@ -1,4 +1,4 @@
-import {Box, Flex, Section, Select, Text} from '@radix-ui/themes';
+import {Box, Card, Flex, ScrollArea, Section, Select, Text} from '@radix-ui/themes';
 import {ContentType} from '../../types/types.ts';
 import {useEffect, useState} from 'react';
 import {useSetting} from '../../contexts/SettingContext.tsx';
@@ -56,18 +56,23 @@ export default function BodyForm(props: BodyFormProps) {
           </Select.Root>
         </Flex>
 
-        <Editor
-          value={body}
-          placeholder={`Enter body of type ${contentType}`}
-          onValueChange={(value) => setBody(value)}
-          style={{
-            fontFamily: 'var(--code-font-family)',
-            fontSize: 'var(--default-font-size)'
-          }}
-          highlight={(code) => {
-            return <HighlightCode content={code} contentType={contentType} codeTheme={themes[setting.codeTheme]} mainDivStyle={{minHeight: 100}}/>
-          }}
-        />
+        <Card style={{height: 200, padding: 0}}>
+          <ScrollArea style={{backgroundColor: themes[setting.codeTheme].plain.backgroundColor}}>
+            <Editor
+              value={body}
+              placeholder={`Enter body of type ${contentType}`}
+              onValueChange={(value) => setBody(value)}
+              style={{
+                fontFamily: 'var(--code-font-family)',
+                fontSize: 'var(--default-font-size)'
+              }}
+              padding={10}
+              highlight={(code) => {
+                return <HighlightCode content={code} contentType={contentType} codeTheme={themes[setting.codeTheme]} mainDivStyle={{minHeight: 100}}/>
+              }}
+            />
+          </ScrollArea>
+        </Card>
 
       </Box>
     </Section>
