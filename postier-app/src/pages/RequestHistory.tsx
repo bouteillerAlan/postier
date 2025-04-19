@@ -1,19 +1,10 @@
-import {
-  ScrollArea,
-  Box,
-  Text,
-  Flex,
-  Badge,
-  Separator,
-  Card,
-  Button,
-  Tooltip,
-  HoverCard,
-} from '@radix-ui/themes';
-import { getStatusColor } from '../services/formatter.ts';
-import {PostierObjectWithMetrics} from '../types/types.ts';
+import {Badge, Box, Button, Card, Flex, HoverCard, ScrollArea, Separator, Text, Tooltip,} from '@radix-ui/themes';
+import {getStatusColor} from '../services/formatter.ts';
+import {PostierObjectWithMetrics, UserSetting} from '../types/types.ts';
 import React, {RefObject, useEffect, useRef, useState} from 'react';
 import {MagnifyingGlassIcon, ReloadIcon, StackIcon, TrashIcon} from '@radix-ui/react-icons';
+import HighlightCode from "../components/codeHighlighting/HighlightCode.tsx";
+import {themes} from "prism-react-renderer";
 
 interface RequestHistoryProps {
   isLoading?: boolean;
@@ -21,9 +12,10 @@ interface RequestHistoryProps {
   setHistory: React.Dispatch<React.SetStateAction<PostierObjectWithMetrics[]>>;
   onClickElement: (request: PostierObjectWithMetrics) => void;
   mainTabRef: RefObject<HTMLDivElement>;
+  userConfig: UserSetting;
 }
 
-export default function RequestHistory({ history, setHistory, onClickElement, mainTabRef, isLoading = false }: RequestHistoryProps) {
+export default function RequestHistory({ history, setHistory, onClickElement, mainTabRef, userConfig, isLoading = false }: RequestHistoryProps) {
   const [vh, setVh] = useState<number>(0);
   const [bw, setBw] = useState<number | 'auto'>(0);
   const boxRef = useRef<HTMLDivElement>(null);
@@ -125,11 +117,10 @@ export default function RequestHistory({ history, setHistory, onClickElement, ma
                       <MagnifyingGlassIcon/>
                     </Badge>
                   </HoverCard.Trigger>
-                  <HoverCard.Content size='1' maxWidth='500px' height='250px'>
-                    <pre>{JSON.stringify(item, undefined, 2)}</pre>
+                  <HoverCard.Content size='1' maxWidth='500px' height='250px' style={{padding: 0, backgroundColor: themes[userConfig.codeTheme].plain.backgroundColor}}>
+                    <HighlightCode content={JSON.stringify(item, undefined, 2)} contentType={'json'} codeTheme={themes[userConfig.codeTheme]} mainDivStyle={{margin: 10}}/>
                   </HoverCard.Content>
                 </HoverCard.Root>
-
 
                 <Badge>{item.request.method}</Badge>
                 <Tooltip content={`${item.response.status}, ${item.response.statusText}`}>
