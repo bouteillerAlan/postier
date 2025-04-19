@@ -1,14 +1,17 @@
 import {Fragment, useEffect, useRef, useState} from 'react';
 import {
+  Badge,
   Box,
-  Container,
-  Tabs,
-  Theme,
-  Text,
   Button,
-  ScrollArea,
+  Container,
   Flex,
-  IconButton, Separator, Tooltip, Badge
+  IconButton,
+  ScrollArea,
+  Separator,
+  Tabs,
+  Text,
+  Theme,
+  Tooltip
 } from '@radix-ui/themes';
 import RequestForm from '../components/forms/RequestForm.tsx';
 import ResponseViewer from '../components/response/ResponseViewer.tsx';
@@ -316,6 +319,7 @@ export default function Request() {
                 history={historyData}
                 setHistory={setHistoryData}
                 onClickElement={pullHistoryRequest}
+                userConfig={setting}
               />
             </Tabs.Content>
 

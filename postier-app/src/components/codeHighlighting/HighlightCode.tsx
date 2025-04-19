@@ -1,5 +1,4 @@
 import React from 'react';
-import {ScrollArea} from '@radix-ui/themes';
 import {Highlight, PrismTheme} from 'prism-react-renderer';
 
 interface HighlightCodeProps {
@@ -18,7 +17,7 @@ export default function HighlightCode (props: HighlightCodeProps) {
     >
       {({ style, tokens, getLineProps, getTokenProps }) => (
         <div style={{...style, ...props.mainDivStyle}}>
-          <ScrollArea style={{position: 'initial'}}>
+          {/*<ScrollArea style={{position: 'initial'}}>*/}
             <pre style={{...style, backgroundColor: 'none', margin: 0}}>
               {tokens.map((line, i) => (
                 <div key={`codeToken${i}`} {...getLineProps({ line })}>
@@ -28,7 +27,7 @@ export default function HighlightCode (props: HighlightCodeProps) {
                 </div>
               ))}
             </pre>
-          </ScrollArea>
+          {/*</ScrollArea>*/}
         </div>
       )}
     </Highlight>
