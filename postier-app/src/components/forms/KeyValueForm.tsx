@@ -25,8 +25,9 @@ export default function KeyValueForm(props: {getKeyValues: (data: KeyValue[]) =>
   };
 
   useEffect(() => {
+    console.log('xxxxxxx')
     props.getKeyValues(keyValues);
-  }, [keyValues]);
+  }, [keyValues, props.title]);
 
   return (
     <Section size='1' pb='0' pt='2'>
