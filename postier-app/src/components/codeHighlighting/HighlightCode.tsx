@@ -6,7 +6,7 @@ interface HighlightCodeProps {
   content: string;
   contentType: string;
   codeTheme: PrismTheme | undefined;
-  mainDivStyle:  React.CSSProperties | undefined;
+  mainDivStyle?:  React.CSSProperties | undefined;
 }
 
 export default function HighlightCode (props: HighlightCodeProps) {
@@ -19,7 +19,7 @@ export default function HighlightCode (props: HighlightCodeProps) {
       {({ style, tokens, getLineProps, getTokenProps }) => (
         <div style={{...style, ...props.mainDivStyle}}>
           <ScrollArea style={{position: 'initial'}}>
-              <pre style={{...style, backgroundColor: 'none', margin: 0}}>
+            <pre style={{...style, backgroundColor: 'none', margin: 0}}>
               {tokens.map((line, i) => (
                 <div key={`codeToken${i}`} {...getLineProps({ line })}>
                   {line.map((token, key) => (
