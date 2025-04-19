@@ -1,18 +1,18 @@
-import React, {useEffect, useRef, useState, Fragment} from 'react';
+import React, {Fragment, useEffect, useRef, useState} from 'react';
 import {
-  Tabs,
-  Box,
-  Text,
-  Flex,
   Badge,
-  Section,
-  Table,
-  Tooltip,
-  Separator,
+  Box,
+  DataList,
+  Flex,
   HoverCard,
   Link,
-  DataList,
-  ScrollArea
+  ScrollArea,
+  Section,
+  Separator,
+  Table,
+  Tabs,
+  Text,
+  Tooltip
 } from '@radix-ui/themes';
 import {HttpMetricsWErr, KeyValue, ResponseData, UserSetting, ViewMode} from '../../types/types.ts';
 import {detectContentType, formatData, getStatusColor} from '../../services/formatter.ts';
@@ -204,7 +204,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
 
           {
             viewMode === 'pretty' ?
-            <PrettyResponse data={formattedData} viewHeight={responseCodeHeight} contentType={ctheader} codeTheme={themes[props.userConfig.codeTheme]}/> :
+            <PrettyResponse data={formattedData} viewHeight={responseCodeHeight} contentType={ctheader} codeTheme={themes[props.userConfig.codeTheme]} userConfig={props.userConfig}/> :
             viewMode === 'raw' ? <RawResponse data={formattedData} viewHeight={responseCodeHeight}/> :
             <PreviewResponse data={formattedData} viewHeight={responseCodeHeight} contentType={ctheader}/>
           }

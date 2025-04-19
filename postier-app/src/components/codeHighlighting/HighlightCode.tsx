@@ -17,17 +17,15 @@ export default function HighlightCode (props: HighlightCodeProps) {
     >
       {({ style, tokens, getLineProps, getTokenProps }) => (
         <div style={{...style, ...props.mainDivStyle}}>
-          {/*<ScrollArea style={{position: 'initial'}}>*/}
-            <pre style={{...style, backgroundColor: 'none', margin: 0}}>
-              {tokens.map((line, i) => (
-                <div key={`codeToken${i}`} {...getLineProps({ line })}>
-                  {line.map((token, key) => (
-                    <span key={`codeLine${key}`} {...getTokenProps({ token })} />
-                  ))}
-                </div>
-              ))}
-            </pre>
-          {/*</ScrollArea>*/}
+          <pre style={{...style, backgroundColor: 'none', margin: 0}}>
+            {tokens.map((line, i) => (
+              <div key={`codeToken${i}`} {...getLineProps({ line })}>
+                {line.map((token, key) => (
+                  <span key={`codeLine${key}`} {...getTokenProps({ token })} />
+                ))}
+              </div>
+            ))}
+          </pre>
         </div>
       )}
     </Highlight>
