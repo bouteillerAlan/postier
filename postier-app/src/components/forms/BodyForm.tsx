@@ -1,10 +1,19 @@
 import {Box, Flex, Section, Select, Text} from '@radix-ui/themes';
 import {ContentType} from '../../types/types.ts';
 import {useEffect, useState} from 'react';
-import CodeEditor from '@uiw/react-textarea-code-editor';
 import {useSetting} from '../../contexts/SettingContext.tsx';
+import Editor from 'react-simple-code-editor';
+import HighlightCode from "../codeHighlighting/HighlightCode.tsx";
+import {themes} from "prism-react-renderer";
 
-export default function BodyForm(props: {getBody: (data: string) => void; getContentType: (data: ContentType) => void; setBody: string | null; setContentType: ContentType | null}) {
+interface BodyFormProps {
+  getBody: (data: string) => void;
+  getContentType: (data: ContentType) => void;
+  setBody: string | null;
+  setContentType: ContentType | null
+}
+
+export default function BodyForm(props: BodyFormProps) {
   const [body, setBody] = useState<string>(props.setBody ?? '');
   const [contentType, setContentType] = useState<ContentType>(props.setContentType ?? 'none');
   const { setting } = useSetting();
@@ -47,16 +56,16 @@ export default function BodyForm(props: {getBody: (data: string) => void; getCon
           </Select.Root>
         </Flex>
 
-        <CodeEditor
+        <Editor
           value={body}
-          language={contentType}
-          placeholder={`Enter ${contentType} body`}
-          onChange={(e) => setBody(e.target.value)}
-          padding={15}
-          data-color-mode={setting.globalTheme === 'auto' ? undefined : setting.globalTheme}
+          placeholder={`Enter body of type ${contentType}`}
+          onValueChange={(value) => setBody(value)}
           style={{
             fontFamily: 'var(--code-font-family)',
             fontSize: 'var(--default-font-size)'
+          }}
+          highlight={(code) => {
+            return <HighlightCode content={code} contentType={contentType} codeTheme={themes[setting.codeTheme]} mainDivStyle={{minHeight: 100}}/>
           }}
         />
 
