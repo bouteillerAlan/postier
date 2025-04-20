@@ -1,32 +1,47 @@
 import {Flex, IconButton, Section, Text, TextField, Tooltip} from '@radix-ui/themes';
 import {KeyValue} from '../../types/types.ts';
 import {useEffect, useState} from 'react';
-import {PlusIcon} from "@radix-ui/react-icons";
+import {Cross2Icon, PlusIcon} from '@radix-ui/react-icons';
 
-export default function KeyValueForm(props: {getKeyValues: (data: KeyValue[]) => void, setKeyValues: KeyValue[] | null, title: string}) {
+interface KeyValueFormProps {
+  getKeyValues: (data: KeyValue[]) => void;
+  setKeyValues: KeyValue[] | null;
+  title: string;
+}
+
+export default function KeyValueForm(props: KeyValueFormProps) {
   const [keyValues, setKeyValues] = useState<KeyValue[]>(
-    (props.setKeyValues && props.setKeyValues.length > 0) ? props.setKeyValues : [{ key: '', value: '', enabled: true }]
+    (props.setKeyValues && props.setKeyValues.length > 0) ? props.setKeyValues : [{ key: '', value: '', enabled: false }]
   );
 
-  const addKeyValue = () => {
+  /**
+   *  add a new keyValue pair to the array
+   *  @return void
+   */
+  function addKeyValue(): void {
     setKeyValues([...keyValues, { key: '', value: '', enabled: true }]);
-  };
+  }
 
-  const removeKeyValue = (index: number) => {
-    const newKeyValues = [...keyValues];
-    newKeyValues.splice(index, 1);
-    setKeyValues(newKeyValues);
-  };
+  /**
+   * remove a keyValue pair from the array
+   * @param index
+   * @return void
+   */
+  function removeKeyValue(index: number): void {
+    const oldKeyValues = [...keyValues];
+    oldKeyValues.splice(index, 1);
+    setKeyValues(oldKeyValues);
+  }
 
-  const changeKeyValue = (index: number, field: keyof KeyValue, value: string | boolean) => {
+  function changeKeyValue(index: number, field: keyof KeyValue, value: string | boolean): void {
     const newKeyValues = [...keyValues];
     newKeyValues[index] = { ...newKeyValues[index], [field]: value };
     setKeyValues(newKeyValues);
-  };
+  }
 
   useEffect(() => {
     props.getKeyValues(keyValues);
-  }, [keyValues, props.title]);
+  }, [keyValues]);
 
   return (
     <Section size='1' pb='0' pt='2'>
@@ -55,7 +70,7 @@ export default function KeyValueForm(props: {getKeyValues: (data: KeyValue[]) =>
               variant='soft'
               color='red'
               onClick={() => removeKeyValue(index)}
-            >✕</IconButton>
+            ><Cross2Icon/></IconButton>
           </Flex>
         ))}
       </Flex>
