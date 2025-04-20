@@ -25,7 +25,6 @@ export default function KeyValueForm(props: {getKeyValues: (data: KeyValue[]) =>
   };
 
   useEffect(() => {
-    console.log('xxxxxxx')
     props.getKeyValues(keyValues);
   }, [keyValues, props.title]);
 

@@ -113,7 +113,7 @@ export default function RequestHistory({ history, setHistory, onClickElement, ma
 
                 <HoverCard.Root>
                   <HoverCard.Trigger>
-                    <Badge>
+                    <Badge className='pointer'>
                       <MagnifyingGlassIcon/>
                     </Badge>
                   </HoverCard.Trigger>

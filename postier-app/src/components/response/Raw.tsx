@@ -1,12 +1,33 @@
-import {Card, ScrollArea} from '@radix-ui/themes';
+import {Card, ScrollArea, Text} from '@radix-ui/themes';
+import {useEffect, useRef, useState} from "react";
 
 export default function RawResponse (props: {data: string, viewHeight: number}) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [cardW, setCardW] = useState<number | 'auto'>('auto');
+
+  function calculateCardWidth() {
+    if (cardRef.current) {
+      // 35 is all the margin, border and the scrollbar gutter
+      setCardW(cardRef.current.clientWidth - 35);
+    } else {
+      setCardW('auto');
+    }
+  }
+
+  useEffect(() => {
+    calculateCardWidth();
+    window.addEventListener('resize', calculateCardWidth);
+    return () => {
+      window.removeEventListener('resize', calculateCardWidth);
+    };
+  }, []);
+
   return (
-    <Card style={{padding: 0, height: props.viewHeight}}>
-      <ScrollArea style={{position: 'relative'}}>
-        <div style={{padding: 10, height: props.viewHeight-20, width: '95vw'}}>
+    <Card style={{height: props.viewHeight, padding: 0}} ref={cardRef}>
+      <ScrollArea>
+        <Text as='p' style={{width: cardW, padding: 12}}>
           {props.data}
-        </div>
+        </Text>
       </ScrollArea>
     </Card>
   );
