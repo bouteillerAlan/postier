@@ -24,3 +24,7 @@ body {
 .methods {
     font-family: 'KhandRegular', sans-serif;
 }
+
+.pointer {
+    cursor: pointer;
+}
