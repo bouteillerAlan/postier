@@ -1,11 +1,15 @@
 import {Card, ScrollArea, Text} from '@radix-ui/themes';
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useRef, useState} from 'react';
 
 export default function RawResponse (props: {data: string, viewHeight: number}) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [cardW, setCardW] = useState<number | 'auto'>('auto');
 
-  function calculateCardWidth() {
+  /**
+   * calculate and set the card width into cardW minus some border & padding
+   * @return void
+   */
+  function calculateCardWidth(): void {
     if (cardRef.current) {
       // 35 is all the margin, border and the scrollbar gutter
       setCardW(cardRef.current.clientWidth - 35);
@@ -14,6 +18,9 @@ export default function RawResponse (props: {data: string, viewHeight: number}) 
     }
   }
 
+  /**
+   * set add / remove EventListener for the card width calculation
+   */
   useEffect(() => {
     calculateCardWidth();
     window.addEventListener('resize', calculateCardWidth);

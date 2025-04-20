@@ -1,4 +1,4 @@
-import { Box, Button, Container, Flex, Section, Select, Tabs, TextField } from '@radix-ui/themes';
+import {Box, Button, Container, Flex, Section, Select, Tabs, TextField} from '@radix-ui/themes';
 import KeyValueForm from './KeyValueForm.tsx';
 import BodyForm from './BodyForm.tsx';
 import {
@@ -27,7 +27,7 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
    * build the string for the query and return it
    * @return string
    */
-  const buildQueryString = (): string => {
+  function buildQueryString(): string {
     if (requestData.request.query && requestData.request.query.length > 0) {
       let prefix = '';
 
@@ -47,14 +47,14 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
       );
     }
     return '';
-  };
+  }
 
   /**
    * add the protocol in the url if it's not given by the user
    * /!\ atm just support https
    * @return string
    */
-  const safeUrl = (): string => {
+  function safeUrl(): string {
     if (requestData.request?.url) {
       const httpPattern = /^https?:\/\//;
       const localhostPattern = /^localhost/;
@@ -77,7 +77,7 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
    * submit the request
    * @return void
    */
-  const handleSubmit = (): void => {
+  function handleSubmit(): void {
     // in case the value is empty
     if (!requestData.request.contentType) requestData.request.contentType = 'none';
     onSubmit({
@@ -85,13 +85,13 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
       composedUrl: `${safeUrl()}${buildQueryString()}`,
       timestamp: Date.now()
     });
-  };
+  }
 
   /**
    * handle the enter key press for the url input
    * @param e KeyboardEvent
    */
-  const handleKeyPress = (e: KeyboardEvent): void => {
+  function handleKeyPress(e: KeyboardEvent): void {
     if (isLoading || !requestData.request?.url) return;
     if (e.key === 'Enter') handleSubmit();
   }
@@ -114,6 +114,9 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
     return countNotEmptyArrayValue(query) > 0;
   }
 
+  /**
+   * set add / remove EventListener for the input keypress
+   */
   useEffect(() => {
     if (urlInputRef && urlInputRef.current) urlInputRef.current.addEventListener('keypress', handleKeyPress);
     return () => {
