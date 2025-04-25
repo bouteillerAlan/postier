@@ -147,6 +147,11 @@ export default function Request() {
     });
   }, []);
 
+  useEffect(() => {
+    setIsLoading(false);
+    console.log('tabIndex', tabIndex);
+  }, [tabIndex]);
+
   /**
    * handle all the value change for the request form
    * @param key the key of the value the form changed
@@ -262,7 +267,10 @@ export default function Request() {
                             variant={(tabIndex === rdata.request.identity.tabId) ? 'solid' : 'soft'}
                             style={{...setBorderValue(index, false), width: '100px'}}
                             key={rdata.request.identity.tabId}
-                            onClick={() => setTabIndex(rdata.request.identity.tabId)}
+                            onClick={() => setTabIndex(() => {
+                              setIsLoading(true);
+                              return rdata.request.identity.tabId;
+                            })}
                           >
                             <Text truncate size='1' style={{minWidth: '100%', textAlign: 'left'}}>
                               <Badge className='methods' color={HttpMethodColorRadixUI(rdata.request.method)} style={{marginRight: 5}}>
@@ -297,13 +305,13 @@ export default function Request() {
                 </ScrollArea>
               </Flex>
 
-              {getActiveRequestIndex() !== -1 && <RequestForm
+              {(getActiveRequestIndex() !== -1 && !isLoading) && <RequestForm
                 onSubmit={handleSendRequest}
                 isLoading={isLoading}
                 requestData={requestData[getActiveRequestIndex()]}
                 setRequestData={handleRequestData}
               />}
-              {getActiveRequestIndex() !== -1 && <ResponseViewer
+              {(getActiveRequestIndex() !== -1 && !isLoading) && <ResponseViewer
                 response={requestData[getActiveRequestIndex()].response}
                 debug={requestData[getActiveRequestIndex()].debug}
                 metrics={requestData[getActiveRequestIndex()].metrics}
