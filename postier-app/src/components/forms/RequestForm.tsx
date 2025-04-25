@@ -10,7 +10,7 @@ import {
   RequestData
 } from '../../types/types.ts';
 import {HttpMethodColorCustom, HttpMethodColorRadixUI} from '../../services/formatter.ts';
-import {useEffect, useRef} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {FilePlusIcon, PaperPlaneIcon} from '@radix-ui/react-icons';
 
 interface RequestFormProps {
@@ -22,6 +22,7 @@ interface RequestFormProps {
 
 export default function RequestForm({ onSubmit, isLoading, requestData, setRequestData }: RequestFormProps) {
   const urlInputRef = useRef<HTMLInputElement>(null);
+  const [tabs, setTabs] = useState<string>('query');
 
   /**
    * build the string for the query and return it
@@ -152,7 +153,7 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
       </Section>
 
       <Section size='1' pt='0'>
-        <Tabs.Root defaultValue='query'>
+        <Tabs.Root defaultValue='query' value={tabs} onValueChange={(v) => setTabs(v)}>
           <Tabs.List>
             <Tabs.Trigger value='query'>
               Query
