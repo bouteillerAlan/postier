@@ -4,14 +4,14 @@ import {useEffect, useState} from 'react';
 import {Cross2Icon, PlusIcon} from '@radix-ui/react-icons';
 
 interface KeyValueFormProps {
-  getKeyValues: (data: KeyValue[]) => void;
-  setKeyValues: KeyValue[] | null;
+  setKeyValues: (data: KeyValue[]) => void;
+  getKeyValues: KeyValue[] | null;
   title: string;
 }
 
 export default function KeyValueForm(props: KeyValueFormProps) {
   const [keyValues, setKeyValues] = useState<KeyValue[]>(
-    (props.setKeyValues && props.setKeyValues.length > 0) ? props.setKeyValues : [{ key: '', value: '', enabled: false }]
+    (props.getKeyValues && props.getKeyValues.length > 0) ? props.getKeyValues : [{ key: '', value: '', enabled: false }]
   );
 
   /**
@@ -40,8 +40,12 @@ export default function KeyValueForm(props: KeyValueFormProps) {
   }
 
   useEffect(() => {
-    props.getKeyValues(keyValues);
+    props.setKeyValues(keyValues);
   }, [keyValues]);
+
+  useEffect(() => {
+    console.log('props.tabIndexChanged', props.getKeyValues);
+  }, []);
 
   return (
     <Section size='1' pb='0' pt='2'>

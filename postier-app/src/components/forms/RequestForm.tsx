@@ -125,6 +125,10 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
     }
   }, [requestData]);
 
+  useEffect(() => {
+    console.log('xxxxxxxx');
+  }, []);
+
   return (
     <Container>
       <Section size='1' style={{paddingTop: 12}}>
@@ -176,16 +180,16 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
           <Box>
             <Tabs.Content value='query'>
               <KeyValueForm
-                getKeyValues={(data: KeyValue[]): void => setRequestData('query', data, requestData.request.id)}
-                setKeyValues={requestData.request?.query ?? null}
+                setKeyValues={(data: KeyValue[]): void => setRequestData('query', data, requestData.request.id)}
+                getKeyValues={requestData.request?.query ?? null}
                 title='Query'
               />
             </Tabs.Content>
 
             <Tabs.Content value='header'>
               <KeyValueForm
-                getKeyValues={(data: KeyValue[]): void => setRequestData('headers', data, requestData.request.id)}
-                setKeyValues={requestData.request?.headers ?? null}
+                setKeyValues={(data: KeyValue[]): void => setRequestData('headers', data, requestData.request.id)}
+                getKeyValues={requestData.request?.headers ?? null}
                 title='Header'
               />
             </Tabs.Content>
