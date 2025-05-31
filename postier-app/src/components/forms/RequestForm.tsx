@@ -125,6 +125,10 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
     }
   }, [requestData]);
 
+  useEffect(() => {
+    console.log('xxxxxxxx');
+  }, []);
+
   return (
     <Container>
       <Section size='1' style={{paddingTop: 12}}>
