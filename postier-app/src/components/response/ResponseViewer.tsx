@@ -21,8 +21,10 @@ import {CheckCircledIcon, CircleIcon, CrossCircledIcon} from '@radix-ui/react-ic
 import RawResponse from './Raw.tsx';
 import PreviewResponse from './Preview.tsx';
 import PrettyResponse from './Pretty.tsx';
+import {Loading} from "../ui/Loading.tsx";
 
 interface ResponseViewerProps {
+  isLoading: boolean;
   response: ResponseData | null;
   debug: KeyValue[] | [];
   metrics: HttpMetricsWErr | undefined;
@@ -40,7 +42,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
     time: 0,
     id: 0
   };
-  const [viewMode, setViewMode] = useState<ViewMode>('pretty');
+  const [viewMode, setViewMode] = useState<ViewMode>('raw');
   const [responseCodeHeight, setResponseCodeHeight] = useState<number>(0);
   const [responseDataHeight, setResponseDataHeight] = useState<number>(0);
   const bgColors = ['var(--ruby-3)', 'var(--orange-3)', 'var(--yellow-3)', 'var(--cyan-3)', 'var(--jade-3)'];
@@ -103,7 +105,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
       errorIsPassed = true;
       return <CrossCircledIcon style={{marginLeft: 3}} color='red'/>
     }
-    return <CheckCircledIcon style={{marginLeft: 3}} color='green'/>  
+    return <CheckCircledIcon style={{marginLeft: 3}} color='green'/>
   }
 
   useEffect(() => {
@@ -120,7 +122,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
         <Badge color={statusColor} size='2'>
           {response.status}, {response.statusText ?? 'undefined status text'}
         </Badge>
-        
+
         <HoverCard.Root>
 		      <HoverCard.Trigger>
 			      <Link href='#'>
@@ -176,7 +178,7 @@ export default function ResponseViewer(props: ResponseViewerProps) {
             </DataList.Root>
           </HoverCard.Content>
         </HoverCard.Root>
-        
+
         <Separator orientation='vertical'/>
         <Tooltip content='Size of the body mesured from the blob (rounded)'>
           <Text size='1' color='gray'>
@@ -202,7 +204,8 @@ export default function ResponseViewer(props: ResponseViewerProps) {
             </Tabs.List>
           </Tabs.Root>
 
-          {
+          {props.isLoading ?
+            <Loading isLoading/> :
             viewMode === 'pretty' ?
             <PrettyResponse data={formattedData} viewHeight={responseCodeHeight} contentType={ctheader} codeTheme={themes[props.userConfig.codeTheme]} userConfig={props.userConfig}/> :
             viewMode === 'raw' ? <RawResponse data={formattedData} viewHeight={responseCodeHeight}/> :
@@ -211,51 +214,57 @@ export default function ResponseViewer(props: ResponseViewerProps) {
         </Tabs.Content>
 
         <Tabs.Content value='headers'>
-          <Section p='0' style={{ height: responseDataHeight, overflow: 'auto' }}>
-            <ScrollArea>
-              <Table.Root size='1' layout='fixed' style={{paddingRight: 10}}>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.ColumnHeaderCell>Key</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
-                  </Table.Row>
-                </Table.Header>
-
-                <Table.Body>
-                  {headers?.map((header, index) => (
-                    <Table.Row key={`headers${index}`}>
-                      <Table.RowHeaderCell>{header.key}</Table.RowHeaderCell>
-                      <Table.Cell>{header.value}</Table.Cell>
+          {props.isLoading ?
+            <Loading isLoading/> :
+            <Section p='0' style={{ height: responseDataHeight, overflow: 'auto' }}>
+              <ScrollArea>
+                <Table.Root size='1' layout='fixed' style={{paddingRight: 10}}>
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeaderCell>Key</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
                     </Table.Row>
-                  ))}
-                </Table.Body>
-              </Table.Root>
-            </ScrollArea>
-          </Section>
+                  </Table.Header>
+
+                  <Table.Body>
+                    {headers?.map((header, index) => (
+                      <Table.Row key={`headers${index}`}>
+                        <Table.RowHeaderCell>{header.key}</Table.RowHeaderCell>
+                        <Table.Cell>{header.value}</Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Root>
+              </ScrollArea>
+            </Section>
+          }
         </Tabs.Content>
 
         <Tabs.Content value='debug'>
-          <Section p='0' style={{ height: responseDataHeight }}>
-            <ScrollArea>
-              <Table.Root size='1' layout='fixed' style={{paddingRight: 10}}>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.ColumnHeaderCell>Key</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
-                  </Table.Row>
-                </Table.Header>
-
-                <Table.Body>
-                  {props.debug.length > 0 && props.debug.map((debug: KeyValue, index: number) => (
-                    <Table.Row key={`debug${index}`}>
-                      <Table.RowHeaderCell>{debug.key}</Table.RowHeaderCell>
-                      <Table.Cell>{debug.value}</Table.Cell>
+          {props.isLoading ?
+            <Loading isLoading/> :
+            <Section p='0' style={{ height: responseDataHeight }}>
+              <ScrollArea>
+                <Table.Root size='1' layout='fixed' style={{paddingRight: 10}}>
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeaderCell>Key</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
                     </Table.Row>
-                  ))}
-                </Table.Body>
-              </Table.Root>
-            </ScrollArea>
-          </Section>
+                  </Table.Header>
+
+                  <Table.Body>
+                    {props.debug.length > 0 && props.debug.map((debug: KeyValue, index: number) => (
+                      <Table.Row key={`debug${index}`}>
+                        <Table.RowHeaderCell>{debug.key}</Table.RowHeaderCell>
+                        <Table.Cell>{debug.value}</Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Root>
+              </ScrollArea>
+            </Section>
+          }
         </Tabs.Content>
 
       </Tabs.Root>
