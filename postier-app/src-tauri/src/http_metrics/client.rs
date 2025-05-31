@@ -19,7 +19,7 @@ impl From<super::HttpMethod> for Method {
     }
 }
 
-// format headers like in the ts version
+// format headers
 fn format_headers(headers: &[KeyValue]) -> std::collections::HashMap<String, String> {
     headers
         .iter()
@@ -28,7 +28,7 @@ fn format_headers(headers: &[KeyValue]) -> std::collections::HashMap<String, Str
         .collect()
 }
 
-// get content type header like in the ts version
+// get "content-type" header
 fn get_content_type_header(content_type: &ContentType) -> String {
     match content_type {
         ContentType::FormData => "multipart/form-data".to_string(),
@@ -133,7 +133,7 @@ fn build_error_response(
 
 pub async fn send_request(request_data: RequestData) -> Result<PostierObject, String> {
     let start_time = Instant::now();
-    
+
     // metrics with default error values
     let mut metrics = HttpMetrics {
         prepare: 0.0,
@@ -153,15 +153,15 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
             return Ok(build_error_response(&request_data, format!("URL normalization failed: {}", e), metrics, start_time));
         }
     };
-    
+
     let method: Method = request_data.method.clone().into();
-    
+
     // prepare headers
     let mut formatted_headers = request_data.headers
         .as_ref()
         .map(|headers| format_headers(headers))
         .unwrap_or_default();
-    
+
     // add content type if needed
     if let Some(content_type) = &request_data.content_type {
         if !matches!(content_type, ContentType::None) && !formatted_headers.contains_key("Content-Type") {
@@ -171,10 +171,10 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
             }
         }
     }
-    
+
     // add user agent
     formatted_headers.insert("User-Agent".to_string(), "PostierRuntime".to_string());
-    
+
     // Parse the URL to get the host
     let url_parsed = match Url::parse(&url) {
         Ok(u) => u,
@@ -216,7 +216,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
 
     // Build request
     let mut request_builder = client.request(method, &url);
-        
+
     // Add headers
     for (key, value) in formatted_headers {
         request_builder = request_builder.header(key, value);
@@ -278,7 +278,7 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
         .collect();
 
     let body_str = String::from_utf8_lossy(&body_bytes).to_string();
-    
+
     // Create response object
     let response_data = ResponseData {
         id: request_data.id.clone(),
@@ -352,11 +352,11 @@ pub async fn send_request(request_data: RequestData) -> Result<PostierObject, St
             enabled: true,
         },
     ];
-    
+
     Ok(PostierObject {
         request: request_data,
         response: response_data,
         debug,
         metrics,
     })
-} 
+}

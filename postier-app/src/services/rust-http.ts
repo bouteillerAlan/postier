@@ -14,7 +14,7 @@ export const sendRequest = async (requestData: RequestData): Promise<PostierObje
       }
     });
 
-    // transform the rust key to the typescript key
+    // transform the rust key to the TypeScript key
     rep.request.identity.tabId = rep.request.identity.tab_id;
     rep.response.statusText = rep.response.status_text;
 

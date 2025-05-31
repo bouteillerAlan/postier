@@ -100,4 +100,4 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     tauri::plugin::Builder::new("http_metrics")
         .invoke_handler(tauri::generate_handler![send_request_with_metrics])
         .build()
-} 
+}
