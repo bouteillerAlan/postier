@@ -35,7 +35,7 @@ export default function KeyValueForm(props: KeyValueFormProps) {
 
   function changeKeyValue(index: number, field: keyof KeyValue, value: string | boolean): void {
     const newKeyValues = [...keyValues];
-    newKeyValues[index] = { ...newKeyValues[index], [field]: value };
+    newKeyValues[index] = { ...newKeyValues[index], [field]: value, enabled: !!(field && value) };
     setKeyValues(newKeyValues);
   }
 

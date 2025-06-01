@@ -29,6 +29,7 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
    * @return string
    */
   function buildQueryString(): string {
+    console.log('buildQueryString', requestData);
     if (requestData.request.query && requestData.request.query.length > 0) {
       let prefix = '';
 
@@ -124,10 +125,6 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
       if (urlInputRef && urlInputRef.current) urlInputRef.current.removeEventListener('keypress', handleKeyPress);
     }
   }, [requestData]);
-
-  useEffect(() => {
-    console.log('xxxxxxxx');
-  }, []);
 
   return (
     <Container>
