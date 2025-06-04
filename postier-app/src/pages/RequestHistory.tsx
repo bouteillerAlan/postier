@@ -1,6 +1,6 @@
 import {Badge, Box, Button, Card, Flex, HoverCard, ScrollArea, Separator, Text, Tooltip,} from '@radix-ui/themes';
 import {getStatusColor} from '../services/formatter.ts';
-import {PostierObjectWithMetrics, UserSetting} from '../types/types.ts';
+import {HistoryByDay, PostierObjectWithMetrics, UserSetting} from '../types/types.ts';
 import React, {RefObject, useEffect, useRef, useState} from 'react';
 import {MagnifyingGlassIcon, ReloadIcon, StackIcon, TrashIcon} from '@radix-ui/react-icons';
 import HighlightCode from "../components/codeHighlighting/HighlightCode.tsx";
@@ -19,7 +19,11 @@ export default function RequestHistory({ history, setHistory, onClickElement, ma
   const [vh, setVh] = useState<number>(0);
   const [bw, setBw] = useState<number | 'auto'>(0);
   const boxRef = useRef<HTMLDivElement>(null);
+  const [sortedHistoryByDay, setSortedHistoryByDay] = useState<HistoryByDay[]>([]);
 
+  /**
+   * set add / remove EventListener for the view height calculation
+   */
   useEffect(() => {
     calculateViewHeight();
     calculateBoxWidth();
@@ -30,6 +34,39 @@ export default function RequestHistory({ history, setHistory, onClickElement, ma
       window.removeEventListener('resize', calculateBoxWidth);
     };
   }, []);
+
+  /**
+   * sort the history by day and set the state
+   */
+  useEffect(() => {
+    if (history.length > 0) setSortedHistoryByDay(sortGroupedHistory(groupHistoryByDay()));
+  }, [history]);
+
+  /**
+   * Sorts a grouped history array by date in descending order
+   * @param {HistoryByDay[]} historyArray An array of grouped history objects, where each object contains a date property
+   * @return {HistoryByDay[]} The sorted array of grouped history objects in descending order by date
+   */
+  function sortGroupedHistory(historyArray: HistoryByDay[]): HistoryByDay[] {
+    return historyArray.sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return dateB - dateA;
+    });
+  }
+
+  /**
+   * regroup the history array by day
+   * @return HistoryByDay[] the history grouped by day
+   */
+  function groupHistoryByDay(): HistoryByDay[] {
+    return history.reduce((acc: HistoryByDay[], curr: PostierObjectWithMetrics) => {
+      const date = new Date(curr.request.timestamp).toLocaleDateString();
+      const existingGroup = acc.find(group => group.date === date);
+      existingGroup ? existingGroup.data.push(curr) : acc.push({ date, data: [curr] });
+      return acc;
+    }, []);
+  }
 
   /**
    * calculate the height for the view list element a set it via a state
@@ -102,59 +139,64 @@ export default function RequestHistory({ history, setHistory, onClickElement, ma
     {(!isLoading && (!history || (history && history.length === 0))) && noHistoryDisplay()}
 
     {<Flex direction='column' gap='2' p='2' ref={boxRef}>
-      {(!isLoading && (history && history.length > 0)) && history.map((item: PostierObjectWithMetrics) => (
-        <Card key={`hist${item.request.id}`}>
-          <Flex gap='2' align='center' justify='between'>
+      {(!isLoading && (history && history.length > 0)) && sortedHistoryByDay.map((dayGroup: HistoryByDay) => (
+        <Box key={`day-${dayGroup.date}`} mb='3'>
+          <Text size='3' weight='bold' mb='2'>{dayGroup.date}</Text>
+          <Flex direction='column' gap='2'>
+            {dayGroup.data.map((item: PostierObjectWithMetrics) => (
+              <Card key={`hist${item.request.id}`}>
+                <Flex gap='2' align='center' justify='between'>
+                  <Flex gap='2' direction='column'>
+                    <Flex gap='2' align='center' mb='1' style={{width: bw}}>
+                      <Badge color='gray'>{new Date(item.request.timestamp).toLocaleString()}</Badge>
+                      <Separator/>
 
-            <Flex gap='2' direction='column'>
-              <Flex gap='2' align='center' mb='1' style={{width: bw}}>
-                <Badge color='gray'>{new Date(item.request.timestamp).toLocaleString()}</Badge>
-                <Separator/>
+                      <HoverCard.Root>
+                        <HoverCard.Trigger>
+                          <Badge className='pointer'>
+                            <MagnifyingGlassIcon/>
+                          </Badge>
+                        </HoverCard.Trigger>
+                        <HoverCard.Content size='1' maxWidth='500px' height='250px' style={{padding: 0, backgroundColor: themes[userConfig.codeTheme].plain.backgroundColor}}>
+                          <HighlightCode content={JSON.stringify(item, undefined, 2)} contentType={'json'} codeTheme={themes[userConfig.codeTheme]} mainDivStyle={{margin: 10}}/>
+                        </HoverCard.Content>
+                      </HoverCard.Root>
 
-                <HoverCard.Root>
-                  <HoverCard.Trigger>
-                    <Badge className='pointer'>
-                      <MagnifyingGlassIcon/>
-                    </Badge>
-                  </HoverCard.Trigger>
-                  <HoverCard.Content size='1' maxWidth='500px' height='250px' style={{padding: 0, backgroundColor: themes[userConfig.codeTheme].plain.backgroundColor}}>
-                    <HighlightCode content={JSON.stringify(item, undefined, 2)} contentType={'json'} codeTheme={themes[userConfig.codeTheme]} mainDivStyle={{margin: 10}}/>
-                  </HoverCard.Content>
-                </HoverCard.Root>
+                      <Badge>{item.request.method}</Badge>
+                      <Tooltip content={`${item.response.status}, ${item.response.statusText}`}>
+                        <Badge color={getStatusColor(item.response.status) as any}>{item.response.status}</Badge>
+                      </Tooltip>
+                      <Text truncate color='gray' weight='bold'>{item.request.url}</Text>
+                    </Flex>
 
-                <Badge>{item.request.method}</Badge>
-                <Tooltip content={`${item.response.status}, ${item.response.statusText}`}>
-                  <Badge color={getStatusColor(item.response.status) as any}>{item.response.status}</Badge>
-                </Tooltip>
-                <Text truncate color='gray' weight='bold'>{item.request.url}</Text>
-              </Flex>
+                    <Flex align='center' gap='2'>
+                      <Tooltip content={`request id ${item.request.id.slice(0, 5)} match response id ${item.response.id.slice(0, 5)}`}>
+                        <Badge color={item.request.id === item.response.id ? 'green' : 'red'}>
+                          <StackIcon/>
+                        </Badge>
+                      </Tooltip>
+                      <Tooltip content={item.request.identity ? 'tab id' : 'pre 1.4.0 version request'}>
+                        <Badge color='gray'>{item.request.identity?.tabId.slice(0, 6) ?? 'no tab id'}</Badge>
+                      </Tooltip>
+                      <Tooltip content='request id'>
+                        <Badge color='gray'>{item.request.id.slice(0, 6)}</Badge>
+                      </Tooltip>
+                    </Flex>
+                  </Flex>
 
-              <Flex align='center' gap='2'>
-                <Tooltip content={`request id ${item.request.id.slice(0, 5)} match response id ${item.response.id.slice(0, 5)}`}>
-                  <Badge color={item.request.id === item.response.id ? 'green' : 'red'}>
-                    <StackIcon/>
-                  </Badge>
-                </Tooltip>
-                <Tooltip content={item.request.identity ? 'tab id' : 'pre 1.4.0 version request'}>
-                  <Badge color='gray'>{item.request.identity?.tabId.slice(0, 6) ?? 'no tab id'}</Badge>
-                </Tooltip>
-                <Tooltip content='request id'>
-                  <Badge color='gray'>{item.request.id.slice(0, 6)}</Badge>
-                </Tooltip>
-              </Flex>
-            </Flex>
-
-            <Flex gap='2' direction='column'>
-              <Button color='orange' variant='soft' onClick={() => onClickElement(item)}>
-                <ReloadIcon/> Load the request
-              </Button>
-              <Button color='crimson' variant='soft' onClick={() => onDeleteElement(item)}>
-                <TrashIcon/> Delete the request
-              </Button>
-            </Flex>
-
+                  <Flex gap='2' direction='column'>
+                    <Button color='orange' variant='soft' onClick={() => onClickElement(item)}>
+                      <ReloadIcon/> Load the request
+                    </Button>
+                    <Button color='crimson' variant='soft' onClick={() => onDeleteElement(item)}>
+                      <TrashIcon/> Delete the request
+                    </Button>
+                  </Flex>
+                </Flex>
+              </Card>
+            ))}
           </Flex>
-        </Card>
+        </Box>
       ))}
     </Flex>}
   </ScrollArea>
