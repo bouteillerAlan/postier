@@ -43,9 +43,12 @@ export default function KeyValueForm(props: KeyValueFormProps) {
     props.setKeyValues(keyValues);
   }, [keyValues]);
 
+  // Update local state when props change
   useEffect(() => {
-    console.log('props.tabIndexChanged', props.getKeyValues);
-  }, []);
+    if (props.getKeyValues) {
+      setKeyValues(props.getKeyValues);
+    }
+  }, [props.getKeyValues]);
 
   return (
     <Section size='1' pb='0' pt='2'>
