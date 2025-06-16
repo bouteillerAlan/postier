@@ -29,6 +29,7 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
    * @return string
    */
   function buildQueryString(): string {
+    console.log('buildQueryString', requestData);
     if (requestData.request.query && requestData.request.query.length > 0) {
       let prefix = '';
 
@@ -36,15 +37,15 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
       if (!requestData.request.url.endsWith('?')) prefix = '?';
 
       // if the user have already set a query just add the other
-      const queryPattern = /\?(.+=.+)+,?/;
+      const queryPattern = /\?(.+=.+)+&?/;
       const hasQuery = queryPattern.test(requestData.request.url);
-      if (hasQuery && !requestData.request.url.endsWith(',')) prefix = ',';
+      if (hasQuery && !requestData.request.url.endsWith('&')) prefix = '&';
 
       return `${prefix}`.concat(
         requestData.request.query
           .filter(item => item.enabled && item.key && item.value)
           .map(item => `${encodeURIComponent(item.key)}=${encodeURIComponent(item.value)}`)
-          .join(',')
+          .join('&')
       );
     }
     return '';
@@ -124,10 +125,6 @@ export default function RequestForm({ onSubmit, isLoading, requestData, setReque
       if (urlInputRef && urlInputRef.current) urlInputRef.current.removeEventListener('keypress', handleKeyPress);
     }
   }, [requestData]);
-
-  useEffect(() => {
-    console.log('xxxxxxxx');
-  }, []);
 
   return (
     <Container>

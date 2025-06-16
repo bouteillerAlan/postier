@@ -35,7 +35,7 @@ export default function KeyValueForm(props: KeyValueFormProps) {
 
   function changeKeyValue(index: number, field: keyof KeyValue, value: string | boolean): void {
     const newKeyValues = [...keyValues];
-    newKeyValues[index] = { ...newKeyValues[index], [field]: value };
+    newKeyValues[index] = { ...newKeyValues[index], [field]: value, enabled: !!(field && value) };
     setKeyValues(newKeyValues);
   }
 
@@ -43,9 +43,12 @@ export default function KeyValueForm(props: KeyValueFormProps) {
     props.setKeyValues(keyValues);
   }, [keyValues]);
 
+  // Update local state when props change
   useEffect(() => {
-    console.log('props.tabIndexChanged', props.getKeyValues);
-  }, []);
+    if (props.getKeyValues) {
+      setKeyValues(props.getKeyValues);
+    }
+  }, [props.getKeyValues]);
 
   return (
     <Section size='1' pb='0' pt='2'>

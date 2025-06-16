@@ -305,13 +305,14 @@ export default function Request() {
                 </ScrollArea>
               </Flex>
 
-              {(getActiveRequestIndex() !== -1 && !isLoading) && <RequestForm
+              {(getActiveRequestIndex() !== -1) && <RequestForm
                 onSubmit={handleSendRequest}
                 isLoading={isLoading}
                 requestData={requestData[getActiveRequestIndex()]}
                 setRequestData={handleRequestData}
               />}
-              {(getActiveRequestIndex() !== -1 && !isLoading) && <ResponseViewer
+              {(getActiveRequestIndex() !== -1) && <ResponseViewer
+                isLoading={isLoading}
                 response={requestData[getActiveRequestIndex()].response}
                 debug={requestData[getActiveRequestIndex()].debug}
                 metrics={requestData[getActiveRequestIndex()].metrics}

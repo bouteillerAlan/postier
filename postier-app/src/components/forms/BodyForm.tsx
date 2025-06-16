@@ -27,15 +27,12 @@ export default function BodyForm(props: BodyFormProps) {
   }, [contentType]);
 
   /**
-   * force the maj of the data when props.setKeyValues change
+   * force the maj of the data when props change
    */
   useEffect(() => {
-    setContentType(props.setContentType ?? 'none')
-  }, [props.setContentType]);
-
-  useEffect(() => {
-    setBody(props.setBody ?? '')
-  }, [props.setBody]);
+    props.setContentType && setContentType(props.setContentType);
+    props.setBody && setBody(props.setBody);
+  }, [props.setContentType, props.setBody]);
 
   return (
     <Section size='1' pt='2' pb='0'>

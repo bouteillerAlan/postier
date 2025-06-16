@@ -108,3 +108,8 @@ export interface PostierObjectWithRequestFromRust extends Omit<PostierObjectWith
 export interface PostierObjectWithMetricsFromRust extends Omit<PostierObjectWithRequestFromRust, 'response'> {
   response: ResponseDataFromRust;
 }
+
+export interface HistoryByDay {
+  date: string;
+  data: PostierObjectWithMetrics[];
+}
