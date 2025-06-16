@@ -3,7 +3,47 @@ name: "build and publish cross"
 on: workflow_dispatch
 
 jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.check_version.outputs.should_release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag
+        id: get_latest_tag
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
+          echo "Latest tag: ${LATEST_TAG}"
+
+      - name: Extract version from tauri.conf.json
+        id: extract_version
+        run: |
+          VERSION=$(grep -o '"version": "[^"]*"' ./postier-app/src-tauri/tauri.conf.json | cut -d '"' -f 4)
+          echo "CONF_VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "Config version: ${VERSION}"
+
+      - name: Check if versions are different
+        id: check_version
+        run: |
+          LATEST_TAG_VERSION=${LATEST_TAG#v}
+          echo "Latest tag version (without v): ${LATEST_TAG_VERSION}"
+          echo "Config version: ${CONF_VERSION}"
+
+          if [ "$LATEST_TAG_VERSION" != "$CONF_VERSION" ]; then
+            echo "Versions are different, should release"
+            echo "should_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "Versions are the same, should not release"
+            echo "should_release=false" >> $GITHUB_OUTPUT
+          fi
+
   publish-tauri:
+    needs: check-version
+    if: needs.check-version.outputs.should_release == 'true'
     permissions:
       contents: write
     strategy:
