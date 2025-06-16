@@ -11,13 +11,13 @@ jobs:
       matrix:
         include:
           - platform: "macos-latest" # for Arm based macs (M1 and above).
-            args: "-vvv --target aarch64-apple-darwin"
+            args: "-v --target aarch64-apple-darwin"
           - platform: "macos-latest" # for Intel based macs.
-            args: "-vvv --target x86_64-apple-darwin"
+            args: "-v --target x86_64-apple-darwin"
           - platform: "ubuntu-22.04"
-            args: "-vvv "
+            args: "-v "
           - platform: "windows-latest"
-            args: "-vvv "
+            args: "-v "
 
     runs-on: ${{ matrix.platform }}
     steps:
